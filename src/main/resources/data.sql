@@ -84,10 +84,10 @@ INSERT INTO role_permissions (role_id, permission_id) VALUES
 -- └──────────────────────────────┴──────────────┴────────────────┘
 
 INSERT INTO users (id, email, password, first_name, last_name, phone, status, created_at, updated_at) VALUES
-(1, 'admin@acainfo.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG13AvcfUONOzCH.TW', 'Admin', 'Sistema', '+34600000001', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 'profesor1@acainfo.com', '$2a$10$YQ8KZ3zE4N0N6kP0y4mCOl6Bsf0HRJfC6RhJWqCE9W9C7K0JqBdW', 'María', 'García López', '+34600000002', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 'profesor2@acainfo.com', '$2a$10$L9pO7kLQjwZvJXGKNbFIH.RyLHwJLvIqJqQYz9vI6pRqFJz7gGHQC', 'Carlos', 'Rodríguez Pérez', '+34600000003', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(4, 'profesor3@acainfo.com', '$2a$10$M8nO9kLPhtXvJXDJMbEIH.QxKGwIKuHpIpPXy8uH5pQpEIy6fFGPB', 'Ana', 'Martínez Sánchez', '+34600000004', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(1, 'admin@acainfo.com', '$2a$12$uZPOUn28mX04KOACU4ZXmegy54Ayk6v.y6n5TXMkVnAm3DdGDxxdW', 'Admin', 'Sistema', '+34600000001', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 'profesor1@acainfo.com', '$2a$12$dA1RGFXDVJBrDyf6du5Sz.x7KD/pCINFAkn1iOC3vovXNTuHt2IqO', 'María', 'García López', '+34600000002', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 'profesor2@acainfo.com', '$2a$12$dA1RGFXDVJBrDyf6du5Sz.x7KD/pCINFAkn1iOC3vovXNTuHt2IqO', 'Carlos', 'Rodríguez Pérez', '+34600000003', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(4, 'profesor3@acainfo.com', '$2a$12$dA1RGFXDVJBrDyf6du5Sz.x7KD/pCINFAkn1iOC3vovXNTuHt2IqO', 'Ana', 'Martínez Sánchez', '+34600000004', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Assign Roles to Test Users
 INSERT INTO user_roles (user_id, role_id) VALUES
