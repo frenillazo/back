@@ -69,6 +69,35 @@ INSERT INTO role_permissions (role_id, permission_id) VALUES
 (3, 19), -- MATERIAL_READ
 (3, 22); -- PAYMENT_READ (own payments)
 
+-- =====================================================
+-- Test Users: Professors and Admin
+-- =====================================================
+-- IMPORTANT: Password hashes generated with BCrypt (strength 10)
+-- CREDENTIALS FOR SWAGGER TESTING:
+-- ┌──────────────────────────────┬──────────────┬────────────────┐
+-- │ Email                        │ Password     │ Role           │
+-- ├──────────────────────────────┼──────────────┼────────────────┤
+-- │ admin@acainfo.com            │ Admin123!    │ ADMIN+TEACHER  │
+-- │ profesor1@acainfo.com        │ Teacher123!  │ TEACHER        │
+-- │ profesor2@acainfo.com        │ Teacher456!  │ TEACHER        │
+-- │ profesor3@acainfo.com        │ Teacher789!  │ TEACHER        │
+-- └──────────────────────────────┴──────────────┴────────────────┘
+
+INSERT INTO users (id, email, password, first_name, last_name, phone, status, created_at, updated_at) VALUES
+(1, 'admin@acainfo.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG13AvcfUONOzCH.TW', 'Admin', 'Sistema', '+34600000001', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 'profesor1@acainfo.com', '$2a$10$YQ8KZ3zE4N0N6kP0y4mCOl6Bsf0HRJfC6RhJWqCE9W9C7K0JqBdW', 'María', 'García López', '+34600000002', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 'profesor2@acainfo.com', '$2a$10$L9pO7kLQjwZvJXGKNbFIH.RyLHwJLvIqJqQYz9vI6pRqFJz7gGHQC', 'Carlos', 'Rodríguez Pérez', '+34600000003', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(4, 'profesor3@acainfo.com', '$2a$10$M8nO9kLPhtXvJXDJMbEIH.QxKGwIKuHpIpPXy8uH5pQpEIy6fFGPB', 'Ana', 'Martínez Sánchez', '+34600000004', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- Assign Roles to Test Users
+INSERT INTO user_roles (user_id, role_id) VALUES
+(1, 1), -- admin@acainfo.com -> ADMIN
+(1, 2), -- admin@acainfo.com -> TEACHER (dual role)
+(2, 2), -- profesor1@acainfo.com -> TEACHER
+(3, 2), -- profesor2@acainfo.com -> TEACHER
+(4, 2); -- profesor3@acainfo.com -> TEACHER
+
 -- Reset sequences for H2 (start after initial data)
 ALTER TABLE permissions ALTER COLUMN id RESTART WITH 26;
 ALTER TABLE roles ALTER COLUMN id RESTART WITH 4;
+ALTER TABLE users ALTER COLUMN id RESTART WITH 5;
