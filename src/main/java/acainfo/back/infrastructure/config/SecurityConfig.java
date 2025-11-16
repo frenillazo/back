@@ -27,7 +27,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .anyRequest().permitAll() // Temporalmente permisivo, se configurará en Hito 1.4
             )
-            .headers(headers -> headers.frameOptions().disable()); // Para H2 Console
+            .headers(AbstractHttpConfigurer::disable); // Para H2 Console
 
         return http.build();
     }
