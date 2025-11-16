@@ -166,17 +166,18 @@ public class UserService {
             );
 
             // Find or create custom role for this teacher
+            User finalTeacher = teacher;
             Role customRole = teacher.getRoles().stream()
                     .filter(r -> r.getName().startsWith("TEACHER_"))
                     .findFirst()
                     .orElseGet(() -> {
                         Role newRole = Role.builder()
                                 .type(RoleType.TEACHER)
-                                .name("TEACHER_" + teacher.getEmail().replaceAll("[^a-zA-Z0-9]", "_"))
-                                .description("Custom permissions for " + teacher.getFirstName() + " " + teacher.getLastName())
+                                .name("TEACHER_" + finalTeacher.getEmail().replaceAll("[^a-zA-Z0-9]", "_"))
+                                .description("Custom permissions for " + finalTeacher.getFirstName() + " " + finalTeacher.getLastName())
                                 .build();
                         newRole = roleRepository.save(newRole);
-                        teacher.addRole(newRole);
+                        finalTeacher.addRole(newRole);
                         return newRole;
                     });
 
