@@ -13,6 +13,7 @@ import acainfo.back.domain.model.Subject;
 import acainfo.back.domain.model.SubjectStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -183,6 +184,21 @@ public class SubjectService implements
         subjectRepository.save(subject);
 
         log.info("Subject archived successfully: {}", subject.getCode());
+    }
+
+    // ==================== FILTERING WITH SPECIFICATIONS ====================
+
+    /**
+     * Finds subjects matching the given specification (dynamic filtering).
+     * This method allows combining multiple filters dynamically.
+     *
+     * @param spec the specification to filter by
+     * @return list of matching subjects
+     */
+    @Transactional(readOnly = true)
+    public List<Subject> findSubjectsWithFilters(Specification<Subject> spec) {
+        log.debug("Finding subjects with dynamic filters");
+        return subjectRepository.findAll(spec);
     }
 
     // ==================== PRIVATE HELPER METHODS ====================
