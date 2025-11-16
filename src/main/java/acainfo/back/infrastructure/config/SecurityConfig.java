@@ -59,7 +59,7 @@ public class SecurityConfig {
             )
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-            .headers(headers -> headers.frameOptions().disable()); // Para H2 Console
+            .headers(AbstractHttpConfigurer::disable); // Para H2 Console
 
         return http.build();
     }
