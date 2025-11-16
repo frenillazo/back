@@ -4,6 +4,7 @@ import acainfo.back.domain.model.Degree;
 import acainfo.back.domain.model.Subject;
 import acainfo.back.domain.model.SubjectStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,10 +14,10 @@ import java.util.Optional;
 
 /**
  * Repository interface for Subject entity.
- * Provides CRUD operations and custom queries for subjects.
+ * Provides CRUD operations, custom queries, and dynamic filtering with Specifications.
  */
 @Repository
-public interface SubjectRepository extends JpaRepository<Subject, Long> {
+public interface SubjectRepository extends JpaRepository<Subject, Long>, JpaSpecificationExecutor<Subject> {
 
     /**
      * Find a subject by its unique code

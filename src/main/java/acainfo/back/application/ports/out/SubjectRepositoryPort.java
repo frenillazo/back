@@ -3,6 +3,7 @@ package acainfo.back.application.ports.out;
 import acainfo.back.domain.model.Degree;
 import acainfo.back.domain.model.Subject;
 import acainfo.back.domain.model.SubjectStatus;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
 import java.util.Optional;
@@ -109,4 +110,12 @@ public interface SubjectRepositoryPort {
      * @return count of subjects
      */
     long countByStatus(SubjectStatus status);
+
+    /**
+     * Finds subjects matching the given specification (dynamic filtering).
+     *
+     * @param spec the specification to filter by
+     * @return list of matching subjects
+     */
+    List<Subject> findAll(Specification<Subject> spec);
 }

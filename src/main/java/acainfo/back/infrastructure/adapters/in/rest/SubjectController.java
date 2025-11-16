@@ -4,9 +4,11 @@ import acainfo.back.application.ports.in.CreateSubjectUseCase;
 import acainfo.back.application.ports.in.DeleteSubjectUseCase;
 import acainfo.back.application.ports.in.GetSubjectUseCase;
 import acainfo.back.application.ports.in.UpdateSubjectUseCase;
+import acainfo.back.application.services.SubjectService;
 import acainfo.back.domain.model.Degree;
 import acainfo.back.domain.model.Subject;
 import acainfo.back.domain.model.SubjectStatus;
+import acainfo.back.domain.validation.SubjectSpecifications;
 import acainfo.back.infrastructure.adapters.in.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -18,6 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,6 +44,7 @@ public class SubjectController {
     private final UpdateSubjectUseCase updateSubjectUseCase;
     private final GetSubjectUseCase getSubjectUseCase;
     private final DeleteSubjectUseCase deleteSubjectUseCase;
+    private final SubjectService subjectService;
 
     // ==================== CREATE ====================
 
@@ -364,29 +368,21 @@ public class SubjectController {
     // ==================== PRIVATE HELPER METHODS ====================
 
     /**
-     * Applies filters to subject query.
+     * Applies filters to subject query using Specifications (Criteria API).
+     * Supports dynamic combination of multiple filters.
      * If no filters are provided, returns all subjects.
      */
     private List<Subject> applyFilters(Degree degree, Integer year, Integer semester, SubjectStatus status, String search) {
-        // If search is provided, use search functionality
-        if (search != null && !search.isBlank()) {
-            return getSubjectUseCase.searchSubjects(search);
-        }
+        // Build dynamic specification combining all filters
+        Specification<Subject> spec = SubjectSpecifications.combineFilters(
+                degree,
+                year,
+                semester,
+                status,
+                search
+        );
 
-        // Apply specific filters
-        if (degree != null && year != null) {
-            return getSubjectUseCase.getSubjectsByDegreeAndYear(degree, year);
-        }
-
-        if (degree != null) {
-            return getSubjectUseCase.getSubjectsByDegree(degree);
-        }
-
-        if (status != null) {
-            return getSubjectUseCase.getSubjectsByStatus(status);
-        }
-
-        // No filters - return all subjects
-        return getSubjectUseCase.getAllSubjects();
+        // Use SubjectService with Specifications for dynamic filtering
+        return subjectService.findSubjectsWithFilters(spec);
     }
 }

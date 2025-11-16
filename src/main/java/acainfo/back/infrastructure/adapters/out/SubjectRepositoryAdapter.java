@@ -5,6 +5,7 @@ import acainfo.back.domain.model.Degree;
 import acainfo.back.domain.model.Subject;
 import acainfo.back.domain.model.SubjectStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -81,5 +82,10 @@ public class SubjectRepositoryAdapter implements SubjectRepositoryPort {
     @Override
     public long countByStatus(SubjectStatus status) {
         return subjectRepository.countByStatus(status);
+    }
+
+    @Override
+    public List<Subject> findAll(Specification<Subject> spec) {
+        return subjectRepository.findAll(spec);
     }
 }
