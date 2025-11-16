@@ -166,6 +166,78 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handle SubjectNotFoundException
+     */
+    @ExceptionHandler(SubjectNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleSubjectNotFoundException(
+            SubjectNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Subject not found: {}", ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.NOT_FOUND.value(),
+                "Not Found",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    /**
+     * Handle DuplicateSubjectCodeException
+     */
+    @ExceptionHandler(DuplicateSubjectCodeException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateSubjectCodeException(
+            DuplicateSubjectCodeException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Duplicate subject code: {}", ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.CONFLICT.value(),
+                "Conflict",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
+     * Handle SubjectHasActiveGroupsException
+     */
+    @ExceptionHandler(SubjectHasActiveGroupsException.class)
+    public ResponseEntity<ErrorResponse> handleSubjectHasActiveGroupsException(
+            SubjectHasActiveGroupsException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Subject has active groups: {}", ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.CONFLICT.value(),
+                "Conflict",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
+     * Handle IllegalArgumentException (for business rule violations)
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
+            IllegalArgumentException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Invalid argument: {}", ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
+    /**
      * Handle DomainException (generic)
      */
     @ExceptionHandler(DomainException.class)
