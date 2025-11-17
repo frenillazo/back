@@ -4,7 +4,7 @@ import acainfo.back.domain.exception.ClassroomScheduleConflictException;
 import acainfo.back.domain.exception.TeacherScheduleConflictException;
 import acainfo.back.domain.model.Classroom;
 import acainfo.back.domain.model.Schedule;
-import acainfo.back.infrastructure.adapters.out.persistence.ScheduleRepository;
+import acainfo.back.infrastructure.adapters.out.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

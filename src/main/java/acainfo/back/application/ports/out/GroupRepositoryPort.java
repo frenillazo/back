@@ -75,13 +75,6 @@ public interface GroupRepositoryPort {
      */
     List<Group> findByPeriod(AcademicPeriod period);
 
-    /**
-     * Finds groups by classroom.
-     *
-     * @param classroom the classroom
-     * @return list of groups
-     */
-    List<Group> findByClassroom(Classroom classroom);
 
     /**
      * Finds groups with available places.

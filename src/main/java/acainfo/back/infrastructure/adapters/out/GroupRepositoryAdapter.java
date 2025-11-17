@@ -59,10 +59,6 @@ public class GroupRepositoryAdapter implements GroupRepositoryPort {
         return groupRepository.findByPeriod(period);
     }
 
-    @Override
-    public List<Group> findByClassroom(Classroom classroom) {
-        return groupRepository.findByClassroom(classroom);
-    }
 
     @Override
     public List<Group> findGroupsWithAvailablePlaces() {
