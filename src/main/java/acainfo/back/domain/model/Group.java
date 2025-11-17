@@ -8,6 +8,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Entity representing a group/class in the training center.
@@ -108,6 +110,14 @@ public class Group {
     @Size(max = 500, message = "Description must not exceed 500 characters")
     @Column(length = 500)
     private String description;
+
+    /**
+     * Weekly schedules for this group.
+     * Defines when the group meets (day + time slots).
+     */
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<Schedule> schedules = new ArrayList<>();
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -214,6 +224,46 @@ public class Group {
      */
     public boolean hasTeacher() {
         return teacher != null;
+    }
+
+    /**
+     * Checks if the group has schedules defined
+     */
+    public boolean hasSchedules() {
+        return schedules != null && !schedules.isEmpty();
+    }
+
+    /**
+     * Adds a schedule to the group
+     */
+    public void addSchedule(Schedule schedule) {
+        if (schedules == null) {
+            schedules = new ArrayList<>();
+        }
+        schedules.add(schedule);
+        schedule.setGroup(this);
+    }
+
+    /**
+     * Removes a schedule from the group
+     */
+    public void removeSchedule(Schedule schedule) {
+        if (schedules != null) {
+            schedules.remove(schedule);
+            schedule.setGroup(null);
+        }
+    }
+
+    /**
+     * Gets the total hours per week for this group
+     */
+    public long getTotalWeeklyHours() {
+        if (schedules == null || schedules.isEmpty()) {
+            return 0;
+        }
+        return schedules.stream()
+                .mapToLong(Schedule::getDurationInMinutes)
+                .sum() / 60;
     }
 
     /**
