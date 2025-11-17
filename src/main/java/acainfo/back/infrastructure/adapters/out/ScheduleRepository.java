@@ -51,7 +51,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long>, JpaSp
      * @param classroom the classroom
      * @return list of schedules
      */
-    @Query("SELECT s FROM Schedule s WHERE s.group.classroom = :classroom ORDER BY s.dayOfWeek, s.startTime")
+    @Query("SELECT s FROM Schedule s WHERE s.classroom = :classroom ORDER BY s.dayOfWeek, s.startTime")
     List<Schedule> findByClassroom(@Param("classroom") Classroom classroom);
 
     /**
@@ -110,7 +110,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long>, JpaSp
      * @param endTime the end time
      * @return list of conflicting schedules
      */
-    @Query("SELECT s FROM Schedule s WHERE s.group.classroom = :classroom " +
+    @Query("SELECT s FROM Schedule s WHERE s.classroom = :classroom " +
             "AND s.dayOfWeek = :dayOfWeek " +
             "AND s.startTime < :endTime AND s.endTime > :startTime")
     List<Schedule> findClassroomConflicts(
@@ -154,7 +154,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long>, JpaSp
      * @param excludeScheduleId the schedule ID to exclude
      * @return list of conflicting schedules
      */
-    @Query("SELECT s FROM Schedule s WHERE s.group.classroom = :classroom " +
+    @Query("SELECT s FROM Schedule s WHERE s.classroom = :classroom " +
             "AND s.dayOfWeek = :dayOfWeek " +
             "AND s.startTime < :endTime AND s.endTime > :startTime " +
             "AND s.id != :excludeScheduleId")

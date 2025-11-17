@@ -73,18 +73,6 @@ public class GroupSpecifications {
     }
 
     /**
-     * Filter by classroom.
-     */
-    public static Specification<Group> hasClassroom(Classroom classroom) {
-        return (root, query, criteriaBuilder) -> {
-            if (classroom == null) {
-                return criteriaBuilder.conjunction();
-            }
-            return criteriaBuilder.equal(root.get("classroom"), classroom);
-        };
-    }
-
-    /**
      * Filter by availability (has available places).
      */
     public static Specification<Group> hasAvailablePlaces(Boolean hasAvailable) {
@@ -115,13 +103,14 @@ public class GroupSpecifications {
     /**
      * Combines all filter criteria into a single Specification.
      * This allows dynamic query building based on provided filters.
+     * Note: Classroom filtering has been removed as classrooms are now assigned per schedule, not per group.
      *
      * @param subjectId Filter by subject ID
      * @param teacherId Filter by teacher ID
      * @param type Filter by group type
      * @param period Filter by academic period
      * @param status Filter by group status
-     * @param classroom Filter by classroom
+     * @param classroom Deprecated parameter (kept for compatibility, ignored)
      * @param hasAvailable Filter groups with available places
      * @param year Filter by year (from subject)
      * @return Combined Specification
@@ -132,7 +121,7 @@ public class GroupSpecifications {
             GroupType type,
             AcademicPeriod period,
             GroupStatus status,
-            Classroom classroom,
+            Classroom classroom,  // Deprecated but kept for compatibility
             Boolean hasAvailable,
             Integer year
     ) {
@@ -153,9 +142,7 @@ public class GroupSpecifications {
         if (status != null) {
             spec = spec.and(hasStatus(status));
         }
-        if (classroom != null) {
-            spec = spec.and(hasClassroom(classroom));
-        }
+        // classroom parameter is deprecated and ignored
         if (hasAvailable != null && hasAvailable) {
             spec = spec.and(hasAvailablePlaces(hasAvailable));
         }

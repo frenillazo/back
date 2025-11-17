@@ -20,7 +20,8 @@ import java.time.LocalTime;
 @Table(name = "schedules", indexes = {
         @Index(name = "idx_schedule_group", columnList = "group_id"),
         @Index(name = "idx_schedule_day", columnList = "day_of_week"),
-        @Index(name = "idx_schedule_time", columnList = "start_time, end_time")
+        @Index(name = "idx_schedule_time", columnList = "start_time, end_time"),
+        @Index(name = "idx_schedule_classroom", columnList = "classroom")
 })
 @EntityListeners(AuditingEntityListener.class)
 @Getter
@@ -51,6 +52,15 @@ public class Schedule {
     @Column(name = "end_time", nullable = false)
     @NotNull(message = "End time is required")
     private LocalTime endTime;
+
+    /**
+     * Classroom where this schedule takes place.
+     * Can be physical (AULA_1, AULA_2) or virtual (VIRTUAL).
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "classroom", nullable = false, length = 20)
+    @NotNull(message = "Classroom is required")
+    private Classroom classroom;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -137,15 +147,16 @@ public class Schedule {
 
     /**
      * Gets a human-readable representation of the schedule.
-     * Example: "MONDAY 10:00-12:00"
+     * Example: "MONDAY 10:00-12:00 (AULA_1)"
      *
      * @return formatted schedule string
      */
     public String getFormattedSchedule() {
-        return String.format("%s %s-%s",
+        return String.format("%s %s-%s (%s)",
                 dayOfWeek.name(),
                 startTime.toString(),
-                endTime.toString()
+                endTime.toString(),
+                classroom.name()
         );
     }
 
@@ -169,16 +180,31 @@ public class Schedule {
 
     /**
      * Gets a user-friendly schedule string in Spanish.
-     * Example: "Lunes 10:00-12:00"
+     * Example: "Lunes 10:00-12:00 (Aula 1)"
      *
      * @return formatted schedule string in Spanish
      */
     public String getFormattedScheduleSpanish() {
-        return String.format("%s %s-%s",
+        return String.format("%s %s-%s (%s)",
                 getLocalizedDayName(),
                 startTime.toString(),
-                endTime.toString()
+                endTime.toString(),
+                classroom.getDisplayName()
         );
+    }
+
+    /**
+     * Checks if this is a physical classroom schedule
+     */
+    public boolean isPhysicalClassroom() {
+        return classroom.isPhysical();
+    }
+
+    /**
+     * Checks if this is a virtual classroom schedule
+     */
+    public boolean isVirtualClassroom() {
+        return classroom.isVirtual();
     }
 
     @Override
@@ -188,6 +214,7 @@ public class Schedule {
                 ", dayOfWeek=" + dayOfWeek +
                 ", startTime=" + startTime +
                 ", endTime=" + endTime +
+                ", classroom=" + classroom +
                 '}';
     }
 }

@@ -13,7 +13,8 @@ import java.util.List;
 
 /**
  * Entity representing a group/class in the training center.
- * A group is a specific instance of a subject with assigned teacher, classroom, and schedule.
+ * A group is a specific instance of a subject with assigned teacher and schedule.
+ * Classrooms are now assigned per schedule slot, not per group.
  */
 @Entity
 @Table(
@@ -23,8 +24,7 @@ import java.util.List;
         @Index(name = "idx_group_teacher", columnList = "teacher_id"),
         @Index(name = "idx_group_status", columnList = "status"),
         @Index(name = "idx_group_type", columnList = "type"),
-        @Index(name = "idx_group_period", columnList = "period"),
-        @Index(name = "idx_group_classroom", columnList = "classroom")
+        @Index(name = "idx_group_period", columnList = "period")
     }
 )
 @EntityListeners(AuditingEntityListener.class)
@@ -71,14 +71,6 @@ public class Group {
     private AcademicPeriod period;
 
     /**
-     * Classroom assigned to this group
-     */
-    @NotNull(message = "Classroom is required")
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private Classroom classroom;
-
-    /**
      * Current status of the group
      */
     @NotNull(message = "Group status is required")
@@ -88,7 +80,8 @@ public class Group {
     private GroupStatus status = GroupStatus.ACTIVO;
 
     /**
-     * Maximum capacity for this group (derived from classroom)
+     * Maximum capacity for this group.
+     * This represents the maximum enrollment limit for the entire group.
      */
     @NotNull(message = "Max capacity is required")
     @Min(value = 1, message = "Max capacity must be at least 1")
@@ -267,20 +260,6 @@ public class Group {
     }
 
     /**
-     * Checks if this is a physical classroom group
-     */
-    public boolean isPhysicalClassroom() {
-        return classroom.isPhysical();
-    }
-
-    /**
-     * Checks if this is a virtual classroom group
-     */
-    public boolean isVirtualClassroom() {
-        return classroom.isVirtual();
-    }
-
-    /**
      * Checks if this is a regular group
      */
     public boolean isRegular() {
@@ -299,7 +278,7 @@ public class Group {
      */
     public String getDisplayName() {
         if (subject == null) return "Group #" + id;
-        return subject.getCode() + " - " + type.getDisplayName() + " (" + classroom.getDisplayName() + ")";
+        return subject.getCode() + " - " + type.getDisplayName();
     }
 
     @Override
@@ -322,7 +301,6 @@ public class Group {
                 ", subject=" + (subject != null ? subject.getCode() : "null") +
                 ", type=" + type +
                 ", period=" + period +
-                ", classroom=" + classroom +
                 ", status=" + status +
                 ", occupancy=" + currentOccupancy + "/" + maxCapacity +
                 '}';

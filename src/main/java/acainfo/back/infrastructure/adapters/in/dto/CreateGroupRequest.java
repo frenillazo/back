@@ -1,9 +1,9 @@
 package acainfo.back.infrastructure.adapters.in.dto;
 
 import acainfo.back.domain.model.AcademicPeriod;
-import acainfo.back.domain.model.Classroom;
 import acainfo.back.domain.model.GroupType;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * DTO for creating a new group.
+ * Note: Classrooms are now assigned per schedule, not per group.
  */
 @Data
 @Builder
@@ -32,9 +33,10 @@ public class CreateGroupRequest {
     @Schema(description = "Academic period when the group will run", example = "CUATRIMESTRE_1")
     private AcademicPeriod period;
 
-    @NotNull(message = "Classroom is required")
-    @Schema(description = "Classroom assigned to the group", example = "AULA_1")
-    private Classroom classroom;
+    @NotNull(message = "Max capacity is required")
+    @Min(value = 1, message = "Max capacity must be at least 1")
+    @Schema(description = "Maximum enrollment capacity for the group", example = "24")
+    private Integer maxCapacity;
 
     @Schema(description = "ID of the teacher assigned to this group (optional)", example = "2")
     private Long teacherId;

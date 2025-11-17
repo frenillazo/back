@@ -76,13 +76,6 @@ public interface GroupRepository extends JpaRepository<Group, Long>, JpaSpecific
     List<Group> findByPeriod(AcademicPeriod period);
 
     /**
-     * Find all groups by classroom
-     * @param classroom the classroom
-     * @return list of groups
-     */
-    List<Group> findByClassroom(Classroom classroom);
-
-    /**
      * Find all groups with available places (not full)
      * @return list of groups with available places
      */
@@ -191,12 +184,4 @@ public interface GroupRepository extends JpaRepository<Group, Long>, JpaSpecific
      * @return list of groups
      */
     List<Group> findByTypeAndPeriod(GroupType type, AcademicPeriod period);
-
-    /**
-     * Find all groups by classroom and status
-     * @param classroom the classroom
-     * @param status the status
-     * @return list of groups
-     */
-    List<Group> findByClassroomAndStatus(Classroom classroom, GroupStatus status);
 }

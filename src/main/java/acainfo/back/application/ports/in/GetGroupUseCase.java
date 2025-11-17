@@ -73,14 +73,6 @@ public interface GetGroupUseCase {
     List<Group> getGroupsByPeriod(AcademicPeriod period);
 
     /**
-     * Gets groups by classroom.
-     *
-     * @param classroom the classroom
-     * @return list of groups
-     */
-    List<Group> getGroupsByClassroom(Classroom classroom);
-
-    /**
      * Gets groups with available places.
      *
      * @return list of groups with available places

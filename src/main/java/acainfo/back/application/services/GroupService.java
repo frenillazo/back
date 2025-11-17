@@ -54,8 +54,10 @@ public class GroupService implements
             validateTeacher(group.getTeacher());
         }
 
-        // Set max capacity based on classroom
-        setCapacityFromClassroom(group);
+        // Validate max capacity is set
+        if (group.getMaxCapacity() == null || group.getMaxCapacity() < 1) {
+            throw new IllegalArgumentException("Max capacity must be specified and greater than 0");
+        }
 
         // Set initial status if not set
         if (group.getStatus() == null) {
@@ -90,14 +92,14 @@ public class GroupService implements
         }
 
         // Update fields
-        existingGroup.setType(group.getType());
-        existingGroup.setPeriod(group.getPeriod());
-        existingGroup.setDescription(group.getDescription());
-
-        // Update classroom and recalculate capacity if changed
-        if (!existingGroup.getClassroom().equals(group.getClassroom())) {
-            existingGroup.setClassroom(group.getClassroom());
-            setCapacityFromClassroom(existingGroup);
+        if (group.getType() != null) {
+            existingGroup.setType(group.getType());
+        }
+        if (group.getPeriod() != null) {
+            existingGroup.setPeriod(group.getPeriod());
+        }
+        if (group.getDescription() != null) {
+            existingGroup.setDescription(group.getDescription());
         }
 
         // Update teacher if provided
@@ -108,6 +110,11 @@ public class GroupService implements
         // Update status if provided
         if (group.getStatus() != null) {
             existingGroup.setStatus(group.getStatus());
+        }
+
+        // Update max capacity if provided
+        if (group.getMaxCapacity() != null && group.getMaxCapacity() > 0) {
+            existingGroup.setMaxCapacity(group.getMaxCapacity());
         }
 
         Group updatedGroup = groupRepository.save(existingGroup);
@@ -192,13 +199,6 @@ public class GroupService implements
     public List<Group> getGroupsByPeriod(AcademicPeriod period) {
         log.debug("Fetching groups by period: {}", period);
         return groupRepository.findByPeriod(period);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Group> getGroupsByClassroom(Classroom classroom) {
-        log.debug("Fetching groups by classroom: {}", classroom);
-        return groupRepository.findByClassroom(classroom);
     }
 
     @Override
@@ -304,19 +304,5 @@ public class GroupService implements
         if (!existingUser.hasRole(RoleType.TEACHER)) {
             throw new InvalidTeacherException(existingUser.getId());
         }
-    }
-
-    /**
-     * Sets the max capacity based on the classroom.
-     */
-    private void setCapacityFromClassroom(Group group) {
-        if (group.getClassroom() == null) {
-            throw new IllegalArgumentException("Classroom is required");
-        }
-
-        int capacity = group.getClassroom().getMaxCapacity();
-        group.setMaxCapacity(capacity);
-
-        log.debug("Set max capacity to {} for classroom {}", capacity, group.getClassroom());
     }
 }

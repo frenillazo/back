@@ -37,9 +37,6 @@ public class GroupResponse {
     @Schema(description = "Status of the group", example = "ACTIVO")
     private GroupStatus status;
 
-    @Schema(description = "Classroom assigned", example = "AULA_1")
-    private Classroom classroom;
-
     @Schema(description = "Maximum capacity", example = "24")
     private Integer maxCapacity;
 
@@ -118,7 +115,6 @@ public class GroupResponse {
                 .type(group.getType())
                 .period(group.getPeriod())
                 .status(group.getStatus())
-                .classroom(group.getClassroom())
                 .maxCapacity(group.getMaxCapacity())
                 .currentOccupancy(group.getCurrentOccupancy())
                 .availablePlaces(group.getAvailablePlaces())

@@ -54,7 +54,7 @@ public class GroupController {
                 .subject(Subject.builder().id(request.getSubjectId()).build())
                 .type(request.getType())
                 .period(request.getPeriod())
-                .classroom(request.getClassroom())
+                .maxCapacity(request.getMaxCapacity())
                 .build();
 
         // Set teacher if provided
@@ -87,8 +87,15 @@ public class GroupController {
         Group group = Group.builder()
                 .type(request.getType())
                 .period(request.getPeriod())
-                .classroom(request.getClassroom())
+                .maxCapacity(request.getMaxCapacity())
+                .status(request.getStatus())
                 .build();
+
+        // Set teacher if provided
+        if (request.getTeacherId() != null) {
+            group.setTeacher(User.builder().id(request.getTeacherId()).build());
+        }
+
         Group updatedGroup = groupService.updateGroup(id, group);
         GroupResponse response = GroupResponse.fromEntity(updatedGroup);
 
@@ -162,15 +169,14 @@ public class GroupController {
             @Parameter(description = "Filter by group type") @RequestParam(required = false) GroupType type,
             @Parameter(description = "Filter by academic period") @RequestParam(required = false) AcademicPeriod period,
             @Parameter(description = "Filter by status") @RequestParam(required = false) GroupStatus status,
-            @Parameter(description = "Filter by classroom") @RequestParam(required = false) Classroom classroom,
             @Parameter(description = "Filter groups with available places") @RequestParam(required = false) Boolean hasAvailablePlaces,
             @Parameter(description = "Filter by year") @RequestParam(required = false) Integer year) {
 
         log.debug("Fetching groups with filters - subjectId: {}, teacherId: {}, type: {}, period: {}, " +
-                        "status: {}, classroom: {}, hasAvailable: {}, year: {}",
-                subjectId, teacherId, type, period, status, classroom, hasAvailablePlaces, year);
+                        "status: {}, hasAvailable: {}, year: {}",
+                subjectId, teacherId, type, period, status, hasAvailablePlaces, year);
 
-        List<Group> groups = applyFilters(subjectId, teacherId, type, period, status, classroom, hasAvailablePlaces, year);
+        List<Group> groups = applyFilters(subjectId, teacherId, type, period, status, hasAvailablePlaces, year);
         List<GroupResponse> responses = groups.stream()
                 .map(GroupResponse::fromEntity)
                 .collect(Collectors.toList());
@@ -255,17 +261,17 @@ public class GroupController {
      * Applies dynamic filters using Specifications.
      */
     private List<Group> applyFilters(Long subjectId, Long teacherId, GroupType type, AcademicPeriod period,
-                                      GroupStatus status, Classroom classroom, Boolean hasAvailablePlaces, Integer year) {
+                                      GroupStatus status, Boolean hasAvailablePlaces, Integer year) {
 
         // If no filters provided, return all groups
         if (subjectId == null && teacherId == null && type == null && period == null &&
-                status == null && classroom == null && hasAvailablePlaces == null && year == null) {
+                status == null && hasAvailablePlaces == null && year == null) {
             return groupService.getAllGroups();
         }
 
         // Build specification with provided filters
         Specification<Group> spec = GroupSpecifications.combineFilters(
-                subjectId, teacherId, type, period, status, classroom, hasAvailablePlaces, year
+                subjectId, teacherId, type, period, status, null, hasAvailablePlaces, year
         );
 
         return groupService.findGroupsWithFilters(spec);
