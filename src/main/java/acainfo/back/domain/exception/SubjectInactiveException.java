@@ -13,7 +13,4 @@ public class SubjectInactiveException extends DomainException {
         super("Cannot create group for inactive subject: " + subjectCode);
     }
 
-    public SubjectInactiveException(String message) {
-        super(message);
-    }
 }
