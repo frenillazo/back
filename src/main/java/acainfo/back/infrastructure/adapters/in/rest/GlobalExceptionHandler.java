@@ -220,6 +220,96 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handle GroupNotFoundException
+     */
+    @ExceptionHandler(GroupNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleGroupNotFoundException(
+            GroupNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Group not found: {}", ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.NOT_FOUND.value(),
+                "Not Found",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    /**
+     * Handle MaxGroupsPerSubjectException
+     */
+    @ExceptionHandler(MaxGroupsPerSubjectException.class)
+    public ResponseEntity<ErrorResponse> handleMaxGroupsPerSubjectException(
+            MaxGroupsPerSubjectException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Maximum groups per subject exceeded: {}", ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.CONFLICT.value(),
+                "Conflict",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
+     * Handle InvalidTeacherException
+     */
+    @ExceptionHandler(InvalidTeacherException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidTeacherException(
+            InvalidTeacherException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Invalid teacher: {}", ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
+    /**
+     * Handle SubjectInactiveException
+     */
+    @ExceptionHandler(SubjectInactiveException.class)
+    public ResponseEntity<ErrorResponse> handleSubjectInactiveException(
+            SubjectInactiveException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Subject inactive: {}", ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.CONFLICT.value(),
+                "Conflict",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
+     * Handle GroupFullException
+     */
+    @ExceptionHandler(GroupFullException.class)
+    public ResponseEntity<ErrorResponse> handleGroupFullException(
+            GroupFullException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Group full: {}", ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.CONFLICT.value(),
+                "Conflict",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
      * Handle IllegalArgumentException (for business rule violations)
      */
     @ExceptionHandler(IllegalArgumentException.class)
