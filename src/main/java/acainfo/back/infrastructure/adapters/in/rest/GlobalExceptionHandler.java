@@ -310,6 +310,74 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handle TeacherScheduleConflictException
+     */
+    @ExceptionHandler(TeacherScheduleConflictException.class)
+    public ResponseEntity<ErrorResponse> handleTeacherScheduleConflictException(
+            TeacherScheduleConflictException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Teacher schedule conflict: {}", ex.getMessage());
+
+        acainfo.back.infrastructure.adapters.in.dto.ScheduleConflictDTO conflictDTO =
+                acainfo.back.infrastructure.adapters.in.dto.ScheduleConflictDTO.fromSchedules(
+                        acainfo.back.infrastructure.adapters.in.dto.ScheduleConflictDTO.ConflictType.TEACHER_CONFLICT,
+                        ex.getDayOfWeek(),
+                        ex.getStartTime(),
+                        ex.getEndTime(),
+                        null,
+                        ex.getTeacherId(),
+                        ex.getConflictingSchedules(),
+                        ex.getMessage()
+                );
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.CONFLICT.value())
+                .error("Schedule Conflict")
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .scheduleConflict(conflictDTO)
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
+     * Handle ClassroomScheduleConflictException
+     */
+    @ExceptionHandler(ClassroomScheduleConflictException.class)
+    public ResponseEntity<ErrorResponse> handleClassroomScheduleConflictException(
+            ClassroomScheduleConflictException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Classroom schedule conflict: {}", ex.getMessage());
+
+        acainfo.back.infrastructure.adapters.in.dto.ScheduleConflictDTO conflictDTO =
+                acainfo.back.infrastructure.adapters.in.dto.ScheduleConflictDTO.fromSchedules(
+                        acainfo.back.infrastructure.adapters.in.dto.ScheduleConflictDTO.ConflictType.CLASSROOM_CONFLICT,
+                        ex.getDayOfWeek(),
+                        ex.getStartTime(),
+                        ex.getEndTime(),
+                        ex.getClassroom(),
+                        null,
+                        ex.getConflictingSchedules(),
+                        ex.getMessage()
+                );
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.CONFLICT.value())
+                .error("Schedule Conflict")
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .scheduleConflict(conflictDTO)
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
      * Handle IllegalArgumentException (for business rule violations)
      */
     @ExceptionHandler(IllegalArgumentException.class)

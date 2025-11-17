@@ -22,6 +22,7 @@ public class ErrorResponse {
     private String message;
     private String path;
     private List<ValidationError> validationErrors;
+    private ScheduleConflictDTO scheduleConflict;
 
     @Data
     @Builder
