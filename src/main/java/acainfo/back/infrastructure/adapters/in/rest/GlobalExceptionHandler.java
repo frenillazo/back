@@ -238,6 +238,24 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handle ScheduleNotFoundException
+     */
+    @ExceptionHandler(ScheduleNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleScheduleNotFoundException(
+            ScheduleNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Schedule not found: {}", ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.NOT_FOUND.value(),
+                "Not Found",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    /**
      * Handle MaxGroupsPerSubjectException
      */
     @ExceptionHandler(MaxGroupsPerSubjectException.class)
