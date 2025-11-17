@@ -131,6 +131,14 @@ public interface GroupRepositoryPort {
     void deleteById(Long id);
 
     /**
+     * Checks if a group exists by ID.
+     *
+     * @param id the group ID
+     * @return true if exists, false otherwise
+     */
+    Boolean existsById(Long id);
+
+    /**
      * Finds groups matching the given specification (dynamic filtering).
      *
      * @param spec the specification to filter by

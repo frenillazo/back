@@ -81,6 +81,11 @@ public class GroupRepositoryAdapter implements GroupRepositoryPort {
     }
 
     @Override
+    public Boolean existsById(Long id) {
+        return groupRepository.existsById(id);
+    }
+
+    @Override
     public long countByStatus(GroupStatus status) {
         return groupRepository.countByStatus(status);
     }
