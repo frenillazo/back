@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.ref.ReferenceQueue;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -83,9 +84,12 @@ public class GroupController {
             @Parameter(description = "Group ID") @PathVariable Long id,
             @Valid @RequestBody UpdateGroupRequest request) {
         log.info("Updating group with ID: {}", id);
-
-        Group updatedGroup = groupService.updateGroup(id, request.getType(), request.getPeriod(),
-                request.getStatus(), request.getClassroom());
+        Group group = Group.builder()
+                .type(request.getType())
+                .period(request.getPeriod())
+                .classroom(request.getClassroom())
+                .build();
+        Group updatedGroup = groupService.updateGroup(id, group);
         GroupResponse response = GroupResponse.fromEntity(updatedGroup);
 
         log.info("Group updated successfully: {}", id);
