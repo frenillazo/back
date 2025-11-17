@@ -4,6 +4,7 @@ import acainfo.back.application.ports.in.CreateSubjectUseCase;
 import acainfo.back.application.ports.in.DeleteSubjectUseCase;
 import acainfo.back.application.ports.in.GetSubjectUseCase;
 import acainfo.back.application.ports.in.UpdateSubjectUseCase;
+import acainfo.back.application.ports.out.GroupRepositoryPort;
 import acainfo.back.application.ports.out.SubjectRepositoryPort;
 import acainfo.back.domain.exception.DuplicateSubjectCodeException;
 import acainfo.back.domain.exception.SubjectHasActiveGroupsException;
@@ -34,6 +35,7 @@ public class SubjectService implements
         DeleteSubjectUseCase {
 
     private final SubjectRepositoryPort subjectRepository;
+    private final GroupRepositoryPort groupRepository;
 
     // ==================== CREATE ====================
 
@@ -165,9 +167,8 @@ public class SubjectService implements
         Subject subject = subjectRepository.findById(id)
                 .orElseThrow(() -> new SubjectNotFoundException(id));
 
-        // TODO: Check if subject has active groups (will be implemented in Hito 2.5)
-        // For now, we'll allow deletion. This will be enhanced when Group entity is created.
-        // validateNoActiveGroups(id);
+        // Check if subject has active groups
+        validateNoActiveGroups(id);
 
         subjectRepository.deleteById(id);
         log.info("Subject deleted successfully: {}", subject.getCode());
@@ -253,18 +254,12 @@ public class SubjectService implements
 
     /**
      * Validates that the subject has no active groups.
-     * TODO: This will be implemented when Group entity is created (Hito 2.5)
      */
     private void validateNoActiveGroups(Long subjectId) {
-        // This will be implemented when GroupRepository is available
-        // For now, this is a placeholder
+        long activeGroupCount = groupRepository.countActiveGroupsBySubjectId(subjectId);
 
-        // Future implementation:
-        // long activeGroupCount = groupRepository.countActiveGroupsBySubjectId(subjectId);
-        // if (activeGroupCount > 0) {
-        //     throw new SubjectHasActiveGroupsException(subjectId, (int) activeGroupCount);
-        // }
-
-        log.warn("Active groups validation not yet implemented (pending Group entity)");
+        if (activeGroupCount > 0) {
+            throw new SubjectHasActiveGroupsException(subjectId, (int) activeGroupCount);
+        }
     }
 }
