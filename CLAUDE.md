@@ -59,7 +59,7 @@
    ```sql
    -- Entidades principales
    users, roles, user_roles
-   subjects, groups, sessions
+   subjects, subjectGroups, sessions
    enrollments, attendance
    materials, payments
    classrooms, schedules
@@ -178,7 +178,7 @@ public class Subject {
     private Degree degree; // INDUSTRIAL, INFORMATICA
     private Integer semester; // 1 o 2
     private SubjectStatus status;
-    private List<Group> groups;
+    private List<Group> subjectGroups;
 }
 
 @Entity
@@ -245,7 +245,7 @@ public class ScheduleValidationService {
 @Entity
 public class Session {
     private Long id;
-    private Group group;
+    private Group subjectGroup;
     private LocalDateTime scheduledStart;
     private LocalDateTime scheduledEnd;
     private SessionMode mode; // PRESENCIAL, DUAL, ONLINE
@@ -291,7 +291,7 @@ public class Session {
 ```java
 @Service
 public class EnrollmentService {
-    public EnrollmentResult enroll(Student student, Group group) {
+    public EnrollmentResult enroll(Student student, Group subjectGroup) {
         // 1. Verificar grupo activo
         // 2. Verificar plazas disponibles
         // 3. Si no hay plazas y tiene 2+ asignaturas -> modo online
@@ -607,7 +607,7 @@ Fase:  Setup| Auth |Academic|Session|Student|Pay|Int|Stat|Test|Deploy
 2. **Para servicios con lógica compleja:**
    ```
    "Create EnrollmentService with transactional method 
-   to enroll student, checking: group capacity, payment 
+   to enroll student, checking: subjectGroup capacity, payment 
    status, schedule conflicts. Include proper exception 
    handling and logging."
    ```
