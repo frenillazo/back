@@ -6,6 +6,8 @@ import acainfo.back.schedule.domain.exception.ClassroomScheduleConflictException
 import acainfo.back.schedule.domain.exception.ScheduleNotFoundException;
 import acainfo.back.schedule.domain.exception.TeacherScheduleConflictException;
 import acainfo.back.schedule.infrastructure.adapters.in.dto.ScheduleConflictDTO;
+import acainfo.back.session.domain.exception.SessionConflictException;
+import acainfo.back.session.domain.exception.SessionNotFoundException;
 import acainfo.back.subject.domain.exception.DuplicateSubjectCodeException;
 import acainfo.back.subject.domain.exception.SubjectHasActiveGroupsException;
 import acainfo.back.subject.domain.exception.SubjectInactiveException;
@@ -404,6 +406,63 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
+     * Handle SessionNotFoundException
+     */
+    @ExceptionHandler(SessionNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleSessionNotFoundException(
+            SessionNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Session not found: {}", ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.NOT_FOUND.value(),
+                "Not Found",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    /**
+     * Handle SessionConflictException
+     */
+    @ExceptionHandler(SessionConflictException.class)
+    public ResponseEntity<ErrorResponse> handleSessionConflictException(
+            SessionConflictException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Session conflict: {} - {}", ex.getConflictType(), ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.CONFLICT.value())
+                .error("Session Conflict")
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
+     * Handle IllegalStateException (for session state violations)
+     */
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalStateException(
+            IllegalStateException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Illegal state: {}", ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.badRequest().body(errorResponse);
     }
 
     /**
