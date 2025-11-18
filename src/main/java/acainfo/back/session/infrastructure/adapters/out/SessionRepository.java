@@ -1,6 +1,7 @@
 package acainfo.back.session.infrastructure.adapters.out;
 
 import acainfo.back.schedule.domain.model.Classroom;
+import acainfo.back.schedule.domain.model.Schedule;
 import acainfo.back.session.domain.model.Session;
 import acainfo.back.session.domain.model.SessionStatus;
 import acainfo.back.subjectgroup.domain.model.SubjectGroup;
@@ -270,4 +271,88 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
            "COUNT(CASE WHEN s.status = 'COMPLETADA' THEN 1 END) * 100.0 / COUNT(s) " +
            "FROM Session s WHERE s.subjectGroup = :subjectGroup")
     Double getCompletionRateForGroup(@Param("subjectGroup") SubjectGroup subjectGroup);
+
+    // ==================== SCHEDULE RELATIONSHIP QUERIES ====================
+
+    /**
+     * Find all sessions generated from a specific schedule
+     */
+    @Query("SELECT s FROM Session s WHERE s.generatedFromSchedule = :schedule " +
+           "ORDER BY s.scheduledStart ASC")
+    List<Session> findByGeneratedFromSchedule(@Param("schedule") Schedule schedule);
+
+    /**
+     * Find sessions generated from a schedule within a date range
+     */
+    @Query("SELECT s FROM Session s WHERE s.generatedFromSchedule = :schedule " +
+           "AND s.scheduledStart >= :startDate AND s.scheduledStart <= :endDate " +
+           "ORDER BY s.scheduledStart ASC")
+    List<Session> findByGeneratedFromScheduleAndDateRange(
+        @Param("schedule") Schedule schedule,
+        @Param("startDate") LocalDateTime startDate,
+        @Param("endDate") LocalDateTime endDate
+    );
+
+    /**
+     * Find sessions NOT generated from any schedule (manually created)
+     */
+    @Query("SELECT s FROM Session s WHERE s.generatedFromSchedule IS NULL " +
+           "ORDER BY s.scheduledStart ASC")
+    List<Session> findManuallyCreatedSessions();
+
+    /**
+     * Find manually created sessions for a subject group
+     */
+    @Query("SELECT s FROM Session s WHERE s.subjectGroup = :subjectGroup " +
+           "AND s.generatedFromSchedule IS NULL " +
+           "ORDER BY s.scheduledStart ASC")
+    List<Session> findManuallyCreatedSessionsByGroup(@Param("subjectGroup") SubjectGroup subjectGroup);
+
+    /**
+     * Count sessions generated from a specific schedule
+     */
+    long countByGeneratedFromSchedule(Schedule schedule);
+
+    /**
+     * Count sessions by schedule and status
+     */
+    long countByGeneratedFromScheduleAndStatus(Schedule schedule, SessionStatus status);
+
+    /**
+     * Check if a schedule has any generated sessions
+     */
+    boolean existsByGeneratedFromSchedule(Schedule schedule);
+
+    /**
+     * Find all schedules that have generated sessions
+     */
+    @Query("SELECT DISTINCT s.generatedFromSchedule FROM Session s " +
+           "WHERE s.generatedFromSchedule IS NOT NULL")
+    List<Schedule> findDistinctSchedulesWithGeneratedSessions();
+
+    /**
+     * Get completion rate for a specific schedule
+     */
+    @Query("SELECT " +
+           "COUNT(CASE WHEN s.status = 'COMPLETADA' THEN 1 END) * 100.0 / COUNT(s) " +
+           "FROM Session s WHERE s.generatedFromSchedule = :schedule")
+    Double getCompletionRateForSchedule(@Param("schedule") Schedule schedule);
+
+    /**
+     * Find the most recent session generated from a schedule
+     */
+    @Query("SELECT s FROM Session s WHERE s.generatedFromSchedule = :schedule " +
+           "ORDER BY s.scheduledStart DESC LIMIT 1")
+    Optional<Session> findMostRecentSessionBySchedule(@Param("schedule") Schedule schedule);
+
+    /**
+     * Find the next upcoming session from a schedule
+     */
+    @Query("SELECT s FROM Session s WHERE s.generatedFromSchedule = :schedule " +
+           "AND s.scheduledStart > :now AND s.status = 'PROGRAMADA' " +
+           "ORDER BY s.scheduledStart ASC LIMIT 1")
+    Optional<Session> findNextUpcomingSessionBySchedule(
+        @Param("schedule") Schedule schedule,
+        @Param("now") LocalDateTime now
+    );
 }

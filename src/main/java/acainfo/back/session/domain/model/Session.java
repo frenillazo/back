@@ -1,6 +1,7 @@
 package acainfo.back.session.domain.model;
 
 import acainfo.back.schedule.domain.model.Classroom;
+import acainfo.back.schedule.domain.model.Schedule;
 import acainfo.back.subjectgroup.domain.model.SubjectGroup;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -30,6 +31,7 @@ import java.time.LocalDateTime;
     name = "sessions",
     indexes = {
         @Index(name = "idx_session_group", columnList = "subject_group_id"),
+        @Index(name = "idx_session_schedule", columnList = "generated_from_schedule_id"),
         @Index(name = "idx_session_status", columnList = "status"),
         @Index(name = "idx_session_mode", columnList = "mode"),
         @Index(name = "idx_session_type", columnList = "type"),
@@ -58,6 +60,27 @@ public class Session {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_group_id", nullable = false)
     private SubjectGroup subjectGroup;
+
+    /**
+     * The Schedule (weekly recurrent pattern) that generated this session.
+     *
+     * RELATIONSHIP SEMANTICS:
+     * - NULL for RECUPERACION sessions (manually created to recover cancelled/postponed sessions)
+     * - NULL for EXTRA sessions (manually created for reviews, group tutoring, etc.)
+     * - NOT NULL for REGULAR sessions (automatically generated from weekly schedule)
+     *
+     * USAGE:
+     * - Traceability: "This session was generated from the Monday 10-12 schedule"
+     * - Bulk operations: "Regenerate all sessions from this schedule if it changes"
+     * - Reporting: "Show me all sessions generated from schedule X"
+     *
+     * IMPORTANT: This is a LOGICAL relationship, not a strict FK constraint.
+     * A Session can exist without a Schedule (manual sessions), and a Schedule
+     * can exist without Sessions (before semester starts).
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "generated_from_schedule_id")
+    private Schedule generatedFromSchedule;
 
     /**
      * Type of session (REGULAR, RECUPERACION, EXTRA)
@@ -383,6 +406,37 @@ public class Session {
      */
     public boolean hasBeenRescheduled() {
         return originalSessionId != null;
+    }
+
+    // ==================== SCHEDULE RELATIONSHIP METHODS ====================
+
+    /**
+     * Checks if this session was generated from a Schedule
+     */
+    public boolean wasGeneratedFromSchedule() {
+        return generatedFromSchedule != null;
+    }
+
+    /**
+     * Checks if this is a manually created session (not generated from schedule)
+     */
+    public boolean isManuallyCreated() {
+        return generatedFromSchedule == null;
+    }
+
+    /**
+     * Checks if this session should be linked to a schedule
+     * (typically REGULAR sessions should be linked)
+     */
+    public boolean shouldBeLinkedToSchedule() {
+        return type == SessionType.REGULAR;
+    }
+
+    /**
+     * Gets the schedule that generated this session (if any)
+     */
+    public Schedule getOriginSchedule() {
+        return generatedFromSchedule;
     }
 
     // ==================== TIME UTILITY METHODS ====================

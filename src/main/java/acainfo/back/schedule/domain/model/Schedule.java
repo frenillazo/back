@@ -1,5 +1,6 @@
 package acainfo.back.schedule.domain.model;
 
+import acainfo.back.session.domain.model.Session;
 import acainfo.back.subjectgroup.domain.model.SubjectGroup;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -12,6 +13,8 @@ import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Schedule entity representing a weekly time slot for a subjectGroup.
@@ -70,6 +73,26 @@ public class Schedule {
     @LastModifiedDate
     @Column(name = "last_modified_at")
     private LocalDateTime updatedAt;
+
+    /**
+     * Sessions that were generated from this schedule.
+     *
+     * RELATIONSHIP SEMANTICS:
+     * - This is the INVERSE side of the relationship (mappedBy)
+     * - Sessions with type REGULAR should reference this schedule
+     * - Sessions with type RECUPERACION or EXTRA typically won't have this reference
+     *
+     * USAGE:
+     * - Bulk regeneration: "Delete all sessions from this schedule and recreate"
+     * - Reporting: "How many sessions have been completed from this schedule?"
+     * - Analytics: "What's the attendance rate for this weekly time slot?"
+     *
+     * IMPORTANT: Empty list doesn't mean error - sessions are created separately
+     * from schedule definition (either manually or via batch generation)
+     */
+    @OneToMany(mappedBy = "generatedFromSchedule", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<Session> generatedSessions = new ArrayList<>();
 
     // ==================== BUSINESS LOGIC METHODS ====================
 
@@ -206,6 +229,81 @@ public class Schedule {
      */
     public boolean isVirtualClassroom() {
         return classroom.isVirtual();
+    }
+
+    // ==================== SESSION RELATIONSHIP METHODS ====================
+
+    /**
+     * Checks if this schedule has generated any sessions
+     */
+    public boolean hasGeneratedSessions() {
+        return generatedSessions != null && !generatedSessions.isEmpty();
+    }
+
+    /**
+     * Gets the count of sessions generated from this schedule
+     */
+    public int getGeneratedSessionsCount() {
+        return generatedSessions != null ? generatedSessions.size() : 0;
+    }
+
+    /**
+     * Gets the count of completed sessions from this schedule
+     */
+    public long getCompletedSessionsCount() {
+        if (generatedSessions == null || generatedSessions.isEmpty()) {
+            return 0;
+        }
+        return generatedSessions.stream()
+                .filter(Session::isCompleted)
+                .count();
+    }
+
+    /**
+     * Gets the count of pending sessions (PROGRAMADA) from this schedule
+     */
+    public long getPendingSessionsCount() {
+        if (generatedSessions == null || generatedSessions.isEmpty()) {
+            return 0;
+        }
+        return generatedSessions.stream()
+                .filter(Session::isScheduled)
+                .count();
+    }
+
+    /**
+     * Gets the count of cancelled sessions from this schedule
+     */
+    public long getCancelledSessionsCount() {
+        if (generatedSessions == null || generatedSessions.isEmpty()) {
+            return 0;
+        }
+        return generatedSessions.stream()
+                .filter(Session::isCancelled)
+                .count();
+    }
+
+    /**
+     * Adds a generated session to this schedule (for bidirectional sync)
+     */
+    public void addGeneratedSession(Session session) {
+        if (generatedSessions == null) {
+            generatedSessions = new ArrayList<>();
+        }
+        if (!generatedSessions.contains(session)) {
+            generatedSessions.add(session);
+            session.setGeneratedFromSchedule(this);
+        }
+    }
+
+    /**
+     * Removes a generated session from this schedule (for bidirectional sync)
+     */
+    public void removeGeneratedSession(Session session) {
+        if (generatedSessions != null) {
+            generatedSessions.remove(session);
+            session.setGeneratedFromSchedule(null);
+        }
     }
 
     @Override
