@@ -1,4 +1,4 @@
-package acainfo.back.session.infrastructure.adapters.in.rest.dto;
+package acainfo.back.session.infrastructure.adapters.in.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;

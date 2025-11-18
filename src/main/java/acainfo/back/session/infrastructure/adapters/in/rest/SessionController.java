@@ -4,7 +4,7 @@ import acainfo.back.session.application.ports.in.*;
 import acainfo.back.session.application.services.SessionService;
 import acainfo.back.session.domain.model.Session;
 import acainfo.back.session.domain.model.SessionStatus;
-import acainfo.back.session.infrastructure.adapters.in.rest.dto.*;
+import acainfo.back.session.infrastructure.adapters.in.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -69,6 +69,7 @@ public class SessionController {
             request.classroom(),
             request.zoomMeetingId(),
             request.notes(),
+            request.generatedFromScheduleId(),
             request.recoveryForSessionId(),
             request.originalSessionId()
         );
@@ -458,6 +459,7 @@ public class SessionController {
                     request.reason(),
                     request.newScheduledStart().toString(),
                     request.newScheduledEnd().toString(),
+                    request.newZoomMeetingId(),
                     request.newClassroom(),
                     request.newZoomMeetingId()
                 );

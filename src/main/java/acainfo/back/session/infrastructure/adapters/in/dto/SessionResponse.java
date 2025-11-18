@@ -1,4 +1,4 @@
-package acainfo.back.session.infrastructure.adapters.in.rest.dto;
+package acainfo.back.session.infrastructure.adapters.in.dto;
 
 import acainfo.back.schedule.domain.model.Classroom;
 import acainfo.back.session.domain.model.Session;

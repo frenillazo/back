@@ -31,6 +31,7 @@ public interface CreateSessionUseCase {
         String classroom,     // AULA_1, AULA_2, VIRTUAL (optional for ONLINE)
         String zoomMeetingId, // Required for ONLINE and DUAL
         String notes,         // Optional notes
+        Long generatedFromScheduleId,
         Long recoveryForSessionId, // Optional - if this is a recovery session
         Long originalSessionId     // Optional - if this is a rescheduled session
     ) {}

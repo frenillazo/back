@@ -48,6 +48,7 @@ public interface PostponeSessionUseCase {
         String reason,
         String newScheduledStart, // ISO-8601 format for the recovery session
         String newScheduledEnd,   // ISO-8601 format for the recovery session
+        String newZoomMeetingId, // Optional - defaults to original if not provided
         String classroom,         // Optional - defaults to original if not provided
         String zoomMeetingId      // Optional - defaults to original if not provided
     ) {}
