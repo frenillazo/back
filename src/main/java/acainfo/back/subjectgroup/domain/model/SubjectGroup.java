@@ -2,6 +2,7 @@ package acainfo.back.subjectgroup.domain.model;
 
 import acainfo.back.shared.domain.model.User;
 import acainfo.back.schedule.domain.model.Schedule;
+import acainfo.back.session.domain.model.Session;
 import acainfo.back.subject.domain.model.Subject;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -114,6 +115,14 @@ public class SubjectGroup {
     @OneToMany(mappedBy = "subjectGroup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<Schedule> schedules = new ArrayList<>();
+
+    /**
+     * Sessions (class instances) for this subjectGroup.
+     * Each session represents a specific occurrence of a class.
+     */
+    @OneToMany(mappedBy = "subjectGroup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<Session> sessions = new ArrayList<>();
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -282,6 +291,53 @@ public class SubjectGroup {
     public String getDisplayName() {
         if (subject == null) return "SubjectGroup #" + id;
         return subject.getCode() + " - " + type.getDisplayName();
+    }
+
+    /**
+     * Checks if the subjectGroup has sessions defined
+     */
+    public boolean hasSessions() {
+        return sessions != null && !sessions.isEmpty();
+    }
+
+    /**
+     * Adds a session to the subjectGroup
+     */
+    public void addSession(Session session) {
+        if (sessions == null) {
+            sessions = new ArrayList<>();
+        }
+        sessions.add(session);
+        session.setSubjectGroup(this);
+    }
+
+    /**
+     * Removes a session from the subjectGroup
+     */
+    public void removeSession(Session session) {
+        if (sessions != null) {
+            sessions.remove(session);
+            session.setSubjectGroup(null);
+        }
+    }
+
+    /**
+     * Gets the count of sessions in a specific status
+     */
+    public long getSessionCountByStatus(acainfo.back.session.domain.model.SessionStatus status) {
+        if (sessions == null || sessions.isEmpty()) {
+            return 0;
+        }
+        return sessions.stream()
+                .filter(s -> s.getStatus() == status)
+                .count();
+    }
+
+    /**
+     * Gets the count of completed sessions
+     */
+    public long getCompletedSessionsCount() {
+        return getSessionCountByStatus(acainfo.back.session.domain.model.SessionStatus.COMPLETADA);
     }
 
     @Override
