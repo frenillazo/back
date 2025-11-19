@@ -101,7 +101,7 @@ public class AttendanceService implements
 
         // 2. Check for existing attendance records
         List<Long> studentIds = command.attendances().stream()
-            .map(RegisterBulkAttendanceCommand.StudentAttendanceData::studentId)
+            .map(StudentAttendanceData::studentId)
             .toList();
 
         List<Attendance> existingAttendances = attendanceRepository
@@ -112,7 +112,7 @@ public class AttendanceService implements
             .collect(Collectors.toSet());
 
         // 3. Filter out duplicates and warn
-        List<RegisterBulkAttendanceCommand.StudentAttendanceData> validAttendances =
+        List<StudentAttendanceData> validAttendances =
             command.attendances().stream()
                 .filter(data -> {
                     if (alreadyRecorded.contains(data.studentId())) {
@@ -128,7 +128,7 @@ public class AttendanceService implements
         List<Attendance> attendances = new ArrayList<>();
         LocalDateTime recordedAt = LocalDateTime.now();
 
-        for (RegisterBulkAttendanceCommand.StudentAttendanceData data : validAttendances) {
+        for (StudentAttendanceData data : validAttendances) {
             AttendanceStatus status = parseAttendanceStatus(data.status());
 
             Attendance attendance = Attendance.builder()
