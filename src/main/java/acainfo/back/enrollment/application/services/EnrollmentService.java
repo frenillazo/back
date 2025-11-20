@@ -50,6 +50,7 @@ public class EnrollmentService implements
     private final EnrollmentRepositoryPort enrollmentRepository;
     private final GroupRepositoryPort groupRepository;
     private final UserRepository userRepository;
+    private final WaitingQueueService waitingQueueService;
 
     // ==================== ENROLL ====================
 
@@ -145,8 +146,8 @@ public class EnrollmentService implements
             log.info("Group {} occupancy decremented to {}/{}",
                 group.getId(), group.getCurrentOccupancy(), group.getMaxCapacity());
 
-            // TODO: Process waiting queue when WaitingQueueService is implemented
-            // waitingQueueService.processWaitingQueue(group);
+            // Process waiting queue automatically
+            waitingQueueService.processWaitingQueue(group.getId());
         }
 
         enrollmentRepository.save(enrollment);
