@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 /**
  * DTO for Attendance responses.
  * Contains all attendance information for client consumption.
+ * Updated to include enrollment and user information.
  */
 @Builder
 public record AttendanceResponse(
@@ -17,16 +18,20 @@ public record AttendanceResponse(
     Long sessionId,
     LocalDateTime sessionScheduledStart,
     String sessionSubjectGroupName,
+    Long enrollmentId,
     Long studentId,
+    String studentName,
     AttendanceStatus status,
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     LocalDateTime recordedAt,
     Long recordedById,
+    String recordedByName,
     String notes,
     Integer minutesLate,
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     LocalDateTime justifiedAt,
     Long justifiedById,
+    String justifiedByName,
     boolean countsAsEffectiveAttendance,
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     LocalDateTime createdAt,
@@ -35,6 +40,7 @@ public record AttendanceResponse(
 ) {
     /**
      * Converts an Attendance entity to an AttendanceResponse DTO.
+     * Includes enrollment and user information.
      */
     public static AttendanceResponse fromEntity(Attendance attendance) {
         return AttendanceResponse.builder()
@@ -42,14 +48,22 @@ public record AttendanceResponse(
             .sessionId(attendance.getSession().getId())
             .sessionScheduledStart(attendance.getSession().getScheduledStart())
             .sessionSubjectGroupName(attendance.getSession().getSubjectGroup().getDisplayName())
-            .studentId(attendance.getStudentId())
+            .enrollmentId(attendance.getEnrollment().getId())
+            .studentId(attendance.getEnrollment().getStudent().getId())
+            .studentName(attendance.getEnrollment().getStudent().getFirstName() + " " +
+                        attendance.getEnrollment().getStudent().getLastName())
             .status(attendance.getStatus())
             .recordedAt(attendance.getRecordedAt())
-            .recordedById(attendance.getRecordedById())
+            .recordedById(attendance.getRecordedBy().getId())
+            .recordedByName(attendance.getRecordedBy().getFirstName() + " " +
+                           attendance.getRecordedBy().getLastName())
             .notes(attendance.getNotes())
             .minutesLate(attendance.getMinutesLate())
             .justifiedAt(attendance.getJustifiedAt())
-            .justifiedById(attendance.getJustifiedById())
+            .justifiedById(attendance.getJustifiedBy() != null ? attendance.getJustifiedBy().getId() : null)
+            .justifiedByName(attendance.getJustifiedBy() != null ?
+                            attendance.getJustifiedBy().getFirstName() + " " +
+                            attendance.getJustifiedBy().getLastName() : null)
             .countsAsEffectiveAttendance(attendance.countsAsEffectiveAttendance())
             .createdAt(attendance.getCreatedAt())
             .updatedAt(attendance.getUpdatedAt())
