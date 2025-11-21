@@ -97,8 +97,7 @@ public class PaymentController {
         log.info("Processing payment {} with Stripe payment ID {}", id, request.getStripePaymentId());
 
         // Get current user
-        User currentUser = userRepository.findByEmail(userDetails.getUsername())
-            .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
+        User currentUser = userRepository.findByEmail(userDetails.getUsername());
 
         Payment payment = paymentService.processPayment(id, request.getStripePaymentId(), currentUser);
         PaymentResponse response = PaymentResponse.fromEntity(payment);
@@ -128,8 +127,7 @@ public class PaymentController {
 
         log.info("Cancelling payment {}", id);
 
-        User currentUser = userRepository.findByEmail(userDetails.getUsername())
-            .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
+        User currentUser = userRepository.findByEmail(userDetails.getUsername());
 
         Payment payment = paymentService.cancelPayment(id, reason, currentUser);
         PaymentResponse response = PaymentResponse.fromEntity(payment);
@@ -159,8 +157,7 @@ public class PaymentController {
 
         log.info("Refunding payment {}", id);
 
-        User currentUser = userRepository.findByEmail(userDetails.getUsername())
-            .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
+        User currentUser = userRepository.findByEmail(userDetails.getUsername());
 
         Payment payment = paymentService.refundPayment(id, request.getReason(), currentUser);
         PaymentResponse response = PaymentResponse.fromEntity(payment);

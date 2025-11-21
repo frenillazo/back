@@ -106,6 +106,10 @@ public class User {
         return hasRole(RoleType.ADMIN);
     }
 
+    public boolean isStudent() {
+        return hasRole(RoleType.STUDENT);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
