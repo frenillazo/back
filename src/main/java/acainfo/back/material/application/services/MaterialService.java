@@ -12,6 +12,8 @@ import acainfo.back.material.domain.exception.MaterialNotFoundException;
 import acainfo.back.material.domain.exception.UnauthorizedMaterialAccessException;
 import acainfo.back.material.domain.model.Material;
 import acainfo.back.material.domain.model.MaterialType;
+import acainfo.back.payment.application.services.PaymentService;
+import acainfo.back.payment.domain.exception.OverduePaymentException;
 import acainfo.back.shared.domain.model.User;
 import acainfo.back.subjectgroup.application.ports.out.GroupRepositoryPort;
 import acainfo.back.subjectgroup.domain.exception.GroupNotFoundException;
@@ -34,7 +36,7 @@ import java.util.Optional;
  * Business Rules:
  * 1. Only teachers can upload materials
  * 2. Students need active enrollment to access materials
- * 3. Materials with requiresPayment=true need payment validation (TODO: integrate with Payment module)
+ * 3. Materials with requiresPayment=true require student to have no overdue payments (>5 days)
  * 4. Supported file types: PDF, Java, C++, Header files
  * 5. Files are stored locally organized by subject group
  * 6. Soft delete is used (isActive flag)
@@ -51,6 +53,7 @@ public class MaterialService implements UploadMaterialUseCase, DownloadMaterialU
     private final UserRepository userRepository;
     private final EnrollmentRepositoryPort enrollmentRepository;
     private final FileStorageService fileStorageService;
+    private final PaymentService paymentService;
 
     // ==================== UPLOAD MATERIAL ====================
 
@@ -161,7 +164,7 @@ public class MaterialService implements UploadMaterialUseCase, DownloadMaterialU
      * Access rules:
      * 1. Teachers and admins have full access
      * 2. Students need active enrollment in the subject group
-     * 3. If material requires payment, student must have payments up to date (TODO)
+     * 3. If material requires payment, student must have no overdue payments (>5 days)
      */
     private void validateMaterialAccess(Material material, User user) {
         // Admins and teachers have full access
@@ -184,15 +187,19 @@ public class MaterialService implements UploadMaterialUseCase, DownloadMaterialU
                 "You must be enrolled in the subject group to access this material");
         }
 
-        // TODO: If material requires payment, validate payment status
+        // If material requires payment, validate payment status
         if (material.getRequiresPayment()) {
-            log.debug("Material {} requires payment validation (TODO: integrate with Payment module)",
-                material.getId());
-            // Future integration:
-            // PaymentStatus status = paymentService.getStudentPaymentStatus(user.getId());
-            // if (status.hasOverduePayments()) {
-            //     throw new UnauthorizedMaterialAccessException("Payment required to access this material");
-            // }
+            log.debug("Material {} requires payment validation for user {}",
+                material.getId(), user.getId());
+
+            try {
+                paymentService.validateNoOverduePayments(user.getId());
+            } catch (OverduePaymentException e) {
+                log.warn("User {} attempted to access material {} with overdue payments",
+                    user.getId(), material.getId());
+                throw new UnauthorizedMaterialAccessException(
+                    "You have overdue payments. Please pay pending fees to access this material.");
+            }
         }
 
         log.debug("User {} has valid access to material {}", user.getId(), material.getId());

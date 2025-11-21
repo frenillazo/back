@@ -9,6 +9,7 @@ import acainfo.back.enrollment.domain.exception.*;
 import acainfo.back.enrollment.domain.model.Enrollment;
 import acainfo.back.enrollment.domain.model.EnrollmentStatus;
 import acainfo.back.enrollment.domain.model.AttendanceMode;
+import acainfo.back.payment.application.services.PaymentService;
 import acainfo.back.shared.domain.exception.UserNotFoundException;
 import acainfo.back.shared.domain.model.RoleType;
 import acainfo.back.shared.domain.model.User;
@@ -34,7 +35,7 @@ import java.util.List;
  * 3. When student withdraws from PRESENCIAL enrollment, a place is freed
  * 4. Only students with STUDENT role can enroll
  * 5. Group must be ACTIVE to accept enrollments
- * 6. Payment validation required (TODO: implement when payment module exists)
+ * 6. Student must not have overdue payments (>5 days) to enroll
  * 7. Online mode for 2+ enrollments (TODO: implement later)
  */
 @Service
@@ -51,6 +52,7 @@ public class EnrollmentService implements
     private final GroupRepositoryPort groupRepository;
     private final UserRepository userRepository;
     private final WaitingQueueService waitingQueueService;
+    private final PaymentService paymentService;
 
     // ==================== ENROLL ====================
 
@@ -68,10 +70,8 @@ public class EnrollmentService implements
         // 3. Validate not already enrolled
         validateNotAlreadyEnrolled(studentId, groupId);
 
-        // 4. TODO: Validate payment status when payment module is implemented
-        // if (!paymentService.hasValidPaymentStatus(studentId)) {
-        //     throw new PaymentRequiredException(studentId);
-        // }
+        // 4. Validate payment status - student must not have overdue payments
+        paymentService.validateNoOverduePayments(studentId);
 
         // 5. Determine attendance mode and enrollment status
         AttendanceMode attendanceMode = determineAttendanceMode(student, group);
