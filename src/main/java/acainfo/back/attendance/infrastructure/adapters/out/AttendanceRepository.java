@@ -43,6 +43,12 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     List<Attendance> findByEnrollmentId(Long enrollmentId);
 
     /**
+     * Find all attendance records for multiple enrollments
+     */
+    @Query("SELECT a FROM Attendance a WHERE a.enrollment.id IN :enrollmentIds")
+    List<Attendance> findByEnrollmentIdIn(@Param("enrollmentIds") List<Long> enrollmentIds);
+
+    /**
      * Find all attendance records for a specific student (across all enrollments)
      */
     @Query("SELECT a FROM Attendance a WHERE a.enrollment.student.id = :studentId")

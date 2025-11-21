@@ -51,6 +51,18 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
     @Query("SELECT s FROM Session s WHERE s.subjectGroup.id = :groupId ORDER BY s.scheduledStart ASC")
     List<Session> findBySubjectGroupId(@Param("groupId") Long groupId);
 
+    /**
+     * Find sessions by subject group ID within a date range
+     */
+    @Query("SELECT s FROM Session s WHERE s.subjectGroup.id = :groupId " +
+           "AND s.scheduledStart >= :startDate AND s.scheduledStart <= :endDate " +
+           "ORDER BY s.scheduledStart ASC")
+    List<Session> findBySubjectGroupIdAndScheduledStartBetween(
+        @Param("groupId") Long groupId,
+        @Param("startDate") LocalDateTime startDate,
+        @Param("endDate") LocalDateTime endDate
+    );
+
     // ==================== TEACHER QUERIES ====================
 
     /**
