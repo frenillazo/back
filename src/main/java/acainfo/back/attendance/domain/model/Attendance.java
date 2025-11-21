@@ -1,6 +1,8 @@
 package acainfo.back.attendance.domain.model;
 
+import acainfo.back.enrollment.domain.model.Enrollment;
 import acainfo.back.session.domain.model.Session;
+import acainfo.back.shared.domain.model.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -17,7 +19,8 @@ import java.time.LocalDateTime;
  * or had a justified absence for a specific session.
  *
  * Business Rules:
- * - One attendance record per student per session
+ * - One attendance record per enrollment per session
+ * - Enrollment must be ACTIVO to register attendance
  * - Can only register attendance for COMPLETADA sessions
  * - Status can be updated (e.g., AUSENTE -> JUSTIFICADO)
  * - Teachers can only register attendance for their own groups
@@ -28,13 +31,13 @@ import java.time.LocalDateTime;
     name = "attendance",
     uniqueConstraints = {
         @UniqueConstraint(
-            name = "uk_attendance_session_student",
-            columnNames = {"session_id", "student_id"}
+            name = "uk_attendance_session_enrollment",
+            columnNames = {"session_id", "enrollment_id"}
         )
     },
     indexes = {
         @Index(name = "idx_attendance_session", columnList = "session_id"),
-        @Index(name = "idx_attendance_student", columnList = "student_id"),
+        @Index(name = "idx_attendance_enrollment", columnList = "enrollment_id"),
         @Index(name = "idx_attendance_status", columnList = "status"),
         @Index(name = "idx_attendance_recorded_at", columnList = "recorded_at")
     }
@@ -60,17 +63,15 @@ public class Attendance {
     private Session session;
 
     /**
-     * ID of the student for this attendance record
-     *
-     * NOTE: Currently using Long studentId instead of @ManyToOne Student
-     * because the Student/Enrollment module is not yet implemented.
-     * This will be refactored to use proper entity relationship when available.
-     *
-     * TODO: Refactor to @ManyToOne Enrollment when enrollment module is implemented
+     * The enrollment for which attendance is being recorded.
+     * Links the student to the specific subject group enrollment.
+     * This provides context about which enrollment the attendance belongs to,
+     * especially important when a student has multiple enrollments.
      */
-    @NotNull(message = "Student ID is required")
-    @Column(name = "student_id", nullable = false)
-    private Long studentId;
+    @NotNull(message = "Enrollment is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "enrollment_id", nullable = false)
+    private Enrollment enrollment;
 
     /**
      * Attendance status (PRESENTE, AUSENTE, TARDANZA, JUSTIFICADO)
@@ -90,17 +91,12 @@ public class Attendance {
     private LocalDateTime recordedAt = LocalDateTime.now();
 
     /**
-     * ID of the user (teacher/admin) who recorded the attendance
-     *
-     * NOTE: Currently using Long recordedById instead of @ManyToOne User
-     * because the User module is not yet implemented.
-     * This will be refactored to use proper entity relationship when available.
-     *
-     * TODO: Refactor to @ManyToOne User when user/auth module is implemented
+     * The user (teacher/admin) who recorded the attendance
      */
-    @NotNull(message = "Recorded by user ID is required")
-    @Column(name = "recorded_by_id", nullable = false)
-    private Long recordedById;
+    @NotNull(message = "Recorded by user is required")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recorded_by_id", nullable = false)
+    private User recordedBy;
 
     /**
      * Optional notes about the attendance
@@ -129,10 +125,11 @@ public class Attendance {
     private LocalDateTime justifiedAt;
 
     /**
-     * ID of the user who approved the justification
+     * The user who approved the justification (teacher/admin)
      */
-    @Column(name = "justified_by_id")
-    private Long justifiedById;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "justified_by_id")
+    private User justifiedBy;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -160,7 +157,7 @@ public class Attendance {
      */
     @AssertTrue(message = "Justification fields should only be set when status is JUSTIFICADO")
     public boolean isJustificationValid() {
-        if (justifiedAt != null || justifiedById != null) {
+        if (justifiedAt != null || justifiedBy != null) {
             return status == AttendanceStatus.JUSTIFICADO;
         }
         return true;
@@ -220,7 +217,7 @@ public class Attendance {
         this.status = AttendanceStatus.PRESENTE;
         this.minutesLate = null;
         this.justifiedAt = null;
-        this.justifiedById = null;
+        this.justifiedBy = null;
     }
 
     /**
@@ -231,7 +228,7 @@ public class Attendance {
         this.notes = reason;
         this.minutesLate = null;
         this.justifiedAt = null;
-        this.justifiedById = null;
+        this.justifiedBy = null;
     }
 
     /**
@@ -245,23 +242,29 @@ public class Attendance {
         this.minutesLate = minutesLate;
         this.notes = notes;
         this.justifiedAt = null;
-        this.justifiedById = null;
+        this.justifiedBy = null;
     }
 
     /**
      * Justifies an absence
      * Can only justify if current status is AUSENTE
+     *
+     * @param justifiedByUser the user (teacher/admin) who approves the justification
+     * @param justificationReason the reason for the justification
      */
-    public void justify(Long justifiedByUserId, String justificationReason) {
+    public void justify(User justifiedByUser, String justificationReason) {
         if (!status.canBeJustified()) {
             throw new IllegalStateException(
                 "Cannot justify attendance with status: " + status +
                 ". Only AUSENTE can be justified."
             );
         }
+        if (justifiedByUser == null) {
+            throw new IllegalArgumentException("Justified by user cannot be null");
+        }
         this.status = AttendanceStatus.JUSTIFICADO;
         this.justifiedAt = LocalDateTime.now();
-        this.justifiedById = justifiedByUserId;
+        this.justifiedBy = justifiedByUser;
         this.notes = justificationReason;
         this.minutesLate = null;
     }
@@ -282,7 +285,7 @@ public class Attendance {
         }
         if (newStatus != AttendanceStatus.JUSTIFICADO) {
             this.justifiedAt = null;
-            this.justifiedById = null;
+            this.justifiedBy = null;
         }
 
         if (notes != null && !notes.trim().isEmpty()) {
@@ -297,8 +300,17 @@ public class Attendance {
      */
     public String getDescription() {
         StringBuilder desc = new StringBuilder();
-        desc.append("Student ").append(studentId)
-            .append(" - Session ").append(session != null ? session.getId() : "?")
+
+        if (enrollment != null && enrollment.getStudent() != null) {
+            desc.append("Student: ")
+                .append(enrollment.getStudent().getFirstName())
+                .append(" ")
+                .append(enrollment.getStudent().getLastName());
+        } else {
+            desc.append("Enrollment ID: ").append(enrollment != null ? enrollment.getId() : "?");
+        }
+
+        desc.append(" - Session ").append(session != null ? session.getId() : "?")
             .append(" - Status: ").append(status);
 
         if (minutesLate != null && minutesLate > 0) {
@@ -338,7 +350,7 @@ public class Attendance {
         return "Attendance{" +
                 "id=" + id +
                 ", sessionId=" + (session != null ? session.getId() : "null") +
-                ", studentId=" + studentId +
+                ", enrollmentId=" + (enrollment != null ? enrollment.getId() : "null") +
                 ", status=" + status +
                 ", recordedAt=" + recordedAt +
                 ", minutesLate=" + minutesLate +
