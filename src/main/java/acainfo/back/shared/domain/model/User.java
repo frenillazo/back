@@ -98,6 +98,14 @@ public class User {
         return status == UserStatus.ACTIVE;
     }
 
+    public boolean isTeacher() {
+        return hasRole(RoleType.TEACHER);
+    }
+
+    public boolean isAdmin() {
+        return hasRole(RoleType.ADMIN);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

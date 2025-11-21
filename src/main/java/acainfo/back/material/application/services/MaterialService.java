@@ -16,8 +16,8 @@ import acainfo.back.shared.domain.model.User;
 import acainfo.back.subjectgroup.application.ports.out.GroupRepositoryPort;
 import acainfo.back.subjectgroup.domain.exception.GroupNotFoundException;
 import acainfo.back.subjectgroup.domain.model.SubjectGroup;
-import acainfo.back.user.application.ports.out.UserRepositoryPort;
-import acainfo.back.user.domain.exception.UserNotFoundException;
+import acainfo.back.shared.infrastructure.adapters.out.UserRepository;
+import acainfo.back.shared.domain.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Service for managing educational materials.
@@ -47,7 +48,7 @@ public class MaterialService implements UploadMaterialUseCase, DownloadMaterialU
 
     private final MaterialRepositoryPort materialRepository;
     private final GroupRepositoryPort groupRepository;
-    private final UserRepositoryPort userRepository;
+    private final UserRepository userRepository;
     private final EnrollmentRepositoryPort enrollmentRepository;
     private final FileStorageService fileStorageService;
 
@@ -170,7 +171,7 @@ public class MaterialService implements UploadMaterialUseCase, DownloadMaterialU
         }
 
         // Students need active enrollment
-        List<Enrollment> enrollments = enrollmentRepository
+        Optional<Enrollment> enrollments = enrollmentRepository
                 .findByStudentIdAndSubjectGroupId(user.getId(), material.getSubjectGroup().getId());
 
         boolean hasActiveEnrollment = enrollments.stream()
