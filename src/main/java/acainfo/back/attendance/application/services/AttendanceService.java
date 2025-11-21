@@ -7,10 +7,17 @@ import acainfo.back.attendance.domain.exception.InvalidAttendanceOperationExcept
 import acainfo.back.attendance.domain.model.Attendance;
 import acainfo.back.attendance.domain.model.AttendanceStatus;
 import acainfo.back.attendance.infrastructure.adapters.out.AttendanceRepository;
+import acainfo.back.enrollment.application.ports.out.EnrollmentRepositoryPort;
+import acainfo.back.enrollment.domain.exception.EnrollmentNotFoundException;
+import acainfo.back.enrollment.domain.model.Enrollment;
+import acainfo.back.enrollment.domain.model.EnrollmentStatus;
 import acainfo.back.session.domain.exception.SessionNotFoundException;
 import acainfo.back.session.domain.model.Session;
 import acainfo.back.session.domain.model.SessionStatus;
 import acainfo.back.session.infrastructure.adapters.out.SessionRepository;
+import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.application.ports.out.UserRepositoryPort;
+import acainfo.back.user.domain.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,7 +34,8 @@ import java.util.stream.Collectors;
  *
  * Business Rules:
  * - Attendance can only be registered for COMPLETADA sessions
- * - One attendance record per student per session (no duplicates)
+ * - One attendance record per enrollment per session (no duplicates)
+ * - Enrollment must be ACTIVO to register attendance
  * - Attendance can be modified within 7 days of recording
  * - Only AUSENTE status can be justified
  * - Statistics calculate effective attendance as PRESENTE + TARDANZA
@@ -44,6 +52,8 @@ public class AttendanceService implements
 
     private final AttendanceRepository attendanceRepository;
     private final SessionRepository sessionRepository;
+    private final EnrollmentRepositoryPort enrollmentRepository;
+    private final UserRepositoryPort userRepository;
 
     // ==================== REGISTER ATTENDANCE ====================
 
@@ -55,36 +65,43 @@ public class AttendanceService implements
         // 1. Validate session exists and is completed
         Session session = validateSessionForAttendance(command.sessionId());
 
-        // 2. Check for duplicate attendance
-        if (attendanceRepository.existsBySessionIdAndStudentId(
-                command.sessionId(), command.studentId())) {
+        // 2. Get enrollment for student in this subject group
+        Enrollment enrollment = getActiveEnrollmentForSession(command.studentId(), session);
+
+        // 3. Check for duplicate attendance
+        if (attendanceRepository.existsBySessionIdAndEnrollmentId(
+                command.sessionId(), enrollment.getId())) {
             throw new AttendanceAlreadyRegisteredException(
                 command.sessionId(), command.studentId()
             );
         }
 
-        // 3. Parse and validate status
+        // 4. Get user who is recording attendance
+        User recordedBy = userRepository.findById(command.recordedById())
+                .orElseThrow(() -> new UserNotFoundException(command.recordedById()));
+
+        // 5. Parse and validate status
         AttendanceStatus status = parseAttendanceStatus(command.status());
 
-        // 4. Build attendance record
+        // 6. Build attendance record
         Attendance attendance = Attendance.builder()
             .session(session)
-            .studentId(command.studentId())
+            .enrollment(enrollment)
             .status(status)
             .recordedAt(LocalDateTime.now())
-            .recordedById(command.recordedById())
+            .recordedBy(recordedBy)
             .notes(command.notes())
             .build();
 
-        // 5. Set minutes late if TARDANZA
+        // 7. Set minutes late if TARDANZA
         if (status == AttendanceStatus.TARDANZA && command.minutesLate() != null) {
             attendance.setMinutesLate(command.minutesLate());
         }
 
-        // 6. Validate business rules
+        // 8. Validate business rules
         validateAttendance(attendance);
 
-        // 7. Save and return
+        // 9. Save and return
         Attendance saved = attendanceRepository.save(attendance);
         log.info("Attendance registered successfully with ID: {}", saved.getId());
 
@@ -99,23 +116,23 @@ public class AttendanceService implements
         // 1. Validate session exists and is completed
         Session session = validateSessionForAttendance(command.sessionId());
 
-        // 2. Check for existing attendance records
-        List<Long> studentIds = command.attendances().stream()
-            .map(StudentAttendanceData::studentId)
-            .toList();
+        // 2. Get user who is recording attendance
+        User recordedBy = userRepository.findById(command.recordedById())
+                .orElseThrow(() -> new UserNotFoundException(command.recordedById()));
 
+        // 3. Check for existing attendance records
         List<Attendance> existingAttendances = attendanceRepository
             .findBySessionId(command.sessionId());
 
-        Set<Long> alreadyRecorded = existingAttendances.stream()
-            .map(Attendance::getStudentId)
+        Set<Long> alreadyRecordedStudents = existingAttendances.stream()
+            .map(a -> a.getEnrollment().getStudent().getId())
             .collect(Collectors.toSet());
 
-        // 3. Filter out duplicates and warn
+        // 4. Filter out duplicates and warn
         List<StudentAttendanceData> validAttendances =
             command.attendances().stream()
                 .filter(data -> {
-                    if (alreadyRecorded.contains(data.studentId())) {
+                    if (alreadyRecordedStudents.contains(data.studentId())) {
                         log.warn("Skipping duplicate attendance for student {} in session {}",
                             data.studentId(), command.sessionId());
                         return false;
@@ -124,32 +141,40 @@ public class AttendanceService implements
                 })
                 .toList();
 
-        // 4. Create attendance records
+        // 5. Create attendance records
         List<Attendance> attendances = new ArrayList<>();
         LocalDateTime recordedAt = LocalDateTime.now();
 
         for (StudentAttendanceData data : validAttendances) {
-            AttendanceStatus status = parseAttendanceStatus(data.status());
+            try {
+                // Get enrollment for this student
+                Enrollment enrollment = getActiveEnrollmentForSession(data.studentId(), session);
 
-            Attendance attendance = Attendance.builder()
-                .session(session)
-                .studentId(data.studentId())
-                .status(status)
-                .recordedAt(recordedAt)
-                .recordedById(command.recordedById())
-                .notes(data.notes())
-                .build();
+                AttendanceStatus status = parseAttendanceStatus(data.status());
 
-            // Set minutes late if TARDANZA
-            if (status == AttendanceStatus.TARDANZA && data.minutesLate() != null) {
-                attendance.setMinutesLate(data.minutesLate());
+                Attendance attendance = Attendance.builder()
+                    .session(session)
+                    .enrollment(enrollment)
+                    .status(status)
+                    .recordedAt(recordedAt)
+                    .recordedBy(recordedBy)
+                    .notes(data.notes())
+                    .build();
+
+                // Set minutes late if TARDANZA
+                if (status == AttendanceStatus.TARDANZA && data.minutesLate() != null) {
+                    attendance.setMinutesLate(data.minutesLate());
+                }
+
+                validateAttendance(attendance);
+                attendances.add(attendance);
+            } catch (EnrollmentNotFoundException e) {
+                log.warn("Skipping student {}: no active enrollment found for session {}",
+                    data.studentId(), command.sessionId());
             }
-
-            validateAttendance(attendance);
-            attendances.add(attendance);
         }
 
-        // 5. Batch save
+        // 6. Batch save
         List<Attendance> saved = attendanceRepository.saveAll(attendances);
         log.info("Bulk attendance registered: {} records created", saved.size());
 
@@ -248,10 +273,14 @@ public class AttendanceService implements
         Attendance attendance = attendanceRepository.findById(command.attendanceId())
             .orElseThrow(() -> new AttendanceNotFoundException(command.attendanceId()));
 
-        // 2. Justify the absence (will throw exception if status is not AUSENTE)
-        attendance.justify(command.justifiedById(), command.justificationReason());
+        // 2. Get user who is justifying the absence
+        User justifiedBy = userRepository.findById(command.justifiedById())
+                .orElseThrow(() -> new UserNotFoundException(command.justifiedById()));
 
-        // 3. Save
+        // 3. Justify the absence (will throw exception if status is not AUSENTE)
+        attendance.justify(justifiedBy, command.justificationReason());
+
+        // 4. Save
         Attendance justified = attendanceRepository.save(attendance);
         log.info("Absence justified for attendance ID: {}", justified.getId());
 
@@ -331,7 +360,7 @@ public class AttendanceService implements
             .count();
 
         long totalStudents = attendances.stream()
-            .map(Attendance::getStudentId)
+            .map(a -> a.getEnrollment().getStudent().getId())
             .distinct()
             .count();
 
@@ -452,6 +481,47 @@ public class AttendanceService implements
     }
 
     // ==================== PRIVATE HELPER METHODS ====================
+
+    /**
+     * Gets the active enrollment for a student in the subject group of the given session.
+     * Validates that the enrollment exists and is ACTIVO.
+     *
+     * @param studentId the student ID
+     * @param session the session
+     * @return the active enrollment
+     * @throws EnrollmentNotFoundException if no active enrollment found
+     * @throws InvalidAttendanceOperationException if enrollment is not active
+     */
+    private Enrollment getActiveEnrollmentForSession(Long studentId, Session session) {
+        Long groupId = session.getSubjectGroup().getId();
+
+        // Find enrollment for this student in this subject group
+        List<Enrollment> enrollments = enrollmentRepository
+                .findByStudentIdAndSubjectGroupId(studentId, groupId);
+
+        if (enrollments.isEmpty()) {
+            log.warn("No enrollment found for student {} in group {}", studentId, groupId);
+            throw new EnrollmentNotFoundException(
+                String.format("No enrollment found for student %d in group %d", studentId, groupId)
+            );
+        }
+
+        // Find active enrollment
+        Enrollment activeEnrollment = enrollments.stream()
+                .filter(e -> e.getStatus() == EnrollmentStatus.ACTIVO)
+                .findFirst()
+                .orElseThrow(() -> {
+                    log.warn("No active enrollment found for student {} in group {}", studentId, groupId);
+                    return new EnrollmentNotFoundException(
+                        String.format("Student %d has no active enrollment in group %d", studentId, groupId)
+                    );
+                });
+
+        log.debug("Found active enrollment {} for student {} in group {}",
+            activeEnrollment.getId(), studentId, groupId);
+
+        return activeEnrollment;
+    }
 
     /**
      * Validates that a session exists and is in COMPLETADA status.
