@@ -15,9 +15,9 @@ import acainfo.back.session.domain.exception.SessionNotFoundException;
 import acainfo.back.session.domain.model.Session;
 import acainfo.back.session.domain.model.SessionStatus;
 import acainfo.back.session.infrastructure.adapters.out.SessionRepository;
+import acainfo.back.shared.domain.exception.UserNotFoundException;
 import acainfo.back.shared.domain.model.User;
-import acainfo.back.user.application.ports.out.UserRepositoryPort;
-import acainfo.back.user.domain.exception.UserNotFoundException;
+import acainfo.back.shared.infrastructure.adapters.out.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -53,7 +53,7 @@ public class AttendanceService implements
     private final AttendanceRepository attendanceRepository;
     private final SessionRepository sessionRepository;
     private final EnrollmentRepositoryPort enrollmentRepository;
-    private final UserRepositoryPort userRepository;
+    private final UserRepository userRepository;
 
     // ==================== REGISTER ATTENDANCE ====================
 
@@ -496,7 +496,7 @@ public class AttendanceService implements
         Long groupId = session.getSubjectGroup().getId();
 
         // Find enrollment for this student in this subject group
-        List<Enrollment> enrollments = enrollmentRepository
+        Optional<Enrollment> enrollments = enrollmentRepository
                 .findByStudentIdAndSubjectGroupId(studentId, groupId);
 
         if (enrollments.isEmpty()) {
