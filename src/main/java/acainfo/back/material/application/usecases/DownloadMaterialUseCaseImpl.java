@@ -9,11 +9,11 @@ import acainfo.back.material.application.services.FileStorageService;
 import acainfo.back.material.domain.exception.MaterialNotFoundException;
 import acainfo.back.material.domain.exception.UnauthorizedMaterialAccessException;
 import acainfo.back.material.domain.model.MaterialDomain;
-import acainfo.back.payment.application.services.PaymentService;
+import acainfo.back.payment.application.ports.in.ManagePaymentUseCase;
 import acainfo.back.payment.domain.exception.OverduePaymentException;
+import acainfo.back.user.application.ports.out.UserRepositoryPort;
 import acainfo.back.user.domain.exception.UserNotFoundException;
-import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
-import acainfo.back.user.infrastructure.adapters.out.persistence.repositories.UserJpaRepository;
+import acainfo.back.user.domain.model.UserDomain;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
@@ -33,10 +33,10 @@ import java.util.Optional;
 public class DownloadMaterialUseCaseImpl implements DownloadMaterialUseCase {
 
     private final MaterialRepositoryPort materialRepository;
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepository;
     private final EnrollmentRepositoryPort enrollmentRepository;
     private final FileStorageService fileStorageService;
-    private final PaymentService paymentService;
+    private final ManagePaymentUseCase managePaymentUseCase;
 
     @Override
     public Resource downloadMaterial(Long materialId, Long userId) {
@@ -52,7 +52,7 @@ public class DownloadMaterialUseCaseImpl implements DownloadMaterialUseCase {
         }
 
         // 2. Get user
-        User user = userRepository.findById(userId)
+        UserDomain user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
         // 3. Check access permissions
@@ -81,7 +81,7 @@ public class DownloadMaterialUseCaseImpl implements DownloadMaterialUseCase {
      * 2. Students need active enrollment in the subject group
      * 3. If material requires payment, student must have no overdue payments (>5 days)
      */
-    private void validateMaterialAccess(MaterialDomain material, User user) {
+    private void validateMaterialAccess(MaterialDomain material, UserDomain user) {
         // Admins and teachers have full access
         if (user.isAdmin() || user.isTeacher()) {
             log.debug("User {} has admin/teacher access to material {}", user.getId(), material.getId());
@@ -108,9 +108,7 @@ public class DownloadMaterialUseCaseImpl implements DownloadMaterialUseCase {
             log.debug("Material {} requires payment validation for user {}",
                     material.getId(), user.getId());
 
-            try {
-                paymentService.validateNoOverduePayments(user.getId());
-            } catch (OverduePaymentException e) {
+            if (managePaymentUseCase.hasOverduePayments(user.getId())) {
                 log.warn("User {} attempted to access material {} with overdue payments",
                         user.getId(), material.getId());
                 throw new UnauthorizedMaterialAccessException(

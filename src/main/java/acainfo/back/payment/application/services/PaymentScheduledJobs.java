@@ -1,5 +1,6 @@
 package acainfo.back.payment.application.services;
 
+import acainfo.back.payment.application.ports.in.ManagePaymentUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class PaymentScheduledJobs {
 
-    private final PaymentService paymentService;
+    private final ManagePaymentUseCase managePaymentUseCase;
 
     /**
      * Check for overdue payments and mark them as ATRASADO.
@@ -29,13 +30,8 @@ public class PaymentScheduledJobs {
         log.info("Starting scheduled job: checkOverduePayments");
 
         try {
-            int markedCount = paymentService.markOverduePayments();
-
-            if (markedCount > 0) {
-                log.warn("Marked {} payments as overdue", markedCount);
-            } else {
-                log.info("No overdue payments found");
-            }
+            managePaymentUseCase.checkAndMarkOverduePayments();
+            log.info("Overdue payments check completed");
 
         } catch (Exception e) {
             log.error("Error running checkOverduePayments scheduled job", e);
@@ -53,17 +49,8 @@ public class PaymentScheduledJobs {
         log.info("Starting scheduled job: generateMonthlyPayments");
 
         try {
-            java.time.LocalDate today = java.time.LocalDate.now();
-            int year = today.getYear();
-            int month = today.getMonthValue();
-
-            int createdCount = paymentService.generateMonthlyPayments(year, month, 1);
-
-            if (createdCount > 0) {
-                log.info("Generated {} monthly payments for {}/{}", createdCount, year, month);
-            } else {
-                log.info("No monthly payments generated for {}/{}", year, month);
-            }
+            managePaymentUseCase.generateMonthlyPayments();
+            log.info("Monthly payments generation completed");
 
         } catch (Exception e) {
             log.error("Error running generateMonthlyPayments scheduled job", e);

@@ -110,59 +110,14 @@ public class GroupRequestResponse {
     }
 
     /**
-     * Converts a GroupRequest entity to a GroupRequestResponse DTO.
+     * Converts a GroupRequest domain to a GroupRequestResponse DTO.
+     * @deprecated Use {@link GroupRequestResponseMapper#toResponse(GroupRequestDomain)} instead
      */
+    @Deprecated
     public static GroupRequestResponse fromEntity(GroupRequestDomain request) {
-        GroupRequestResponseBuilder builder = GroupRequestResponse.builder()
-                .id(request.getId())
-                .status(request.getStatus())
-                .supportersCount(request.getSupportersCount())
-                .minimumSupporters(GroupRequestDomain.MINIMUM_SUPPORTERS)
-                .supportersNeeded(request.getSupportersNeeded())
-                .supportersProgress(request.getSupportersProgress())
-                .hasMinimumSupporters(request.hasMinimumSupporters())
-                .requestedAt(request.getRequestedAt())
-                .resolvedAt(request.getResolvedAt())
-                .rejectionReason(request.getRejectionReason())
-                .comments(request.getComments());
-
-        // Add subject info
-        if (request.getSubject() != null) {
-            var subject = request.getSubject();
-            builder.subject(SubjectBasicInfo.builder()
-                    .id(subject.getId())
-                    .code(subject.getCode())
-                    .name(subject.getName())
-                    .year(subject.getYear())
-                    .build());
-        }
-
-        // Add requester info
-        if (request.getRequestedBy() != null) {
-            var requester = request.getRequestedBy();
-            builder.requestedBy(StudentBasicInfo.builder()
-                    .id(requester.getId())
-                    .email(requester.getEmail())
-                    .firstName(requester.getFirstName())
-                    .lastName(requester.getLastName())
-                    .fullName(requester.getFullName())
-                    .build());
-        }
-
-        // Add supporters list
-        if (request.getSupporters() != null) {
-            List<StudentBasicInfo> supportersList = request.getSupporters().stream()
-                    .map(supporter -> StudentBasicInfo.builder()
-                            .id(supporter.getId())
-                            .email(supporter.getEmail())
-                            .firstName(supporter.getFirstName())
-                            .lastName(supporter.getLastName())
-                            .fullName(supporter.getFullName())
-                            .build())
-                    .collect(Collectors.toList());
-            builder.supporters(supportersList);
-        }
-
-        return builder.build();
+        // This method is deprecated and should not be used.
+        // Use GroupRequestResponseMapper.toResponse() which properly fetches related entities.
+        throw new UnsupportedOperationException(
+            "fromEntity() is deprecated. Use GroupRequestResponseMapper.toResponse() instead.");
     }
 }

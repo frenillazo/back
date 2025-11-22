@@ -9,8 +9,8 @@ import acainfo.back.enrollment.domain.model.EnrollmentDomain;
 import acainfo.back.enrollment.domain.model.EnrollmentStatus;
 import acainfo.back.material.application.ports.out.MaterialRepositoryPort;
 import acainfo.back.material.domain.model.MaterialDomain;
-import acainfo.back.payment.application.services.PaymentService; // TODO: Replace with use cases/ports
-import acainfo.back.payment.domain.model.Payment;
+import acainfo.back.payment.application.ports.in.ManagePaymentUseCase;
+import acainfo.back.payment.domain.model.PaymentDomain;
 import acainfo.back.session.application.ports.out.SessionRepositoryPort;
 import acainfo.back.session.domain.model.SessionDomain;
 import acainfo.back.session.domain.model.SessionStatus;
@@ -47,7 +47,7 @@ public class StudentService {
     private final UserRepository userRepository;
     private final EnrollmentService enrollmentService;
     private final GroupRequestService groupRequestService;
-    private final PaymentService paymentService;
+    private final ManagePaymentUseCase managePaymentUseCase;
     private final AttendanceRepositoryPort attendanceRepository;
     private final SessionRepositoryPort sessionRepository;
     private final MaterialRepositoryPort materialRepository;
@@ -82,12 +82,12 @@ public class StudentService {
                 .collect(Collectors.toList());
 
         // 4. Get pending payments
-        List<Payment> pendingPayments = paymentService.getPendingPaymentsByStudent(studentId);
+        List<PaymentDomain> pendingPayments = managePaymentUseCase.getPendingPayments(studentId);
         List<PaymentResponse> pendingPaymentsDto = pendingPayments.stream()
-                .map(PaymentResponse::fromEntity)
+                .map(PaymentResponse::fromDomain)
                 .collect(Collectors.toList());
-        BigDecimal totalPending = paymentService.calculateTotalPendingByStudent(studentId);
-        boolean hasOverdue = paymentService.hasOverduePayments(studentId);
+        BigDecimal totalPending = managePaymentUseCase.calculateTotalPendingByStudent(studentId);
+        boolean hasOverdue = managePaymentUseCase.hasOverduePayments(studentId);
 
         // 5. Get upcoming sessions
         List<UpcomingSessionDTO> upcomingSessions = getUpcomingSessions(studentId, activeEnrollments);

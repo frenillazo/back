@@ -1,9 +1,8 @@
 package acainfo.back.payment.infrastructure.adapters.in.rest;
 
-import acainfo.back.payment.application.services.PaymentService;
+import acainfo.back.payment.application.ports.in.ManagePaymentUseCase;
 import acainfo.back.payment.application.services.StripeService;
-import acainfo.back.payment.domain.model.Payment;
-import acainfo.back.payment.infrastructure.adapters.out.PaymentRepository;
+import acainfo.back.payment.domain.model.PaymentDomain;
 import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
@@ -35,8 +34,7 @@ import org.springframework.web.bind.annotation.*;
 public class StripeWebhookController {
 
     private final StripeService stripeService;
-    private final PaymentService paymentService;
-    private final PaymentRepository paymentRepository;
+    private final ManagePaymentUseCase managePaymentUseCase;
 
     /**
      * Handle Stripe webhook events.

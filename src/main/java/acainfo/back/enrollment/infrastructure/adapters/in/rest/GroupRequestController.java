@@ -1,9 +1,10 @@
 package acainfo.back.enrollment.infrastructure.adapters.in.rest;
 
 import acainfo.back.enrollment.application.services.GroupRequestService;
-import acainfo.back.enrollment.domain.model.GroupRequest;
+import acainfo.back.enrollment.domain.model.GroupRequestDomain;
 import acainfo.back.enrollment.infrastructure.adapters.in.dto.CreateGroupRequestRequest;
 import acainfo.back.enrollment.infrastructure.adapters.in.dto.GroupRequestResponse;
+import acainfo.back.enrollment.infrastructure.adapters.in.dto.GroupRequestResponseMapper;
 import acainfo.back.enrollment.infrastructure.adapters.in.dto.RejectGroupRequestRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 public class GroupRequestController {
 
     private final GroupRequestService groupRequestService;
+    private final GroupRequestResponseMapper groupRequestResponseMapper;
 
     // ==================== CREATE REQUEST ====================
 
@@ -54,13 +56,13 @@ public class GroupRequestController {
         log.info("Creating group request for subject {} by student {}",
             request.getSubjectId(), request.getRequesterId());
 
-        GroupRequest groupRequest = groupRequestService.createGroupRequest(
+        GroupRequestDomain groupRequest = groupRequestService.createGroupRequest(
             request.getSubjectId(),
             request.getRequesterId(),
             request.getComments()
         );
 
-        GroupRequestResponse response = GroupRequestResponse.fromEntity(groupRequest);
+        GroupRequestResponse response = groupRequestResponseMapper.toResponse(groupRequest);
 
         log.info("Group request created successfully with ID: {}", groupRequest.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -86,8 +88,8 @@ public class GroupRequestController {
             @Parameter(description = "Student ID") @RequestParam Long studentId) {
         log.info("Student {} supporting group request {}", studentId, id);
 
-        GroupRequest groupRequest = groupRequestService.supportRequest(id, studentId);
-        GroupRequestResponse response = GroupRequestResponse.fromEntity(groupRequest);
+        GroupRequestDomain groupRequest = groupRequestService.supportRequest(id, studentId);
+        GroupRequestResponse response = groupRequestResponseMapper.toResponse(groupRequest);
 
         log.info("Support added successfully. Total supporters: {}", groupRequest.getSupportersCount());
         return ResponseEntity.ok(response);
@@ -111,8 +113,8 @@ public class GroupRequestController {
             @Parameter(description = "Student ID") @RequestParam Long studentId) {
         log.info("Student {} removing support from group request {}", studentId, id);
 
-        GroupRequest groupRequest = groupRequestService.unsupportRequest(id, studentId);
-        GroupRequestResponse response = GroupRequestResponse.fromEntity(groupRequest);
+        GroupRequestDomain groupRequest = groupRequestService.unsupportRequest(id, studentId);
+        GroupRequestResponse response = groupRequestResponseMapper.toResponse(groupRequest);
 
         log.info("Support removed successfully. Total supporters: {}", groupRequest.getSupportersCount());
         return ResponseEntity.ok(response);
@@ -138,8 +140,8 @@ public class GroupRequestController {
             @Parameter(description = "Admin ID") @RequestParam Long adminId) {
         log.info("Admin {} approving group request {}", adminId, id);
 
-        GroupRequest groupRequest = groupRequestService.approveRequest(id, adminId);
-        GroupRequestResponse response = GroupRequestResponse.fromEntity(groupRequest);
+        GroupRequestDomain groupRequest = groupRequestService.approveRequest(id, adminId);
+        GroupRequestResponse response = groupRequestResponseMapper.toResponse(groupRequest);
 
         log.info("Group request {} approved successfully", id);
         return ResponseEntity.ok(response);
@@ -163,8 +165,8 @@ public class GroupRequestController {
             @Valid @RequestBody RejectGroupRequestRequest request) {
         log.info("Admin {} rejecting group request {}", adminId, id);
 
-        GroupRequest groupRequest = groupRequestService.rejectRequest(id, adminId, request.getReason());
-        GroupRequestResponse response = GroupRequestResponse.fromEntity(groupRequest);
+        GroupRequestDomain groupRequest = groupRequestService.rejectRequest(id, adminId, request.getReason());
+        GroupRequestResponse response = groupRequestResponseMapper.toResponse(groupRequest);
 
         log.info("Group request {} rejected. Reason: {}", id, request.getReason());
         return ResponseEntity.ok(response);
@@ -184,8 +186,8 @@ public class GroupRequestController {
             @Parameter(description = "Request ID") @PathVariable Long id) {
         log.debug("Fetching group request by ID: {}", id);
 
-        GroupRequest groupRequest = groupRequestService.getRequestById(id);
-        GroupRequestResponse response = GroupRequestResponse.fromEntity(groupRequest);
+        GroupRequestDomain groupRequest = groupRequestService.getRequestById(id);
+        GroupRequestResponse response = groupRequestResponseMapper.toResponse(groupRequest);
 
         return ResponseEntity.ok(response);
     }
@@ -203,9 +205,9 @@ public class GroupRequestController {
     public ResponseEntity<List<GroupRequestResponse>> getAllPendingRequests() {
         log.debug("Fetching all pending group requests");
 
-        List<GroupRequest> requests = groupRequestService.getAllPendingRequests();
+        List<GroupRequestDomain> requests = groupRequestService.getAllPendingRequests();
         List<GroupRequestResponse> response = requests.stream()
-                .map(GroupRequestResponse::fromEntity)
+                .map(groupRequestResponseMapper::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
@@ -225,9 +227,9 @@ public class GroupRequestController {
             @Parameter(description = "Subject ID") @PathVariable Long subjectId) {
         log.debug("Fetching group requests for subject: {}", subjectId);
 
-        List<GroupRequest> requests = groupRequestService.getRequestsBySubject(subjectId);
+        List<GroupRequestDomain> requests = groupRequestService.getRequestsBySubject(subjectId);
         List<GroupRequestResponse> response = requests.stream()
-                .map(GroupRequestResponse::fromEntity)
+                .map(groupRequestResponseMapper::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
@@ -247,9 +249,9 @@ public class GroupRequestController {
             @Parameter(description = "Student ID") @PathVariable Long studentId) {
         log.debug("Fetching group requests created by student: {}", studentId);
 
-        List<GroupRequest> requests = groupRequestService.getRequestsByRequester(studentId);
+        List<GroupRequestDomain> requests = groupRequestService.getRequestsByRequester(studentId);
         List<GroupRequestResponse> response = requests.stream()
-                .map(GroupRequestResponse::fromEntity)
+                .map(groupRequestResponseMapper::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
@@ -269,9 +271,9 @@ public class GroupRequestController {
             @Parameter(description = "Student ID") @PathVariable Long studentId) {
         log.debug("Fetching group requests supported by student: {}", studentId);
 
-        List<GroupRequest> requests = groupRequestService.getRequestsSupportedByStudent(studentId);
+        List<GroupRequestDomain> requests = groupRequestService.getRequestsSupportedByStudent(studentId);
         List<GroupRequestResponse> response = requests.stream()
-                .map(GroupRequestResponse::fromEntity)
+                .map(groupRequestResponseMapper::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
