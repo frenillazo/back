@@ -7,12 +7,12 @@ import acainfo.back.enrollment.application.ports.in.GetGroupRequestUseCase;
 import acainfo.back.enrollment.application.ports.out.GroupRequestRepositoryPort;
 import acainfo.back.enrollment.domain.exception.DuplicateGroupRequestException;
 import acainfo.back.enrollment.domain.exception.GroupRequestNotFoundException;
-import acainfo.back.enrollment.domain.model.GroupRequest;
+import acainfo.back.enrollment.domain.model.GroupRequestDomain;
 import acainfo.back.enrollment.domain.model.GroupRequestStatus;
+import acainfo.back.user.application.ports.out.UserRepositoryPort;
 import acainfo.back.user.domain.exception.UserNotFoundException;
 import acainfo.back.user.domain.model.RoleType;
-import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
-import acainfo.back.user.infrastructure.adapters.out.persistence.repositories.UserJpaRepository;
+import acainfo.back.user.domain.model.UserDomain;
 import acainfo.back.subject.application.ports.out.SubjectRepositoryPort;
 import acainfo.back.subject.domain.exception.SubjectNotFoundException;
 import acainfo.back.subject.domain.model.SubjectDomain;
@@ -47,16 +47,16 @@ public class GroupRequestService implements
 
     private final GroupRequestRepositoryPort groupRequestRepository;
     private final SubjectRepositoryPort subjectRepository;
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepository;
 
     // ==================== CREATE ====================
 
     @Override
-    public GroupRequest createGroupRequest(Long subjectId, Long requesterId, String comments) {
+    public GroupRequestDomain createGroupRequest(Long subjectId, Long requesterId, String comments) {
         log.info("Creating group request for subject {} by student {}", subjectId, requesterId);
 
         // Validate student exists and has STUDENT role
-        User requester = validateStudent(requesterId);
+        UserDomain requester = validateStudent(requesterId);
 
         // Validate subject exists
         SubjectDomain subject = validateSubject(subjectId);
@@ -66,18 +66,19 @@ public class GroupRequestService implements
             throw new DuplicateGroupRequestException(subjectId);
         }
 
-        // Create group request
-        GroupRequest groupRequest = GroupRequest.builder()
-                .subject(subject)
-                .requestedBy(requester)
+        // Create group request domain
+        GroupRequestDomain groupRequest = GroupRequestDomain.builder()
+                .subjectId(subject.getId())
+                .requestedById(requester.getId())
                 .status(GroupRequestStatus.PENDIENTE)
                 .comments(comments)
+                .requestedAt(java.time.LocalDateTime.now())
                 .build();
 
         // Add requester as first supporter
-        groupRequest.addSupporter(requester);
+        groupRequest = groupRequest.addSupporter(requester.getId());
 
-        GroupRequest savedRequest = groupRequestRepository.save(groupRequest);
+        GroupRequestDomain savedRequest = groupRequestRepository.save(groupRequest);
 
         log.info("Group request created successfully with ID: {}", savedRequest.getId());
 
@@ -93,14 +94,14 @@ public class GroupRequestService implements
 
     @Override
     @Transactional
-    public GroupRequest supportRequest(Long requestId, Long studentId) {
+    public GroupRequestDomain supportRequest(Long requestId, Long studentId) {
         log.info("Student {} supporting group request {}", studentId, requestId);
 
         // Validate student exists and has STUDENT role
-        User student = validateStudent(studentId);
+        UserDomain student = validateStudent(studentId);
 
         // Get group request
-        GroupRequest groupRequest = groupRequestRepository.findById(requestId)
+        GroupRequestDomain groupRequest = groupRequestRepository.findById(requestId)
                 .orElseThrow(() -> new GroupRequestNotFoundException(requestId));
 
         // Validate request is pending
@@ -109,13 +110,13 @@ public class GroupRequestService implements
         }
 
         // Check if already supporting
-        if (groupRequest.isSupporter(student)) {
+        if (groupRequest.isSupporter(student.getId())) {
             throw new IllegalStateException("Student is already supporting this request");
         }
 
         // Add supporter
-        groupRequest.addSupporter(student);
-        GroupRequest updatedRequest = groupRequestRepository.save(groupRequest);
+        GroupRequestDomain updated = groupRequest.addSupporter(student.getId());
+        GroupRequestDomain updatedRequest = groupRequestRepository.save(updated);
 
         log.info("Student {} added as supporter. Total supporters: {}",
             studentId, updatedRequest.getSupportersCount());
@@ -130,14 +131,14 @@ public class GroupRequestService implements
 
     @Override
     @Transactional
-    public GroupRequest unsupportRequest(Long requestId, Long studentId) {
+    public GroupRequestDomain unsupportRequest(Long requestId, Long studentId) {
         log.info("Student {} removing support from group request {}", studentId, requestId);
 
         // Validate student
-        User student = validateStudent(studentId);
+        UserDomain student = validateStudent(studentId);
 
         // Get group request
-        GroupRequest groupRequest = groupRequestRepository.findById(requestId)
+        GroupRequestDomain groupRequest = groupRequestRepository.findById(requestId)
                 .orElseThrow(() -> new GroupRequestNotFoundException(requestId));
 
         // Validate request is pending
@@ -146,18 +147,18 @@ public class GroupRequestService implements
         }
 
         // Check if student is the requester (cannot remove themselves)
-        if (groupRequest.isRequester(student)) {
+        if (groupRequest.isRequester(student.getId())) {
             throw new IllegalStateException("Requester cannot remove their support. Consider deleting the request instead.");
         }
 
         // Check if is supporter
-        if (!groupRequest.isSupporter(student)) {
+        if (!groupRequest.isSupporter(student.getId())) {
             throw new IllegalStateException("Student is not supporting this request");
         }
 
         // Remove supporter
-        groupRequest.removeSupporter(student);
-        GroupRequest updatedRequest = groupRequestRepository.save(groupRequest);
+        GroupRequestDomain updated = groupRequest.removeSupporter(student.getId());
+        GroupRequestDomain updatedRequest = groupRequestRepository.save(updated);
 
         log.info("Student {} removed as supporter. Total supporters: {}",
             studentId, updatedRequest.getSupportersCount());
@@ -169,27 +170,27 @@ public class GroupRequestService implements
 
     @Override
     @Transactional
-    public GroupRequest approveRequest(Long requestId, Long adminId) {
+    public GroupRequestDomain approveRequest(Long requestId, Long adminId) {
         log.info("Admin {} approving group request {}", adminId, requestId);
 
         // Validate admin
         validateAdmin(adminId);
 
         // Get group request
-        GroupRequest groupRequest = groupRequestRepository.findById(requestId)
+        GroupRequestDomain groupRequest = groupRequestRepository.findById(requestId)
                 .orElseThrow(() -> new GroupRequestNotFoundException(requestId));
 
         // Validate has minimum supporters
         if (!groupRequest.hasMinimumSupporters()) {
             throw new IllegalStateException(
                 String.format("Request does not have minimum supporters. Current: %d, Required: %d",
-                    groupRequest.getSupportersCount(), GroupRequest.MINIMUM_SUPPORTERS)
+                    groupRequest.getSupportersCount(), GroupRequestDomain.MINIMUM_SUPPORTERS)
             );
         }
 
         // Approve request
-        groupRequest.approve();
-        GroupRequest approvedRequest = groupRequestRepository.save(groupRequest);
+        GroupRequestDomain approved = groupRequest.approve();
+        GroupRequestDomain approvedRequest = groupRequestRepository.save(approved);
 
         log.info("Group request {} approved successfully", requestId);
 
@@ -204,7 +205,7 @@ public class GroupRequestService implements
 
     @Override
     @Transactional
-    public GroupRequest rejectRequest(Long requestId, Long adminId, String reason) {
+    public GroupRequestDomain rejectRequest(Long requestId, Long adminId, String reason) {
         log.info("Admin {} rejecting group request {}", adminId, requestId);
 
         // Validate admin
@@ -216,12 +217,12 @@ public class GroupRequestService implements
         }
 
         // Get group request
-        GroupRequest groupRequest = groupRequestRepository.findById(requestId)
+        GroupRequestDomain groupRequest = groupRequestRepository.findById(requestId)
                 .orElseThrow(() -> new GroupRequestNotFoundException(requestId));
 
         // Reject request
-        groupRequest.reject(reason);
-        GroupRequest rejectedRequest = groupRequestRepository.save(groupRequest);
+        GroupRequestDomain rejected = groupRequest.reject(reason);
+        GroupRequestDomain rejectedRequest = groupRequestRepository.save(rejected);
 
         log.info("Group request {} rejected. Reason: {}", requestId, reason);
 
@@ -235,7 +236,7 @@ public class GroupRequestService implements
 
     @Override
     @Transactional(readOnly = true)
-    public GroupRequest getRequestById(Long id) {
+    public GroupRequestDomain getRequestById(Long id) {
         log.debug("Fetching group request by ID: {}", id);
         return groupRequestRepository.findById(id)
                 .orElseThrow(() -> new GroupRequestNotFoundException(id));
@@ -243,28 +244,28 @@ public class GroupRequestService implements
 
     @Override
     @Transactional(readOnly = true)
-    public List<GroupRequest> getAllPendingRequests() {
+    public List<GroupRequestDomain> getAllPendingRequests() {
         log.debug("Fetching all pending group requests");
         return groupRequestRepository.findByStatus(GroupRequestStatus.PENDIENTE);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<GroupRequest> getRequestsBySubject(Long subjectId) {
+    public List<GroupRequestDomain> getRequestsBySubject(Long subjectId) {
         log.debug("Fetching group requests for subject: {}", subjectId);
         return groupRequestRepository.findBySubjectId(subjectId);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<GroupRequest> getRequestsByRequester(Long studentId) {
+    public List<GroupRequestDomain> getRequestsByRequester(Long studentId) {
         log.debug("Fetching group requests created by student: {}", studentId);
         return groupRequestRepository.findByRequesterId(studentId);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<GroupRequest> getRequestsSupportedByStudent(Long studentId) {
+    public List<GroupRequestDomain> getRequestsSupportedByStudent(Long studentId) {
         log.debug("Fetching group requests supported by student: {}", studentId);
         return groupRequestRepository.findRequestsSupportedByStudent(studentId);
     }
@@ -287,12 +288,12 @@ public class GroupRequestService implements
     /**
      * Validates that the user exists and has STUDENT role.
      */
-    private User validateStudent(Long studentId) {
+    private UserDomain validateStudent(Long studentId) {
         if (studentId == null) {
             throw new IllegalArgumentException("Student ID is required");
         }
 
-        User student = userRepository.findById(studentId)
+        UserDomain student = userRepository.findById(studentId)
                 .orElseThrow(() -> new UserNotFoundException(studentId));
 
         if (!student.hasRole(RoleType.STUDENT)) {
@@ -311,12 +312,12 @@ public class GroupRequestService implements
     /**
      * Validates that the user exists and has ADMIN role.
      */
-    private void validateAdmin(Long adminId) {
+    private UserDomain validateAdmin(Long adminId) {
         if (adminId == null) {
             throw new IllegalArgumentException("Admin ID is required");
         }
 
-        User admin = userRepository.findById(adminId)
+        UserDomain admin = userRepository.findById(adminId)
                 .orElseThrow(() -> new UserNotFoundException(adminId));
 
         if (!admin.hasRole(RoleType.ADMIN)) {

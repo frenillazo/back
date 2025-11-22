@@ -1,6 +1,6 @@
 package acainfo.back.enrollment.application.ports.out;
 
-import acainfo.back.enrollment.domain.model.GroupRequest;
+import acainfo.back.enrollment.domain.model.GroupRequestDomain;
 import acainfo.back.enrollment.domain.model.GroupRequestStatus;
 
 import java.util.List;
@@ -9,6 +9,7 @@ import java.util.Optional;
 /**
  * Port for group request repository operations.
  * This interface defines the contract for group request persistence.
+ * Works with GroupRequestDomain (pure domain model).
  */
 public interface GroupRequestRepositoryPort {
 
@@ -18,7 +19,7 @@ public interface GroupRequestRepositoryPort {
      * @param groupRequest the group request to save
      * @return the saved group request
      */
-    GroupRequest save(GroupRequest groupRequest);
+    GroupRequestDomain save(GroupRequestDomain groupRequest);
 
     /**
      * Finds a group request by ID.
@@ -26,14 +27,14 @@ public interface GroupRequestRepositoryPort {
      * @param id the group request ID
      * @return Optional containing the group request if found
      */
-    Optional<GroupRequest> findById(Long id);
+    Optional<GroupRequestDomain> findById(Long id);
 
     /**
      * Finds all group requests.
      *
      * @return list of all group requests
      */
-    List<GroupRequest> findAll();
+    List<GroupRequestDomain> findAll();
 
     /**
      * Finds group requests by subject ID.
@@ -41,7 +42,7 @@ public interface GroupRequestRepositoryPort {
      * @param subjectId the subject ID
      * @return list of group requests
      */
-    List<GroupRequest> findBySubjectId(Long subjectId);
+    List<GroupRequestDomain> findBySubjectId(Long subjectId);
 
     /**
      * Finds group requests by requester (student who created the request).
@@ -49,7 +50,7 @@ public interface GroupRequestRepositoryPort {
      * @param requesterId the requester ID
      * @return list of group requests
      */
-    List<GroupRequest> findByRequesterId(Long requesterId);
+    List<GroupRequestDomain> findByRequesterId(Long requesterId);
 
     /**
      * Finds group requests by status.
@@ -57,7 +58,7 @@ public interface GroupRequestRepositoryPort {
      * @param status the request status
      * @return list of group requests
      */
-    List<GroupRequest> findByStatus(GroupRequestStatus status);
+    List<GroupRequestDomain> findByStatus(GroupRequestStatus status);
 
     /**
      * Finds pending group requests for a subject.
@@ -65,7 +66,7 @@ public interface GroupRequestRepositoryPort {
      * @param subjectId the subject ID
      * @return list of pending group requests
      */
-    List<GroupRequest> findPendingBySubjectId(Long subjectId);
+    List<GroupRequestDomain> findPendingBySubjectId(Long subjectId);
 
     int countPendingByStudentId(Long studentId);
 
@@ -76,7 +77,7 @@ public interface GroupRequestRepositoryPort {
      * @param subjectId the subject ID
      * @return Optional containing the pending request if found
      */
-    Optional<GroupRequest> findPendingRequestBySubjectId(Long subjectId);
+    Optional<GroupRequestDomain> findPendingRequestBySubjectId(Long subjectId);
 
     /**
      * Checks if a pending request exists for a subject.
@@ -92,7 +93,7 @@ public interface GroupRequestRepositoryPort {
      * @param studentId the student ID
      * @return list of group requests
      */
-    List<GroupRequest> findRequestsSupportedByStudent(Long studentId);
+    List<GroupRequestDomain> findRequestsSupportedByStudent(Long studentId);
 
     /**
      * Checks if a student supports a specific request.
