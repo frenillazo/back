@@ -1,6 +1,6 @@
 package acainfo.back.material.application.ports.in;
 
-import acainfo.back.material.domain.model.Material;
+import acainfo.back.material.domain.model.MaterialDomain;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -24,7 +24,7 @@ public interface UploadMaterialUseCase {
      * @throws acainfo.back.subjectgroup.domain.exception.GroupNotFoundException if group doesn't exist
      * @throws acainfo.back.shared.domain.exception.UnauthorizedException if uploader is not a teacher
      */
-    Material uploadMaterial(
+    MaterialDomain uploadMaterial(
         MultipartFile file,
         Long subjectGroupId,
         Long uploaderId,

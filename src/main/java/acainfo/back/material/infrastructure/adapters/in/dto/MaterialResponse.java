@@ -1,6 +1,5 @@
 package acainfo.back.material.infrastructure.adapters.in.dto;
 
-import acainfo.back.material.domain.model.Material;
 import acainfo.back.material.domain.model.MaterialType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -64,32 +63,4 @@ public class MaterialResponse {
 
     @Schema(description = "Version for optimistic locking", example = "1")
     private Integer version;
-
-    /**
-     * Converts a Material entity to a MaterialResponse DTO.
-     *
-     * @param material the material entity
-     * @return the DTO
-     */
-    public static MaterialResponse fromEntity(Material material) {
-        return MaterialResponse.builder()
-                .id(material.getId())
-                .subjectGroupId(material.getSubjectGroup().getId())
-                .subjectGroupName(material.getSubjectGroup().getSubject().getName() + " - " +
-                                 material.getSubjectGroup().getDisplayName())
-                .fileName(material.getFileName())
-                .type(material.getType())
-                .fileSize(material.getFileSize())
-                .formattedFileSize(material.getFormattedFileSize())
-                .description(material.getDescription())
-                .topic(material.getTopic())
-                .uploadedById(material.getUploadedBy().getId())
-                .uploadedByName(material.getUploadedBy().getFirstName() + " " +
-                               material.getUploadedBy().getLastName())
-                .uploadedAt(material.getUploadedAt())
-                .requiresPayment(material.getRequiresPayment())
-                .isActive(material.getIsActive())
-                .version(material.getVersion())
-                .build();
-    }
 }

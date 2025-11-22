@@ -1,6 +1,6 @@
 package acainfo.back.material.application.ports.in;
 
-import acainfo.back.material.domain.model.Material;
+import acainfo.back.material.domain.model.MaterialDomain;
 import acainfo.back.material.domain.model.MaterialType;
 
 import java.util.List;
@@ -19,7 +19,7 @@ public interface ManageMaterialUseCase {
      * @return the material
      * @throws acainfo.back.material.domain.exception.MaterialNotFoundException if not found
      */
-    Material getMaterialById(Long materialId);
+    MaterialDomain getMaterialById(Long materialId);
 
     /**
      * Gets all active materials for a subject group.
@@ -27,7 +27,7 @@ public interface ManageMaterialUseCase {
      * @param subjectGroupId the subject group ID
      * @return list of active materials
      */
-    List<Material> getMaterialsBySubjectGroup(Long subjectGroupId);
+    List<MaterialDomain> getMaterialsBySubjectGroup(Long subjectGroupId);
 
     /**
      * Gets materials by subject group and type.
@@ -36,7 +36,7 @@ public interface ManageMaterialUseCase {
      * @param type the material type
      * @return list of materials
      */
-    List<Material> getMaterialsBySubjectGroupAndType(Long subjectGroupId, MaterialType type);
+    List<MaterialDomain> getMaterialsBySubjectGroupAndType(Long subjectGroupId, MaterialType type);
 
     /**
      * Gets materials by subject group and topic.
@@ -45,7 +45,7 @@ public interface ManageMaterialUseCase {
      * @param topic the topic/unit
      * @return list of materials
      */
-    List<Material> getMaterialsBySubjectGroupAndTopic(Long subjectGroupId, String topic);
+    List<MaterialDomain> getMaterialsBySubjectGroupAndTopic(Long subjectGroupId, String topic);
 
     /**
      * Updates material metadata (description, topic, requiresPayment).
@@ -60,7 +60,7 @@ public interface ManageMaterialUseCase {
      * @throws acainfo.back.material.domain.exception.MaterialNotFoundException if not found
      * @throws acainfo.back.shared.domain.exception.UnauthorizedException if user is not authorized
      */
-    Material updateMaterial(
+    MaterialDomain updateMaterial(
         Long materialId,
         Long userId,
         String description,
@@ -96,5 +96,10 @@ public interface ManageMaterialUseCase {
      * @param teacherId the teacher ID
      * @return list of materials
      */
-    List<Material> getMaterialsByTeacher(Long teacherId);
+    List<MaterialDomain> getMaterialsByTeacher(Long teacherId);
+
+    /**
+     * Gets all distinct topics for a subject group
+     */
+    List<String> getTopicsBySubjectGroup(Long subjectGroupId);
 }
