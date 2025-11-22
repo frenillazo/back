@@ -7,11 +7,11 @@ import acainfo.back.enrollment.domain.exception.GroupNotActiveException;
 import acainfo.back.enrollment.domain.model.AttendanceMode;
 import acainfo.back.enrollment.domain.model.EnrollmentDomain;
 import acainfo.back.enrollment.domain.model.EnrollmentStatus;
-import acainfo.back.payment.application.services.PaymentService;
+import acainfo.back.payment.application.ports.in.ManagePaymentUseCase;
+import acainfo.back.user.application.ports.out.UserRepositoryPort;
 import acainfo.back.user.domain.exception.UserNotFoundException;
 import acainfo.back.user.domain.model.RoleType;
-import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
-import acainfo.back.user.infrastructure.adapters.out.persistence.repositories.UserJpaRepository;
+import acainfo.back.user.domain.model.UserDomain;
 import acainfo.back.subjectgroup.application.ports.out.GroupRepositoryPort;
 import acainfo.back.subjectgroup.domain.exception.GroupNotFoundException;
 import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
@@ -42,8 +42,8 @@ public class EnrollStudentUseCaseImpl implements EnrollStudentUseCase {
 
     private final EnrollmentRepositoryPort enrollmentRepository;
     private final GroupRepositoryPort groupRepository;
-    private final UserRepository userRepository;
-    private final PaymentService paymentService;
+    private final UserRepositoryPort userRepository;
+    private final ManagePaymentUseCase managePaymentUseCase;
 
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -51,7 +51,7 @@ public class EnrollStudentUseCaseImpl implements EnrollStudentUseCase {
         log.info("Enrolling student {} in group {}", studentId, groupId);
 
         // 1. Validate student exists and has STUDENT role
-        User student = validateStudent(studentId);
+        UserDomain student = validateStudent(studentId);
 
         // 2. Validate group exists and is active
         SubjectGroupDomain group = validateGroupActive(groupId);
@@ -60,7 +60,9 @@ public class EnrollStudentUseCaseImpl implements EnrollStudentUseCase {
         validateNotAlreadyEnrolled(studentId, groupId);
 
         // 4. Validate payment status - student must not have overdue payments
-        paymentService.validateNoOverduePayments(studentId);
+        if (managePaymentUseCase.hasOverduePayments(studentId)) {
+            throw new IllegalStateException("Student has overdue payments and cannot enroll");
+        }
 
         // 5. Determine attendance mode and enrollment status
         AttendanceMode attendanceMode = determineAttendanceMode(student, group);
@@ -103,7 +105,9 @@ public class EnrollStudentUseCaseImpl implements EnrollStudentUseCase {
             validateStudent(studentId);
             validateGroupActive(groupId);
             validateNotAlreadyEnrolled(studentId, groupId);
-            paymentService.validateNoOverduePayments(studentId);
+            if (managePaymentUseCase.hasOverduePayments(studentId)) {
+                return false;
+            }
             return true;
         } catch (Exception e) {
             log.debug("Student {} cannot enroll in group {}: {}", studentId, groupId, e.getMessage());
@@ -116,12 +120,12 @@ public class EnrollStudentUseCaseImpl implements EnrollStudentUseCase {
     /**
      * Validates that the user exists and has STUDENT role.
      */
-    private User validateStudent(Long studentId) {
+    private UserDomain validateStudent(Long studentId) {
         if (studentId == null) {
             throw new IllegalArgumentException("Student ID is required");
         }
 
-        User student = userRepository.findById(studentId)
+        UserDomain student = userRepository.findById(studentId)
                 .orElseThrow(() -> new UserNotFoundException(studentId));
 
         if (!student.hasRole(RoleType.STUDENT)) {
@@ -175,7 +179,7 @@ public class EnrollStudentUseCaseImpl implements EnrollStudentUseCase {
      * TODO: Implement online mode for students with 2+ active enrollments when group is full
      * This requires counting active enrollments and allowing ONLINE mode instead of EN_ESPERA
      */
-    private AttendanceMode determineAttendanceMode(User student, SubjectGroupDomain group) {
+    private AttendanceMode determineAttendanceMode(UserDomain student, SubjectGroupDomain group) {
         // If group has available places, enroll presentially
         if (group.hasAvailablePlaces()) {
             return AttendanceMode.PRESENCIAL;
