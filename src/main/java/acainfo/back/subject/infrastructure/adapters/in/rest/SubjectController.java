@@ -1,15 +1,14 @@
 package acainfo.back.subject.infrastructure.adapters.in.rest;
 
 import acainfo.back.shared.infrastructure.adapters.in.dto.ErrorResponse;
+import acainfo.back.subject.application.mappers.SubjectDtoMapper;
 import acainfo.back.subject.application.ports.in.CreateSubjectUseCase;
 import acainfo.back.subject.application.ports.in.DeleteSubjectUseCase;
 import acainfo.back.subject.application.ports.in.GetSubjectUseCase;
 import acainfo.back.subject.application.ports.in.UpdateSubjectUseCase;
-import acainfo.back.subject.application.services.SubjectService;
 import acainfo.back.subject.domain.model.Degree;
-import acainfo.back.subject.domain.model.Subject;
+import acainfo.back.subject.domain.model.SubjectDomain;
 import acainfo.back.subject.domain.model.SubjectStatus;
-import acainfo.back.subject.domain.validation.SubjectSpecifications;
 import acainfo.back.subject.infrastructure.adapters.in.dto.CreateSubjectRequest;
 import acainfo.back.subject.infrastructure.adapters.in.dto.SubjectResponse;
 import acainfo.back.subject.infrastructure.adapters.in.dto.UpdateSubjectRequest;
@@ -23,17 +22,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * REST Controller for subject management.
+ * Uses hexagonal architecture with Use Cases and DTO Mapper.
  * Provides CRUD operations and filtering capabilities.
  */
 @RestController
@@ -43,11 +41,14 @@ import java.util.stream.Collectors;
 @Tag(name = "Subjects", description = "Subject management APIs")
 public class SubjectController {
 
+    // Use Cases (Ports IN)
     private final CreateSubjectUseCase createSubjectUseCase;
     private final UpdateSubjectUseCase updateSubjectUseCase;
     private final GetSubjectUseCase getSubjectUseCase;
     private final DeleteSubjectUseCase deleteSubjectUseCase;
-    private final SubjectService subjectService;
+
+    // Mapper
+    private final SubjectDtoMapper subjectDtoMapper;
 
     // ==================== CREATE ====================
 
@@ -79,18 +80,14 @@ public class SubjectController {
     ) {
         log.info("Creating subject with code: {}", request.getCode());
 
-        Subject subject = Subject.builder()
-                .code(request.getCode())
-                .name(request.getName())
-                .year(request.getYear())
-                .degree(request.getDegree())
-                .semester(request.getSemester())
-                .description(request.getDescription())
-                .status(request.getStatus())
-                .build();
+        // Map DTO → Domain
+        SubjectDomain subject = subjectDtoMapper.toDomain(request);
 
-        Subject createdSubject = createSubjectUseCase.createSubject(subject);
-        SubjectResponse response = SubjectResponse.fromEntity(createdSubject);
+        // Execute use case
+        SubjectDomain createdSubject = createSubjectUseCase.createSubject(subject);
+
+        // Map Domain → DTO Response
+        SubjectResponse response = subjectDtoMapper.toResponse(createdSubject);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -116,10 +113,11 @@ public class SubjectController {
         log.debug("Getting all subjects with filters - degree: {}, year: {}, semester: {}, status: {}, search: {}",
                 degree, year, semester, status, search);
 
-        List<Subject> subjects = applyFilters(degree, year, semester, status, search);
-        List<SubjectResponse> response = subjects.stream()
-                .map(SubjectResponse::fromEntity)
-                .collect(Collectors.toList());
+        // Apply filters using use case methods
+        List<SubjectDomain> subjects = applyFilters(degree, year, semester, status, search);
+
+        // Map to response
+        List<SubjectResponse> response = subjectDtoMapper.toResponses(subjects);
 
         return ResponseEntity.ok(response);
     }
@@ -146,8 +144,8 @@ public class SubjectController {
     ) {
         log.debug("Getting subject by ID: {}", id);
 
-        Subject subject = getSubjectUseCase.getSubjectById(id);
-        SubjectResponse response = SubjectResponse.fromEntity(subject);
+        SubjectDomain subject = getSubjectUseCase.getSubjectById(id);
+        SubjectResponse response = subjectDtoMapper.toResponse(subject);
 
         return ResponseEntity.ok(response);
     }
@@ -174,8 +172,8 @@ public class SubjectController {
     ) {
         log.debug("Getting subject by code: {}", code);
 
-        Subject subject = getSubjectUseCase.getSubjectByCode(code);
-        SubjectResponse response = SubjectResponse.fromEntity(subject);
+        SubjectDomain subject = getSubjectUseCase.getSubjectByCode(code);
+        SubjectResponse response = subjectDtoMapper.toResponse(subject);
 
         return ResponseEntity.ok(response);
     }
@@ -189,10 +187,8 @@ public class SubjectController {
     public ResponseEntity<List<SubjectResponse>> getActiveSubjects() {
         log.debug("Getting all active subjects");
 
-        List<Subject> subjects = getSubjectUseCase.getActiveSubjects();
-        List<SubjectResponse> response = subjects.stream()
-                .map(SubjectResponse::fromEntity)
-                .collect(Collectors.toList());
+        List<SubjectDomain> subjects = getSubjectUseCase.getActiveSubjects();
+        List<SubjectResponse> response = subjectDtoMapper.toResponses(subjects);
 
         return ResponseEntity.ok(response);
     }
@@ -208,10 +204,8 @@ public class SubjectController {
     ) {
         log.debug("Getting subjects by degree: {}", degree);
 
-        List<Subject> subjects = getSubjectUseCase.getSubjectsByDegree(degree);
-        List<SubjectResponse> response = subjects.stream()
-                .map(SubjectResponse::fromEntity)
-                .collect(Collectors.toList());
+        List<SubjectDomain> subjects = getSubjectUseCase.getSubjectsByDegree(degree);
+        List<SubjectResponse> response = subjectDtoMapper.toResponses(subjects);
 
         return ResponseEntity.ok(response);
     }
@@ -227,10 +221,8 @@ public class SubjectController {
     ) {
         log.debug("Searching subjects with term: {}", term);
 
-        List<Subject> subjects = getSubjectUseCase.searchSubjects(term);
-        List<SubjectResponse> response = subjects.stream()
-                .map(SubjectResponse::fromEntity)
-                .collect(Collectors.toList());
+        List<SubjectDomain> subjects = getSubjectUseCase.searchSubjects(term);
+        List<SubjectResponse> response = subjectDtoMapper.toResponses(subjects);
 
         return ResponseEntity.ok(response);
     }
@@ -266,18 +258,17 @@ public class SubjectController {
     ) {
         log.info("Updating subject with ID: {}", id);
 
-        Subject subject = Subject.builder()
-                .code(request.getCode())
-                .name(request.getName())
-                .year(request.getYear())
-                .degree(request.getDegree())
-                .semester(request.getSemester())
-                .description(request.getDescription())
-                .status(request.getStatus())
-                .build();
+        // Load existing subject
+        SubjectDomain existing = getSubjectUseCase.getSubjectById(id);
 
-        Subject updatedSubject = updateSubjectUseCase.updateSubject(id, subject);
-        SubjectResponse response = SubjectResponse.fromEntity(updatedSubject);
+        // Apply updates from DTO
+        SubjectDomain updated = subjectDtoMapper.updateDomainFromDto(existing, request);
+
+        // Execute use case
+        SubjectDomain updatedSubject = updateSubjectUseCase.updateSubject(id, updated);
+
+        // Map to response
+        SubjectResponse response = subjectDtoMapper.toResponse(updatedSubject);
 
         return ResponseEntity.ok(response);
     }
@@ -298,11 +289,28 @@ public class SubjectController {
     ) {
         log.info("Updating status for subject ID: {} to {}", id, status);
 
-        Subject subject = getSubjectUseCase.getSubjectById(id);
-        subject.setStatus(status);
+        // Load existing subject
+        SubjectDomain existing = getSubjectUseCase.getSubjectById(id);
 
-        Subject updatedSubject = updateSubjectUseCase.updateSubject(id, subject);
-        SubjectResponse response = SubjectResponse.fromEntity(updatedSubject);
+        // Build updated subject with new status
+        SubjectDomain updated = SubjectDomain.builder()
+                .id(existing.getId())
+                .code(existing.getCode())
+                .name(existing.getName())
+                .year(existing.getYear())
+                .degree(existing.getDegree())
+                .semester(existing.getSemester())
+                .description(existing.getDescription())
+                .status(status) // Updated status
+                .createdAt(existing.getCreatedAt())
+                .updatedAt(java.time.LocalDateTime.now())
+                .build();
+
+        // Execute use case
+        SubjectDomain updatedSubject = updateSubjectUseCase.updateSubject(id, updated);
+
+        // Map to response
+        SubjectResponse response = subjectDtoMapper.toResponse(updatedSubject);
 
         return ResponseEntity.ok(response);
     }
@@ -361,9 +369,12 @@ public class SubjectController {
     ) {
         log.info("Archiving subject with ID: {}", id);
 
+        // Archive using use case (uses domain logic)
         deleteSubjectUseCase.archiveSubject(id);
-        Subject subject = getSubjectUseCase.getSubjectById(id);
-        SubjectResponse response = SubjectResponse.fromEntity(subject);
+
+        // Get updated subject
+        SubjectDomain subject = getSubjectUseCase.getSubjectById(id);
+        SubjectResponse response = subjectDtoMapper.toResponse(subject);
 
         return ResponseEntity.ok(response);
     }
@@ -371,21 +382,32 @@ public class SubjectController {
     // ==================== PRIVATE HELPER METHODS ====================
 
     /**
-     * Applies filters to subject query using Specifications (Criteria API).
+     * Applies filters to subject query using Use Case methods.
      * Supports dynamic combination of multiple filters.
      * If no filters are provided, returns all subjects.
      */
-    private List<Subject> applyFilters(Degree degree, Integer year, Integer semester, SubjectStatus status, String search) {
-        // Build dynamic specification combining all filters
-        Specification<Subject> spec = SubjectSpecifications.combineFilters(
-                degree,
-                year,
-                semester,
-                status,
-                search
-        );
+    private List<SubjectDomain> applyFilters(Degree degree, Integer year, Integer semester,
+                                              SubjectStatus status, String search) {
+        // Priority 1: Search by term (most specific)
+        if (search != null && !search.isBlank()) {
+            return getSubjectUseCase.searchSubjects(search);
+        }
 
-        // Use SubjectService with Specifications for dynamic filtering
-        return subjectService.findSubjectsWithFilters(spec);
+        // Priority 2: Combined filters (degree + year)
+        if (degree != null && year != null) {
+            return getSubjectUseCase.getSubjectsByDegreeAndYear(degree, year);
+        }
+
+        // Priority 3: Single filters
+        if (status != null) {
+            return getSubjectUseCase.getSubjectsByStatus(status);
+        }
+
+        if (degree != null) {
+            return getSubjectUseCase.getSubjectsByDegree(degree);
+        }
+
+        // No filters: return all
+        return getSubjectUseCase.getAllSubjects();
     }
 }

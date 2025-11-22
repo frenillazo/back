@@ -1,7 +1,6 @@
 package acainfo.back.subject.infrastructure.adapters.in.dto;
 
 import acainfo.back.subject.domain.model.Degree;
-import acainfo.back.subject.domain.model.Subject;
 import acainfo.back.subject.domain.model.SubjectStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -13,6 +12,7 @@ import java.time.LocalDateTime;
 
 /**
  * DTO for subject response.
+ * Note: Mapping to this DTO should be done via SubjectDtoMapper
  */
 @Data
 @Builder
@@ -53,23 +53,4 @@ public class SubjectResponse {
 
     @Schema(description = "Full name (code - name)", example = "ING-101 - Cálculo I")
     private String fullName;
-
-    /**
-     * Converts a Subject entity to SubjectResponse DTO.
-     */
-    public static SubjectResponse fromEntity(Subject subject) {
-        return SubjectResponse.builder()
-                .id(subject.getId())
-                .code(subject.getCode())
-                .name(subject.getName())
-                .year(subject.getYear())
-                .degree(subject.getDegree())
-                .semester(subject.getSemester())
-                .status(subject.getStatus())
-                .description(subject.getDescription())
-                .createdAt(subject.getCreatedAt())
-                .updatedAt(subject.getUpdatedAt())
-                .fullName(subject.getFullName())
-                .build();
-    }
 }
