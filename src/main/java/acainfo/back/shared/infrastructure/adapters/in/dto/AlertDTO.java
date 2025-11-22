@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  * DTO for student alerts and notifications.
  */
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "Alert or notification for a student")

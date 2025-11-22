@@ -237,8 +237,7 @@ public class StudentService {
 
     /**
      * Generate alerts for student dashboard.
-     * TODO: Integrate this method into the dashboard response.
-     * TODO: toBuilder missing in some AlertDTO creations.
+     * Provides intelligent notifications about payments, attendance, and enrollment status.
      */
     private List<AlertDTO> generateAlerts(
             User student,
@@ -249,7 +248,7 @@ public class StudentService {
         List<AlertDTO> alerts = new ArrayList<>();
 
         // Payment alerts
-        /*for (Payment payment : pendingPayments) {
+        for (Payment payment : pendingPayments) {
             if (payment.isOverdue()) {
                 alerts.add(AlertDTO.error(
                     AlertDTO.AlertType.PAYMENT_OVERDUE,
@@ -272,7 +271,7 @@ public class StudentService {
                 String.format("En lista de espera para %s",
                     waiting.getSubjectGroup().getSubject().getName())
             ).toBuilder().relatedId(waiting.getId()).build());
-        }*/
+        }
 
         // Attendance alert
         if (attendance.getAtRisk()) {
