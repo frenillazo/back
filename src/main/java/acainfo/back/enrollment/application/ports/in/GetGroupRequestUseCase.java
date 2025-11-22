@@ -1,6 +1,7 @@
 package acainfo.back.enrollment.application.ports.in;
 
 import acainfo.back.enrollment.domain.model.GroupRequest;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -47,6 +48,14 @@ public interface GetGroupRequestUseCase {
      * @return list of group requests
      */
     List<GroupRequest> getRequestsSupportedByStudent(Long studentId);
+
+    /**
+     * Gets the count of pending requests created by a student.
+     *
+     * @param studentId the student ID
+     * @return count of pending requests
+     */
+    int getPendingRequestsByStudent(Long studentId);
 
     /**
      * Checks if a student supports a specific request.

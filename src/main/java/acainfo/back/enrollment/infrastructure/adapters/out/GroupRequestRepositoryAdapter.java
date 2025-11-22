@@ -75,6 +75,11 @@ public class GroupRequestRepositoryAdapter implements GroupRequestRepositoryPort
     }
 
     @Override
+    public int countPendingByStudentId(Long studentId) {
+        return groupRequestRepository.countPendingByStudentId(studentId);
+    }
+
+    @Override
     public void deleteById(Long id) {
         groupRequestRepository.deleteById(id);
     }

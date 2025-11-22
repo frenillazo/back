@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -63,28 +64,28 @@ public class StudentService {
 
         // 1. Get student profile
         User student = userRepository.findById(studentId)
-            .orElseThrow(() -> new UserNotFoundException(studentId));
+                .orElseThrow(() -> new UserNotFoundException(studentId));
         StudentProfileResponse profile = StudentProfileResponse.fromEntity(student);
 
         // 2. Get active enrollments
         List<Enrollment> activeEnrollments = enrollmentService.getActiveEnrollmentsByStudent(studentId);
         List<EnrollmentResponse> activeEnrollmentsDto = activeEnrollments.stream()
-            .map(EnrollmentResponse::fromEntity)
-            .collect(Collectors.toList());
+                .map(EnrollmentResponse::fromEntity)
+                .collect(Collectors.toList());
 
         // 3. Get waiting enrollments
-        List<Enrollment> waitingEnrollments = enrollmentService.getEnrollmentsByStudent(studentId).stream()
-            .filter(e -> e.getStatus() == EnrollmentStatus.EN_ESPERA)
-            .collect(Collectors.toList());
+        List<Enrollment> waitingEnrollments = enrollmentService.getAllEnrollmentsByStudent(studentId).stream()
+                .filter(e -> e.getStatus() == EnrollmentStatus.EN_ESPERA)
+                .toList();
         List<EnrollmentResponse> waitingEnrollmentsDto = waitingEnrollments.stream()
-            .map(EnrollmentResponse::fromEntity)
-            .collect(Collectors.toList());
+                .map(EnrollmentResponse::fromEntity)
+                .collect(Collectors.toList());
 
         // 4. Get pending payments
         List<Payment> pendingPayments = paymentService.getPendingPaymentsByStudent(studentId);
         List<PaymentResponse> pendingPaymentsDto = pendingPayments.stream()
-            .map(PaymentResponse::fromEntity)
-            .collect(Collectors.toList());
+                .map(PaymentResponse::fromEntity)
+                .collect(Collectors.toList());
         BigDecimal totalPending = paymentService.calculateTotalPendingByStudent(studentId);
         boolean hasOverdue = paymentService.hasOverduePayments(studentId);
 
@@ -94,27 +95,24 @@ public class StudentService {
         // 6. Get attendance summary
         AttendanceSummaryDTO attendanceSummary = getAttendanceSummary(studentId, activeEnrollments);
 
-        // 7. Generate alerts
-        List<AlertDTO> alerts = generateAlerts(student, pendingPayments, waitingEnrollments, attendanceSummary);
-
         // 8. Get counts
-        int pendingGroupRequests = groupRequestService.getPendingRequestsByStudent(studentId).size();
+        int pendingGroupRequests = groupRequestService.getPendingRequestsByStudent(studentId);
         int newMaterials = countNewMaterials(activeEnrollments);
 
         return StudentDashboardResponse.builder()
-            .profile(profile)
-            .activeEnrollments(activeEnrollmentsDto)
-            .waitingEnrollments(waitingEnrollmentsDto)
-            .pendingPayments(pendingPaymentsDto)
-            .totalPendingAmount(totalPending)
-            .hasOverduePayments(hasOverdue)
-            .upcomingSessions(upcomingSessions)
-            .attendanceSummary(attendanceSummary)
-            .alerts(alerts)
-            .activeEnrollmentsCount(activeEnrollments.size())
-            .pendingGroupRequestsCount(pendingGroupRequests)
-            .newMaterialsCount(newMaterials)
-            .build();
+                .profile(profile)
+                .activeEnrollments(activeEnrollmentsDto)
+                .waitingEnrollments(waitingEnrollmentsDto)
+                .pendingPayments(pendingPaymentsDto)
+                .totalPendingAmount(totalPending)
+                .hasOverduePayments(hasOverdue)
+                .upcomingSessions(upcomingSessions)
+                .attendanceSummary(attendanceSummary)
+                .alerts(generateAlerts(student, pendingPayments, waitingEnrollments, attendanceSummary))
+                .activeEnrollmentsCount(activeEnrollments.size())
+                .pendingGroupRequestsCount(pendingGroupRequests)
+                .newMaterialsCount(newMaterials)
+                .build();
     }
 
     /**
@@ -122,7 +120,7 @@ public class StudentService {
      */
     public StudentProfileResponse getProfile(Long studentId) {
         User student = userRepository.findById(studentId)
-            .orElseThrow(() -> new UserNotFoundException(studentId));
+                .orElseThrow(() -> new UserNotFoundException(studentId));
         return StudentProfileResponse.fromEntity(student);
     }
 
@@ -134,7 +132,7 @@ public class StudentService {
         log.info("Updating profile for student {}", studentId);
 
         User student = userRepository.findById(studentId)
-            .orElseThrow(() -> new UserNotFoundException(studentId));
+                .orElseThrow(() -> new UserNotFoundException(studentId));
 
         // Update fields if provided
         if (request.getFirstName() != null) {
@@ -162,9 +160,9 @@ public class StudentService {
 
         for (Enrollment enrollment : enrollments) {
             List<Session> sessions = sessionRepository.findBySubjectGroupIdAndScheduledStartBetween(
-                enrollment.getSubjectGroup().getId(),
-                now,
-                weekFromNow
+                    enrollment.getSubjectGroup().getId(),
+                    now,
+                    weekFromNow
             );
 
             for (Session session : sessions) {
@@ -188,21 +186,20 @@ public class StudentService {
         long minutesUntil = ChronoUnit.MINUTES.between(now, session.getScheduledStart());
 
         return UpcomingSessionDTO.builder()
-            .sessionId(session.getId())
-            .subjectName(session.getSubjectGroup().getSubject().getName())
-            .subjectCode(session.getSubjectGroup().getSubject().getCode())
-            .teacherName(session.getSubjectGroup().getTeacher() != null ?
-                session.getSubjectGroup().getTeacher().getFullName() : "N/A")
-            .startTime(session.getScheduledStart())
-            .endTime(session.getScheduledEnd())
-            .mode(session.getMode().name())
-            .location(session.getClassroom() != null ? session.getClassroom().name() : "ONLINE")
-            .zoomMeetingId(session.getZoomMeetingId())
-            .topic(session.getTopic())
-            .minutesUntilStart(minutesUntil)
-            .isToday(session.getScheduledStart().toLocalDate().equals(LocalDate.now()))
-            .isImminent(minutesUntil > 0 && minutesUntil <= 60)
-            .build();
+                .sessionId(session.getId())
+                .subjectName(session.getSubjectGroup().getSubject().getName())
+                .subjectCode(session.getSubjectGroup().getSubject().getCode())
+                .teacherName(session.getSubjectGroup().getTeacher() != null ?
+                        session.getSubjectGroup().getTeacher().getFullName() : "N/A")
+                .startTime(session.getScheduledStart())
+                .endTime(session.getScheduledEnd())
+                .mode(session.getMode().name())
+                .location(session.getClassroom() != null ? session.getClassroom().name() : "ONLINE")
+                .zoomMeetingId(session.getZoomMeetingId())
+                .minutesUntilStart(minutesUntil)
+                .isToday(session.getScheduledStart().toLocalDate().equals(LocalDate.now()))
+                .isImminent(minutesUntil > 0 && minutesUntil <= 60)
+                .build();
     }
 
     /**
@@ -210,8 +207,8 @@ public class StudentService {
      */
     private AttendanceSummaryDTO getAttendanceSummary(Long studentId, List<Enrollment> enrollments) {
         List<Long> enrollmentIds = enrollments.stream()
-            .map(Enrollment::getId)
-            .collect(Collectors.toList());
+                .map(Enrollment::getId)
+                .collect(Collectors.toList());
 
         if (enrollmentIds.isEmpty()) {
             return AttendanceSummaryDTO.empty();
@@ -226,12 +223,12 @@ public class StudentService {
         int justified = (int) allAttendances.stream().filter(a -> a.getStatus() == AttendanceStatus.JUSTIFICADO).count();
 
         AttendanceSummaryDTO summary = AttendanceSummaryDTO.builder()
-            .totalSessions(total)
-            .attended(attended)
-            .absent(absent)
-            .late(late)
-            .justified(justified)
-            .build();
+                .totalSessions(total)
+                .attended(attended)
+                .absent(absent)
+                .late(late)
+                .justified(justified)
+                .build();
 
         summary.calculatePercentage();
 
@@ -240,17 +237,19 @@ public class StudentService {
 
     /**
      * Generate alerts for student dashboard.
+     * TODO: Integrate this method into the dashboard response.
+     * TODO: toBuilder missing in some AlertDTO creations.
      */
     private List<AlertDTO> generateAlerts(
-        User student,
-        List<Payment> pendingPayments,
-        List<Enrollment> waitingEnrollments,
-        AttendanceSummaryDTO attendance
+            User student,
+            List<Payment> pendingPayments,
+            List<Enrollment> waitingEnrollments,
+            AttendanceSummaryDTO attendance
     ) {
         List<AlertDTO> alerts = new ArrayList<>();
 
         // Payment alerts
-        for (Payment payment : pendingPayments) {
+        /*for (Payment payment : pendingPayments) {
             if (payment.isOverdue()) {
                 alerts.add(AlertDTO.error(
                     AlertDTO.AlertType.PAYMENT_OVERDUE,
@@ -273,14 +272,14 @@ public class StudentService {
                 String.format("En lista de espera para %s",
                     waiting.getSubjectGroup().getSubject().getName())
             ).toBuilder().relatedId(waiting.getId()).build());
-        }
+        }*/
 
         // Attendance alert
         if (attendance.getAtRisk()) {
             alerts.add(AlertDTO.warning(
-                AlertDTO.AlertType.ATTENDANCE_LOW,
-                String.format("Tu asistencia es del %.1f%%. Necesitas al menos 75%%",
-                    attendance.getAttendancePercentage())
+                    AlertDTO.AlertType.ATTENDANCE_LOW,
+                    String.format("Tu asistencia es del %.1f%%. Necesitas al menos 75%%",
+                            attendance.getAttendancePercentage())
             ));
         }
 
@@ -296,11 +295,11 @@ public class StudentService {
 
         for (Enrollment enrollment : enrollments) {
             List<Material> materials = materialRepository
-                .findBySubjectGroupIdAndIsActiveTrue(enrollment.getSubjectGroup().getId());
+                    .findBySubjectGroupIdAndIsActiveTrue(enrollment.getSubjectGroup().getId());
 
-            count += materials.stream()
-                .filter(m -> m.getUploadDate().isAfter(weekAgo))
-                .count();
+            count += (int) materials.stream()
+                    .filter(m -> m.getUploadDate().isAfter(Instant.from(weekAgo)))
+                    .count();
         }
 
         return count;

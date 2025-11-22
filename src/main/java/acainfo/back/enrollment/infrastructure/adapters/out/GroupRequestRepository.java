@@ -86,4 +86,11 @@ public interface GroupRequestRepository extends JpaRepository<GroupRequest, Long
      */
     @Query("SELECT COUNT(gr) FROM GroupRequest gr WHERE gr.subject.id = :subjectId AND gr.status = 'PENDIENTE'")
     long countPendingBySubjectId(@Param("subjectId") Long subjectId);
+
+    /**
+     * Count pending requests for a subject
+     */
+    @Query("SELECT COUNT(gr) FROM GroupRequest gr WHERE gr.requestedBy.id= :studentId AND gr.status = 'PENDIENTE'")
+    int countPendingByStudentId(@Param("studentId") Long studentId);
+
 }

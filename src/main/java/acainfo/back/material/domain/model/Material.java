@@ -10,6 +10,7 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 /**
@@ -177,6 +178,10 @@ public class Material {
         return fileSize / (1024.0 * 1024.0);
     }
 
+    public Instant getUploadDate() {
+        return uploadedAt != null ? uploadedAt.atZone(java.time.ZoneId.systemDefault()).toInstant() : null;
+    }
+
     /**
      * Get formatted file size
      */
@@ -214,4 +219,6 @@ public class Material {
                 ", isActive=" + isActive +
                 '}';
     }
+
+
 }

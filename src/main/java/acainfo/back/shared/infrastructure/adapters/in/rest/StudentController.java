@@ -121,7 +121,6 @@ public class StudentController {
      * Get the current authenticated user entity.
      */
     private User getCurrentUser(UserDetails userDetails) {
-        return userRepository.findByEmail(userDetails.getUsername())
-            .orElseThrow(() -> new IllegalStateException("Authenticated user not found: " + userDetails.getUsername()));
+        return userRepository.findByEmail(userDetails.getUsername());
     }
 }

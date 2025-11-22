@@ -269,6 +269,13 @@ public class GroupRequestService implements
         return groupRequestRepository.findRequestsSupportedByStudent(studentId);
     }
 
+    @Transactional
+    @Override
+    public int getPendingRequestsByStudent(Long studentId) {
+        log.debug("Counting pending group requests created by student: {}", studentId);
+        return groupRequestRepository.countPendingByStudentId(studentId);
+    }
+
     @Override
     @Transactional(readOnly = true)
     public boolean isStudentSupporter(Long requestId, Long studentId) {

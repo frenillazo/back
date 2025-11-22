@@ -67,6 +67,8 @@ public interface GroupRequestRepositoryPort {
      */
     List<GroupRequest> findPendingBySubjectId(Long subjectId);
 
+    int countPendingByStudentId(Long studentId);
+
     /**
      * Finds a pending group request for a subject.
      * Only one pending request should exist per subject.

@@ -89,6 +89,10 @@ public class User {
         return firstName + " " + lastName;
     }
 
+    public LocalDateTime getLastLogin() {
+        return updatedAt;
+    }
+
     public boolean hasRole(RoleType roleType) {
         return roles.stream()
                 .anyMatch(role -> role.getType() == roleType);
