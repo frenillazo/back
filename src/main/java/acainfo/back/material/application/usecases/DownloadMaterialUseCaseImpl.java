@@ -1,7 +1,7 @@
 package acainfo.back.material.application.usecases;
 
 import acainfo.back.enrollment.application.ports.out.EnrollmentRepositoryPort;
-import acainfo.back.enrollment.domain.model.Enrollment;
+import acainfo.back.enrollment.domain.model.EnrollmentDomain;
 import acainfo.back.enrollment.domain.model.EnrollmentStatus;
 import acainfo.back.material.application.ports.in.DownloadMaterialUseCase;
 import acainfo.back.material.application.ports.out.MaterialRepositoryPort;
@@ -89,11 +89,12 @@ public class DownloadMaterialUseCaseImpl implements DownloadMaterialUseCase {
         }
 
         // Students need active enrollment
-        Optional<Enrollment> enrollments = enrollmentRepository
+        Optional<EnrollmentDomain> enrollment = enrollmentRepository
                 .findByStudentIdAndSubjectGroupId(user.getId(), material.getSubjectGroupId());
 
-        boolean hasActiveEnrollment = enrollments.stream()
-                .anyMatch(e -> e.getStatus() == EnrollmentStatus.ACTIVO);
+        boolean hasActiveEnrollment = enrollment
+                .map(e -> e.getStatus() == EnrollmentStatus.ACTIVO)
+                .orElse(false);
 
         if (!hasActiveEnrollment) {
             log.warn("User {} attempted to access material {} without active enrollment",

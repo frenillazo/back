@@ -1,7 +1,7 @@
 package acainfo.back.enrollment.domain.model;
 
 import acainfo.back.shared.domain.model.User;
-import acainfo.back.subject.domain.model.Subject;
+import acainfo.back.subject.infrastructure.adapters.out.persistence.entities.SubjectJpaEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -52,7 +52,7 @@ public class GroupRequest {
     @NotNull(message = "Subject is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_id", nullable = false)
-    private Subject subject;
+    private SubjectJpaEntity subject;
 
     /**
      * The student who created the request

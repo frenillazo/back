@@ -1,19 +1,19 @@
 package acainfo.back.shared.application.services.student;
 
-import acainfo.back.attendance.domain.model.Attendance;
+import acainfo.back.attendance.application.ports.out.AttendanceRepositoryPort;
+import acainfo.back.attendance.domain.model.AttendanceDomain;
 import acainfo.back.attendance.domain.model.AttendanceStatus;
-import acainfo.back.attendance.infrastructure.adapters.out.AttendanceRepository;
 import acainfo.back.enrollment.application.services.EnrollmentService;
 import acainfo.back.enrollment.application.services.GroupRequestService;
-import acainfo.back.enrollment.domain.model.Enrollment;
+import acainfo.back.enrollment.domain.model.EnrollmentDomain;
 import acainfo.back.enrollment.domain.model.EnrollmentStatus;
 import acainfo.back.material.application.ports.out.MaterialRepositoryPort;
-import acainfo.back.material.domain.model.Material;
+import acainfo.back.material.domain.model.MaterialDomain;
 import acainfo.back.payment.application.services.PaymentService;
 import acainfo.back.payment.domain.model.Payment;
-import acainfo.back.session.domain.model.Session;
+import acainfo.back.session.application.ports.out.SessionRepositoryPort;
+import acainfo.back.session.domain.model.SessionDomain;
 import acainfo.back.session.domain.model.SessionStatus;
-import acainfo.back.session.infrastructure.adapters.out.SessionRepository;
 import acainfo.back.shared.domain.exception.UserNotFoundException;
 import acainfo.back.shared.domain.model.User;
 import acainfo.back.shared.infrastructure.adapters.in.dto.*;
@@ -48,8 +48,8 @@ public class StudentService {
     private final EnrollmentService enrollmentService;
     private final GroupRequestService groupRequestService;
     private final PaymentService paymentService;
-    private final AttendanceRepository attendanceRepository;
-    private final SessionRepository sessionRepository;
+    private final AttendanceRepositoryPort attendanceRepository;
+    private final SessionRepositoryPort sessionRepository;
     private final MaterialRepositoryPort materialRepository;
 
     /**
@@ -68,17 +68,17 @@ public class StudentService {
         StudentProfileResponse profile = StudentProfileResponse.fromEntity(student);
 
         // 2. Get active enrollments
-        List<Enrollment> activeEnrollments = enrollmentService.getActiveEnrollmentsByStudent(studentId);
+        List<EnrollmentDomain> activeEnrollments = enrollmentService.getActiveEnrollmentsByStudent(studentId);
         List<EnrollmentResponse> activeEnrollmentsDto = activeEnrollments.stream()
-                .map(EnrollmentResponse::fromEntity)
+                .map(EnrollmentResponse::fromDomain)
                 .collect(Collectors.toList());
 
         // 3. Get waiting enrollments
-        List<Enrollment> waitingEnrollments = enrollmentService.getAllEnrollmentsByStudent(studentId).stream()
+        List<EnrollmentDomain> waitingEnrollments = enrollmentService.getAllEnrollmentsByStudent(studentId).stream()
                 .filter(e -> e.getStatus() == EnrollmentStatus.EN_ESPERA)
                 .toList();
         List<EnrollmentResponse> waitingEnrollmentsDto = waitingEnrollments.stream()
-                .map(EnrollmentResponse::fromEntity)
+                .map(EnrollmentResponse::fromDomain)
                 .collect(Collectors.toList());
 
         // 4. Get pending payments
@@ -152,20 +152,20 @@ public class StudentService {
     /**
      * Get upcoming sessions for student (next 7 days).
      */
-    private List<UpcomingSessionDTO> getUpcomingSessions(Long studentId, List<Enrollment> enrollments) {
+    private List<UpcomingSessionDTO> getUpcomingSessions(Long studentId, List<EnrollmentDomain> enrollments) {
         List<UpcomingSessionDTO> upcoming = new ArrayList<>();
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime weekFromNow = now.plusDays(7);
 
-        for (Enrollment enrollment : enrollments) {
-            List<Session> sessions = sessionRepository.findBySubjectGroupIdAndScheduledStartBetween(
-                    enrollment.getSubjectGroup().getId(),
+        for (EnrollmentDomain enrollment : enrollments) {
+            List<SessionDomain> sessions = sessionRepository.findBySubjectGroupIdAndScheduledStartBetween(
+                    enrollment.getSubjectGroupId(),
                     now,
                     weekFromNow
             );
 
-            for (Session session : sessions) {
+            for (SessionDomain session : sessions) {
                 if (session.getStatus() != SessionStatus.CANCELADA) {
                     upcoming.add(mapSessionToDTO(session));
                 }
@@ -180,17 +180,20 @@ public class StudentService {
 
     /**
      * Map Session to UpcomingSessionDTO.
+     * Note: This requires fetching related entities (SubjectGroup, Subject, Teacher, Classroom).
+     * For production, consider using a DTO mapper with joins or caching.
      */
-    private UpcomingSessionDTO mapSessionToDTO(Session session) {
+    private UpcomingSessionDTO mapSessionToDTO(SessionDomain session) {
         LocalDateTime now = LocalDateTime.now();
         long minutesUntil = ChronoUnit.MINUTES.between(now, session.getScheduledStart());
 
+        // TODO: Fetch SubjectGroup, Subject, Teacher info via repositories/ports
+        // For now, returning basic info from SessionDomain
         return UpcomingSessionDTO.builder()
                 .sessionId(session.getId())
-                .subjectName(session.getSubjectGroup().getSubject().getName())
-                .subjectCode(session.getSubjectGroup().getSubject().getCode())
-                .teacherName(session.getSubjectGroup().getTeacher() != null ?
-                        session.getSubjectGroup().getTeacher().getFullName() : "N/A")
+                .subjectName("") // TODO: Fetch via SubjectGroupRepositoryPort
+                .subjectCode("") // TODO: Fetch via SubjectRepositoryPort
+                .teacherName("N/A") // TODO: Fetch via UserRepository
                 .startTime(session.getScheduledStart())
                 .endTime(session.getScheduledEnd())
                 .mode(session.getMode().name())
@@ -205,16 +208,16 @@ public class StudentService {
     /**
      * Get attendance summary for student.
      */
-    private AttendanceSummaryDTO getAttendanceSummary(Long studentId, List<Enrollment> enrollments) {
+    private AttendanceSummaryDTO getAttendanceSummary(Long studentId, List<EnrollmentDomain> enrollments) {
         List<Long> enrollmentIds = enrollments.stream()
-                .map(Enrollment::getId)
+                .map(EnrollmentDomain::getId)
                 .collect(Collectors.toList());
 
         if (enrollmentIds.isEmpty()) {
             return AttendanceSummaryDTO.empty();
         }
 
-        List<Attendance> allAttendances = attendanceRepository.findByEnrollmentIdIn(enrollmentIds);
+        List<AttendanceDomain> allAttendances = attendanceRepository.findByEnrollmentIdIn(enrollmentIds);
 
         int total = allAttendances.size();
         int attended = (int) allAttendances.stream().filter(a -> a.getStatus() == AttendanceStatus.PRESENTE).count();
@@ -242,7 +245,7 @@ public class StudentService {
     private List<AlertDTO> generateAlerts(
             User student,
             List<Payment> pendingPayments,
-            List<Enrollment> waitingEnrollments,
+            List<EnrollmentDomain> waitingEnrollments,
             AttendanceSummaryDTO attendance
     ) {
         List<AlertDTO> alerts = new ArrayList<>();
@@ -265,11 +268,12 @@ public class StudentService {
         }
 
         // Waiting queue alerts
-        for (Enrollment waiting : waitingEnrollments) {
+        for (EnrollmentDomain waiting : waitingEnrollments) {
             alerts.add(AlertDTO.info(
                 AlertDTO.AlertType.WAITING_QUEUE_POSITION,
-                String.format("En lista de espera para %s",
-                    waiting.getSubjectGroup().getSubject().getName())
+                String.format("En lista de espera - Enrollment ID: %s",
+                    waiting.getId())
+                    // TODO: Fetch subject group and subject name via repositories
             ).toBuilder().relatedId(waiting.getId()).build());
         }
 
@@ -288,13 +292,13 @@ public class StudentService {
     /**
      * Count new materials (uploaded in last 7 days).
      */
-    private int countNewMaterials(List<Enrollment> enrollments) {
+    private int countNewMaterials(List<EnrollmentDomain> enrollments) {
         LocalDateTime weekAgo = LocalDateTime.now().minusDays(7);
         int count = 0;
 
-        for (Enrollment enrollment : enrollments) {
-            List<Material> materials = materialRepository
-                    .findBySubjectGroupIdAndIsActiveTrue(enrollment.getSubjectGroup().getId());
+        for (EnrollmentDomain enrollment : enrollments) {
+            List<MaterialDomain> materials = materialRepository
+                    .findBySubjectGroupIdAndIsActiveTrue(enrollment.getSubjectGroupId());
 
             count += (int) materials.stream()
                     .filter(m -> m.getUploadDate().isAfter(Instant.from(weekAgo)))

@@ -1,9 +1,9 @@
 package acainfo.back.subjectgroup.infrastructure.adapters.out.persistence.entities;
 
-import acainfo.back.schedule.domain.model.Schedule;
-import acainfo.back.session.domain.model.Session;
+import acainfo.back.schedule.infrastructure.adapters.out.persistence.entities.ScheduleJpaEntity;
+import acainfo.back.session.infrastructure.adapters.out.persistence.entities.SessionJpaEntity;
 import acainfo.back.shared.domain.model.User;
-import acainfo.back.subject.domain.model.Subject;
+import acainfo.back.subject.infrastructure.adapters.out.persistence.entities.SubjectJpaEntity;
 import acainfo.back.subjectgroup.domain.model.AcademicPeriod;
 import acainfo.back.subjectgroup.domain.model.GroupStatus;
 import acainfo.back.subjectgroup.domain.model.GroupType;
@@ -51,7 +51,7 @@ public class SubjectGroupJpaEntity {
     @NotNull(message = "Subject is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_id", nullable = false)
-    private Subject subject;
+    private SubjectJpaEntity subject;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id")
@@ -90,11 +90,11 @@ public class SubjectGroupJpaEntity {
 
     @OneToMany(mappedBy = "subjectGroup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
-    private List<Schedule> schedules = new ArrayList<>();
+    private List<ScheduleJpaEntity> schedules = new ArrayList<>();
 
     @OneToMany(mappedBy = "subjectGroup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
-    private List<Session> sessions = new ArrayList<>();
+    private List<SessionJpaEntity> sessions = new ArrayList<>();
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

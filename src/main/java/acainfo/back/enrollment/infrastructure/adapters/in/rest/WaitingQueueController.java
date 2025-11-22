@@ -1,7 +1,8 @@
 package acainfo.back.enrollment.infrastructure.adapters.in.rest;
 
+import acainfo.back.enrollment.application.mappers.EnrollmentDtoMapper;
 import acainfo.back.enrollment.application.services.WaitingQueueService;
-import acainfo.back.enrollment.domain.model.Enrollment;
+import acainfo.back.enrollment.domain.model.EnrollmentDomain;
 import acainfo.back.enrollment.infrastructure.adapters.in.dto.EnrollmentResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,7 +16,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * REST Controller for waiting queue management.
@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 public class WaitingQueueController {
 
     private final WaitingQueueService waitingQueueService;
+    private final EnrollmentDtoMapper enrollmentDtoMapper;
 
     // ==================== GET WAITING QUEUE ====================
 
@@ -49,10 +50,8 @@ public class WaitingQueueController {
             @Parameter(description = "Group ID") @PathVariable Long groupId) {
         log.debug("Getting waiting queue for group: {}", groupId);
 
-        List<Enrollment> waitingQueue = waitingQueueService.getWaitingQueue(groupId);
-        List<EnrollmentResponse> response = waitingQueue.stream()
-                .map(EnrollmentResponse::fromEntity)
-                .collect(Collectors.toList());
+        List<EnrollmentDomain> waitingQueue = waitingQueueService.getWaitingQueue(groupId);
+        List<EnrollmentResponse> response = enrollmentDtoMapper.toResponses(waitingQueue);
 
         log.debug("Group {} has {} students waiting", groupId, response.size());
         return ResponseEntity.ok(response);
