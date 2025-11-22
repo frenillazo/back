@@ -148,4 +148,89 @@ public interface GetSessionUseCase {
      * Count sessions by subject group and status
      */
     long countBySubjectGroupIdAndStatus(Long groupId, SessionStatus status);
+
+    // ==================== CONVENIENCE METHODS FOR CONTROLLERS ====================
+    // These methods provide friendlier names for common operations
+
+    /**
+     * Find a session by ID (throws exception if not found)
+     * Convenience method for controllers
+     */
+    default SessionDomain findSessionById(Long id) {
+        return findById(id).orElseThrow(() ->
+            new acainfo.back.session.domain.exception.SessionNotFoundException(id)
+        );
+    }
+
+    /**
+     * Get sessions by group
+     * Convenience method for controllers
+     */
+    default List<SessionDomain> getSessionsByGroup(Long groupId) {
+        return findBySubjectGroupId(groupId);
+    }
+
+    /**
+     * Get sessions by group and date range
+     * Convenience method for controllers
+     */
+    default List<SessionDomain> getSessionsByGroupAndDateRange(
+            Long groupId,
+            LocalDateTime startDate,
+            LocalDateTime endDate
+    ) {
+        return findBySubjectGroupIdAndDateRange(groupId, startDate, endDate);
+    }
+
+    /**
+     * Get sessions by teacher
+     * Convenience method for controllers
+     */
+    default List<SessionDomain> getSessionsByTeacher(Long teacherId) {
+        return findByTeacherId(teacherId);
+    }
+
+    /**
+     * Get sessions by teacher and date range
+     * Convenience method for controllers
+     */
+    default List<SessionDomain> getSessionsByTeacherAndDateRange(
+            Long teacherId,
+            LocalDateTime startDate,
+            LocalDateTime endDate
+    ) {
+        return findByTeacherIdAndDateRange(teacherId, startDate, endDate);
+    }
+
+    /**
+     * Get upcoming sessions (from now)
+     * Convenience method for controllers
+     */
+    default List<SessionDomain> getUpcomingSessions() {
+        return findUpcomingSessions(LocalDateTime.now());
+    }
+
+    /**
+     * Get sessions currently in progress
+     * Convenience method for controllers
+     */
+    default List<SessionDomain> getInProgressSessions() {
+        return findInProgressSessions();
+    }
+
+    /**
+     * Get sessions requiring action
+     * Convenience method for controllers
+     */
+    default List<SessionDomain> getSessionsRequiringAction() {
+        return findSessionsRequiringAction();
+    }
+
+    /**
+     * Get sessions by status
+     * Convenience method for controllers
+     */
+    default List<SessionDomain> getSessionsByStatus(SessionStatus status) {
+        return findByStatus(status);
+    }
 }
