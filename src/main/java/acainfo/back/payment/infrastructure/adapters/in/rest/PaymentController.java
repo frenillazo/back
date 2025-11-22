@@ -1,14 +1,15 @@
 package acainfo.back.payment.infrastructure.adapters.in.rest;
 
-import acainfo.back.payment.application.services.PaymentService;
-import acainfo.back.payment.domain.model.Payment;
+import acainfo.back.payment.application.ports.in.ManagePaymentUseCase;
+import acainfo.back.payment.domain.model.PaymentDomain;
 import acainfo.back.payment.domain.model.PaymentStatus;
 import acainfo.back.payment.infrastructure.adapters.in.dto.CreatePaymentRequest;
 import acainfo.back.payment.infrastructure.adapters.in.dto.PaymentResponse;
+import acainfo.back.payment.infrastructure.adapters.in.dto.PaymentResponseMapper;
 import acainfo.back.payment.infrastructure.adapters.in.dto.ProcessPaymentRequest;
 import acainfo.back.payment.infrastructure.adapters.in.dto.RefundPaymentRequest;
-import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
-import acainfo.back.user.infrastructure.adapters.out.persistence.repositories.UserJpaRepository;
+import acainfo.back.user.application.ports.out.UserRepositoryPort;
+import acainfo.back.user.domain.model.UserDomain;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 /**
  * REST Controller for payment management.
  * Provides endpoints for creating, processing, and querying payments.
+ * Updated to use hexagonal architecture with use cases.
  */
 @RestController
 @RequestMapping("/api/payments")
@@ -40,8 +42,9 @@ import java.util.stream.Collectors;
 @Tag(name = "Payments", description = "Payment management endpoints")
 public class PaymentController {
 
-    private final PaymentService paymentService;
-    private final UserRepository userRepository;
+    private final ManagePaymentUseCase managePaymentUseCase;
+    private final UserRepositoryPort userRepository;
+    private final PaymentResponseMapper paymentResponseMapper;
 
     // ==================== CREATE PAYMENT ====================
 
@@ -60,16 +63,18 @@ public class PaymentController {
     public ResponseEntity<PaymentResponse> createPayment(@Valid @RequestBody CreatePaymentRequest request) {
         log.info("Creating payment for student {}", request.getStudentId());
 
-        Payment payment = paymentService.createPayment(
-            request.getStudentId(),
-            request.getAmount(),
-            request.getPaymentType(),
-            request.getDueDate(),
-            request.getDescription(),
-            request.getAcademicPeriod()
-        );
+        ManagePaymentUseCase.CreatePaymentCommand command =
+                new ManagePaymentUseCase.CreatePaymentCommand(
+                    request.getStudentId(),
+                    request.getAmount(),
+                    request.getPaymentType(),
+                    request.getDueDate(),
+                    request.getDescription(),
+                    request.getAcademicPeriod()
+                );
 
-        PaymentResponse response = PaymentResponse.fromEntity(payment);
+        PaymentDomain payment = managePaymentUseCase.createPayment(command);
+        PaymentResponse response = paymentResponseMapper.toResponse(payment);
 
         log.info("Payment created successfully: id={}", payment.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -96,11 +101,19 @@ public class PaymentController {
 
         log.info("Processing payment {} with Stripe payment ID {}", id, request.getStripePaymentId());
 
-        // Get current user
-        User currentUser = userRepository.findByEmail(userDetails.getUsername());
+        // Get current user ID
+        UserDomain currentUser = userRepository.findByEmailIgnoreCase(userDetails.getUsername())
+                .orElseThrow(() -> new IllegalStateException("Current user not found"));
 
-        Payment payment = paymentService.processPayment(id, request.getStripePaymentId(), currentUser);
-        PaymentResponse response = PaymentResponse.fromEntity(payment);
+        ManagePaymentUseCase.ProcessPaymentCommand command =
+                new ManagePaymentUseCase.ProcessPaymentCommand(
+                    id,
+                    request.getStripePaymentId(),
+                    currentUser.getId()
+                );
+
+        PaymentDomain payment = managePaymentUseCase.processPayment(command);
+        PaymentResponse response = paymentResponseMapper.toResponse(payment);
 
         log.info("Payment {} processed successfully", id);
         return ResponseEntity.ok(response);
@@ -127,10 +140,11 @@ public class PaymentController {
 
         log.info("Cancelling payment {}", id);
 
-        User currentUser = userRepository.findByEmail(userDetails.getUsername());
+        UserDomain currentUser = userRepository.findByEmailIgnoreCase(userDetails.getUsername())
+                .orElseThrow(() -> new IllegalStateException("Current user not found"));
 
-        Payment payment = paymentService.cancelPayment(id, reason, currentUser);
-        PaymentResponse response = PaymentResponse.fromEntity(payment);
+        PaymentDomain payment = managePaymentUseCase.cancelPayment(id, currentUser.getId(), reason);
+        PaymentResponse response = paymentResponseMapper.toResponse(payment);
 
         log.info("Payment {} cancelled successfully", id);
         return ResponseEntity.ok(response);
@@ -157,10 +171,11 @@ public class PaymentController {
 
         log.info("Refunding payment {}", id);
 
-        User currentUser = userRepository.findByEmail(userDetails.getUsername());
+        UserDomain currentUser = userRepository.findByEmailIgnoreCase(userDetails.getUsername())
+                .orElseThrow(() -> new IllegalStateException("Current user not found"));
 
-        Payment payment = paymentService.refundPayment(id, request.getReason(), currentUser);
-        PaymentResponse response = PaymentResponse.fromEntity(payment);
+        PaymentDomain payment = managePaymentUseCase.refundPayment(id, currentUser.getId(), request.getReason());
+        PaymentResponse response = paymentResponseMapper.toResponse(payment);
 
         log.info("Payment {} refunded successfully", id);
         return ResponseEntity.ok(response);
@@ -182,8 +197,8 @@ public class PaymentController {
     public ResponseEntity<PaymentResponse> getPaymentById(@Parameter(description = "Payment ID") @PathVariable Long id) {
         log.debug("Retrieving payment {}", id);
 
-        Payment payment = paymentService.getPaymentById(id);
-        PaymentResponse response = PaymentResponse.fromEntity(payment);
+        PaymentDomain payment = managePaymentUseCase.getPaymentById(id);
+        PaymentResponse response = paymentResponseMapper.toResponse(payment);
 
         return ResponseEntity.ok(response);
     }
@@ -205,9 +220,9 @@ public class PaymentController {
 
         log.debug("Retrieving payments for student {}", studentId);
 
-        List<Payment> payments = paymentService.getPaymentsByStudent(studentId);
+        List<PaymentDomain> payments = managePaymentUseCase.getPaymentsByStudent(studentId);
         List<PaymentResponse> response = payments.stream()
-            .map(PaymentResponse::fromEntity)
+            .map(paymentResponseMapper::toResponse)
             .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
@@ -230,9 +245,9 @@ public class PaymentController {
 
         log.debug("Retrieving pending payments for student {}", studentId);
 
-        List<Payment> payments = paymentService.getPendingPaymentsByStudent(studentId);
+        List<PaymentDomain> payments = managePaymentUseCase.getPendingPayments(studentId);
         List<PaymentResponse> response = payments.stream()
-            .map(PaymentResponse::fromEntity)
+            .map(paymentResponseMapper::toResponse)
             .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
@@ -255,7 +270,7 @@ public class PaymentController {
 
         log.debug("Checking overdue status for student {}", studentId);
 
-        boolean hasOverdue = paymentService.hasOverduePayments(studentId);
+        boolean hasOverdue = managePaymentUseCase.hasOverduePayments(studentId);
         return ResponseEntity.ok(hasOverdue);
     }
 
@@ -276,7 +291,7 @@ public class PaymentController {
 
         log.debug("Calculating total pending for student {}", studentId);
 
-        BigDecimal total = paymentService.calculateTotalPendingByStudent(studentId);
+        BigDecimal total = managePaymentUseCase.calculateTotalPendingByStudent(studentId);
         return ResponseEntity.ok(total);
     }
 
@@ -297,9 +312,9 @@ public class PaymentController {
 
         log.debug("Retrieving payments with status {}", status);
 
-        List<Payment> payments = paymentService.getPaymentsByStatus(status);
+        List<PaymentDomain> payments = managePaymentUseCase.getPaymentsByStatus(status);
         List<PaymentResponse> response = payments.stream()
-            .map(PaymentResponse::fromEntity)
+            .map(paymentResponseMapper::toResponse)
             .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
@@ -320,9 +335,9 @@ public class PaymentController {
 
         log.debug("Retrieving payments for period {}", period);
 
-        List<Payment> payments = paymentService.getPaymentsByAcademicPeriod(period);
+        List<PaymentDomain> payments = managePaymentUseCase.getPaymentsByAcademicPeriod(period);
         List<PaymentResponse> response = payments.stream()
-            .map(PaymentResponse::fromEntity)
+            .map(paymentResponseMapper::toResponse)
             .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
@@ -338,14 +353,14 @@ public class PaymentController {
         @ApiResponse(responseCode = "200", description = "Revenue calculated successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid date range"),
         @ApiResponse(responseCode = "403", description = "Insufficient permissions")
-    })
+    )
     public ResponseEntity<BigDecimal> calculateRevenue(
             @Parameter(description = "Start date") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @Parameter(description = "End date") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
         log.info("Calculating revenue between {} and {}", startDate, endDate);
 
-        BigDecimal revenue = paymentService.calculateRevenueBetween(startDate, endDate);
+        BigDecimal revenue = managePaymentUseCase.calculateRevenueBetween(startDate, endDate);
         return ResponseEntity.ok(revenue);
     }
 
@@ -362,7 +377,7 @@ public class PaymentController {
     public ResponseEntity<List<Long>> getStudentsWithOverduePayments() {
         log.debug("Retrieving students with overdue payments");
 
-        List<Long> studentIds = paymentService.getStudentsWithOverduePayments();
+        List<Long> studentIds = managePaymentUseCase.getStudentsWithOverduePayments();
         return ResponseEntity.ok(studentIds);
     }
 }
