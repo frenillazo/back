@@ -1,0 +1,20 @@
+package acainfo.back.user.domain.model;
+
+/**
+ * Enum representing different audit actions that can be logged.
+ * Domain model - NO infrastructure dependencies.
+ */
+public enum AuditAction {
+    LOGIN,
+    LOGOUT,
+    LOGIN_FAILED,
+    USER_CREATED,
+    USER_UPDATED,
+    USER_DELETED,
+    PASSWORD_CHANGED,
+    ROLE_ASSIGNED,
+    ROLE_REVOKED,
+    PERMISSION_GRANTED,
+    PERMISSION_REVOKED,
+    ACCESS_DENIED
+}
