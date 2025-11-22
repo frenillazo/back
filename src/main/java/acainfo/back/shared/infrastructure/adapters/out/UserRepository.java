@@ -1,8 +1,8 @@
 package acainfo.back.shared.infrastructure.adapters.out;
 
-import acainfo.back.shared.domain.model.User;
-import acainfo.back.shared.domain.model.UserStatus;
-import acainfo.back.shared.domain.model.RoleType;
+import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
+import acainfo.back.user.domain.model.UserStatus;
+import acainfo.back.user.domain.model.RoleType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

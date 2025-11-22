@@ -1,7 +1,7 @@
 package acainfo.back.material.infrastructure.adapters.out.persistence.entities;
 
 import acainfo.back.material.domain.model.MaterialType;
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
 import acainfo.back.subjectgroup.infrastructure.adapters.out.persistence.entities.SubjectGroupJpaEntity;
 import jakarta.persistence.*;
 import lombok.*;

@@ -2,7 +2,7 @@ package acainfo.back.shared.infrastructure.adapters.in.rest;
 
 import acainfo.back.shared.application.services.AuthService;
 import acainfo.back.shared.infrastructure.adapters.in.dto.AuthResponse;
-import acainfo.back.shared.infrastructure.adapters.in.dto.ErrorResponse;
+import acainfo.back.config.dto.ErrorResponse;
 import acainfo.back.shared.infrastructure.adapters.in.dto.LoginRequest;
 import acainfo.back.shared.infrastructure.adapters.in.dto.MessageResponse;
 import acainfo.back.shared.infrastructure.adapters.in.dto.RefreshTokenRequest;

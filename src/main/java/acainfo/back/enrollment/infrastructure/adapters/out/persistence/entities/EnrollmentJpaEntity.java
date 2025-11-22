@@ -2,7 +2,7 @@ package acainfo.back.enrollment.infrastructure.adapters.out.persistence.entities
 
 import acainfo.back.enrollment.domain.model.AttendanceMode;
 import acainfo.back.enrollment.domain.model.EnrollmentStatus;
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
 import acainfo.back.subjectgroup.infrastructure.adapters.out.persistence.entities.SubjectGroupJpaEntity;
 import jakarta.persistence.*;
 import lombok.*;

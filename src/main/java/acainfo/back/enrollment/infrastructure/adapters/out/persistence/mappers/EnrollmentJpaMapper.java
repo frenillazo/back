@@ -2,7 +2,7 @@ package acainfo.back.enrollment.infrastructure.adapters.out.persistence.mappers;
 
 import acainfo.back.enrollment.domain.model.EnrollmentDomain;
 import acainfo.back.enrollment.infrastructure.adapters.out.persistence.entities.EnrollmentJpaEntity;
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
 import acainfo.back.subjectgroup.infrastructure.adapters.out.persistence.entities.SubjectGroupJpaEntity;
 import org.springframework.stereotype.Component;
 

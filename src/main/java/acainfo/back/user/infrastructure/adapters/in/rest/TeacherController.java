@@ -19,7 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 // TODO: ErrorResponse will be moved to a shared config module
-import acainfo.back.shared.infrastructure.adapters.in.dto.ErrorResponse;
+import acainfo.back.config.dto.ErrorResponse;
 
 @RestController
 @RequestMapping("/api/teachers")

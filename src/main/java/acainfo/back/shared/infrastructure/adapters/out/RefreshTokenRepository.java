@@ -1,7 +1,7 @@
 package acainfo.back.shared.infrastructure.adapters.out;
 
 import acainfo.back.shared.domain.model.RefreshToken;
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

@@ -1,6 +1,6 @@
 package acainfo.back.shared.infrastructure.adapters.in.dto;
 
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,6 +1,6 @@
 package acainfo.back.material.domain.exception;
 
-import acainfo.back.shared.domain.exception.DomainException;
+import acainfo.back.user.domain.exception.DomainException;
 
 /**
  * Exception thrown when there is an error storing or retrieving files.

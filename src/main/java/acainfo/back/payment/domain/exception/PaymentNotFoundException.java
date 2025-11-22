@@ -1,6 +1,6 @@
 package acainfo.back.payment.domain.exception;
 
-import acainfo.back.shared.domain.exception.DomainException;
+import acainfo.back.user.domain.exception.DomainException;
 
 /**
  * Exception thrown when a payment is not found.

@@ -1,6 +1,6 @@
 package acainfo.back.schedule.domain.exception;
 
-import acainfo.back.shared.domain.exception.DomainException;
+import acainfo.back.user.domain.exception.DomainException;
 import acainfo.back.schedule.domain.model.ScheduleDomain;
 
 import java.util.List;

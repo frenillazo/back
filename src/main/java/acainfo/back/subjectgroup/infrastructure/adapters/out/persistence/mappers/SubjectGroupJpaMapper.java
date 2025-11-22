@@ -1,6 +1,6 @@
 package acainfo.back.subjectgroup.infrastructure.adapters.out.persistence.mappers;
 
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
 import acainfo.back.subject.infrastructure.adapters.out.persistence.entities.SubjectJpaEntity;
 import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
 import acainfo.back.subjectgroup.infrastructure.adapters.out.persistence.entities.SubjectGroupJpaEntity;

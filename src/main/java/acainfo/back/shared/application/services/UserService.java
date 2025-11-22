@@ -1,14 +1,14 @@
 package acainfo.back.shared.application.services;
 
 import acainfo.back.shared.domain.exception.UserAlreadyExistsException;
-import acainfo.back.shared.domain.exception.UserNotFoundException;
+import acainfo.back.user.domain.exception.UserNotFoundException;
 import acainfo.back.shared.domain.model.*;
 import acainfo.back.shared.infrastructure.adapters.in.dto.CreateTeacherRequest;
 import acainfo.back.shared.infrastructure.adapters.in.dto.UpdateTeacherRequest;
 import acainfo.back.shared.infrastructure.adapters.in.dto.UserResponse;
 import acainfo.back.shared.infrastructure.adapters.out.PermissionRepository;
 import acainfo.back.shared.infrastructure.adapters.out.RoleRepository;
-import acainfo.back.shared.infrastructure.adapters.out.UserRepository;
+import acainfo.back.user.infrastructure.adapters.out.persistence.repositories.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;

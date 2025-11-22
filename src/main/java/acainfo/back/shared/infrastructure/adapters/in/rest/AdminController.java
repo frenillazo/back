@@ -1,9 +1,9 @@
 package acainfo.back.shared.infrastructure.adapters.in.rest;
 
 import acainfo.back.shared.application.services.UserService;
-import acainfo.back.shared.domain.model.RoleType;
+import acainfo.back.user.domain.model.RoleType;
 import acainfo.back.shared.infrastructure.adapters.in.dto.CreateTeacherRequest;
-import acainfo.back.shared.infrastructure.adapters.in.dto.ErrorResponse;
+import acainfo.back.config.dto.ErrorResponse;
 import acainfo.back.shared.infrastructure.adapters.in.dto.MessageResponse;
 import acainfo.back.shared.infrastructure.adapters.in.dto.UpdateTeacherRequest;
 import acainfo.back.shared.infrastructure.adapters.in.dto.UserResponse;

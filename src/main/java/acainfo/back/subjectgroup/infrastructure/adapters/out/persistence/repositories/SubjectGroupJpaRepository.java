@@ -1,6 +1,6 @@
 package acainfo.back.subjectgroup.infrastructure.adapters.out.persistence.repositories;
 
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
 import acainfo.back.subject.infrastructure.adapters.out.persistence.entities.SubjectJpaEntity;
 import acainfo.back.subjectgroup.domain.model.AcademicPeriod;
 import acainfo.back.subjectgroup.domain.model.GroupStatus;

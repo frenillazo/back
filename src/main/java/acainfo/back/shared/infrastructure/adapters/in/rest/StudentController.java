@@ -17,8 +17,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import acainfo.back.shared.domain.model.User;
-import acainfo.back.shared.infrastructure.adapters.out.UserRepository;
+import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
+import acainfo.back.user.infrastructure.adapters.out.persistence.repositories.UserJpaRepository;
 
 /**
  * REST Controller for student-specific operations.

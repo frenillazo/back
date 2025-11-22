@@ -2,7 +2,7 @@ package acainfo.back.shared.infrastructure.adapters.out;
 
 import acainfo.back.shared.domain.model.AuditAction;
 import acainfo.back.shared.domain.model.AuditLog;
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

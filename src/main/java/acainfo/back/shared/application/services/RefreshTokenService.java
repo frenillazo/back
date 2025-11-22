@@ -2,7 +2,7 @@ package acainfo.back.shared.application.services;
 
 import acainfo.back.shared.domain.exception.UnauthorizedException;
 import acainfo.back.shared.domain.model.RefreshToken;
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
 import acainfo.back.shared.infrastructure.adapters.out.RefreshTokenRepository;
 import acainfo.back.shared.infrastructure.config.JwtProperties;
 import lombok.RequiredArgsConstructor;

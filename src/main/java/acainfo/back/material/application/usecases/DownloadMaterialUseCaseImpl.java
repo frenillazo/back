@@ -11,9 +11,9 @@ import acainfo.back.material.domain.exception.UnauthorizedMaterialAccessExceptio
 import acainfo.back.material.domain.model.MaterialDomain;
 import acainfo.back.payment.application.services.PaymentService;
 import acainfo.back.payment.domain.exception.OverduePaymentException;
-import acainfo.back.shared.domain.exception.UserNotFoundException;
-import acainfo.back.shared.domain.model.User;
-import acainfo.back.shared.infrastructure.adapters.out.UserRepository;
+import acainfo.back.user.domain.exception.UserNotFoundException;
+import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
+import acainfo.back.user.infrastructure.adapters.out.persistence.repositories.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;

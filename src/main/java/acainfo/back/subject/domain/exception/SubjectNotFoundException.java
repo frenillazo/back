@@ -1,6 +1,6 @@
 package acainfo.back.subject.domain.exception;
 
-import acainfo.back.shared.domain.exception.DomainException;
+import acainfo.back.user.domain.exception.DomainException;
 
 /**
  * Exception thrown when a subject is not found.

@@ -10,8 +10,8 @@ import acainfo.back.enrollment.infrastructure.adapters.out.persistence.entities.
 import acainfo.back.enrollment.infrastructure.adapters.out.persistence.repositories.EnrollmentJpaRepository;
 import acainfo.back.session.infrastructure.adapters.out.persistence.entities.SessionJpaEntity;
 import acainfo.back.session.infrastructure.adapters.out.persistence.repositories.SessionJpaRepository;
-import acainfo.back.shared.domain.model.User;
-import acainfo.back.shared.infrastructure.adapters.out.UserRepository;
+import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
+import acainfo.back.user.infrastructure.adapters.out.persistence.repositories.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

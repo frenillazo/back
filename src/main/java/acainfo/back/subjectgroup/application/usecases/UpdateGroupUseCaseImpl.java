@@ -1,10 +1,10 @@
 package acainfo.back.subjectgroup.application.usecases;
 
 import acainfo.back.shared.domain.exception.InvalidTeacherException;
-import acainfo.back.shared.domain.exception.UserNotFoundException;
-import acainfo.back.shared.domain.model.RoleType;
-import acainfo.back.shared.domain.model.User;
-import acainfo.back.shared.infrastructure.adapters.out.UserRepository;
+import acainfo.back.user.domain.exception.UserNotFoundException;
+import acainfo.back.user.domain.model.RoleType;
+import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
+import acainfo.back.user.infrastructure.adapters.out.persistence.repositories.UserJpaRepository;
 import acainfo.back.subjectgroup.application.ports.in.UpdateGroupUseCase;
 import acainfo.back.subjectgroup.application.ports.out.GroupRepositoryPort;
 import acainfo.back.subjectgroup.domain.exception.GroupNotFoundException;

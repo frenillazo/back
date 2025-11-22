@@ -14,10 +14,10 @@ import acainfo.back.payment.domain.model.Payment;
 import acainfo.back.session.application.ports.out.SessionRepositoryPort;
 import acainfo.back.session.domain.model.SessionDomain;
 import acainfo.back.session.domain.model.SessionStatus;
-import acainfo.back.shared.domain.exception.UserNotFoundException;
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.domain.exception.UserNotFoundException;
+import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
 import acainfo.back.shared.infrastructure.adapters.in.dto.*;
-import acainfo.back.shared.infrastructure.adapters.out.UserRepository; // TODO: Create UserRepositoryPort in application layer
+import acainfo.back.user.infrastructure.adapters.out.persistence.repositories.UserJpaRepository; // TODO: Create UserRepositoryPort in application layer
 import acainfo.back.enrollment.infrastructure.adapters.in.dto.EnrollmentResponse;
 import acainfo.back.payment.infrastructure.adapters.in.dto.PaymentResponse;
 import lombok.RequiredArgsConstructor;

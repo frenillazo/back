@@ -2,8 +2,8 @@ package acainfo.back.enrollment.application.mappers;
 
 import acainfo.back.enrollment.domain.model.EnrollmentDomain;
 import acainfo.back.enrollment.infrastructure.adapters.in.dto.EnrollmentResponse;
-import acainfo.back.shared.domain.model.User;
-import acainfo.back.shared.infrastructure.adapters.out.UserRepository;
+import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
+import acainfo.back.user.infrastructure.adapters.out.persistence.repositories.UserJpaRepository;
 import acainfo.back.subject.application.ports.out.SubjectRepositoryPort;
 import acainfo.back.subject.domain.model.SubjectDomain;
 import acainfo.back.subjectgroup.application.ports.out.GroupRepositoryPort;

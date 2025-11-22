@@ -1,7 +1,7 @@
 package acainfo.back.shared.infrastructure.adapters.out;
 
 import acainfo.back.shared.domain.model.Role;
-import acainfo.back.shared.domain.model.RoleType;
+import acainfo.back.user.domain.model.RoleType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

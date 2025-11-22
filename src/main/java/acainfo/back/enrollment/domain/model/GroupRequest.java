@@ -1,6 +1,6 @@
 package acainfo.back.enrollment.domain.model;
 
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
 import acainfo.back.subject.infrastructure.adapters.out.persistence.entities.SubjectJpaEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;

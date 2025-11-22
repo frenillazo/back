@@ -6,8 +6,8 @@ import acainfo.back.enrollment.application.ports.out.EnrollmentRepositoryPort;
 import acainfo.back.enrollment.domain.model.EnrollmentDomain;
 import acainfo.back.session.application.ports.out.SessionRepositoryPort;
 import acainfo.back.session.domain.model.SessionDomain;
-import acainfo.back.shared.domain.model.User;
-import acainfo.back.shared.infrastructure.adapters.out.UserRepository; // TODO: Create UserRepositoryPort in application layer
+import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
+import acainfo.back.user.infrastructure.adapters.out.persistence.repositories.UserJpaRepository; // TODO: Create UserRepositoryPort in application layer
 import acainfo.back.subjectgroup.application.ports.out.SubjectGroupRepositoryPort;
 import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
 import lombok.RequiredArgsConstructor;

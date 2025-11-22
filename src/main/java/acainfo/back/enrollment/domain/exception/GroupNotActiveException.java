@@ -1,6 +1,6 @@
 package acainfo.back.enrollment.domain.exception;
 
-import acainfo.back.shared.domain.exception.DomainException;
+import acainfo.back.user.domain.exception.DomainException;
 
 /**
  * Exception thrown when attempting to enroll in a group that is not active.

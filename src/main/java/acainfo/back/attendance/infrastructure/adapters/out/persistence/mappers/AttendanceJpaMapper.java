@@ -4,7 +4,7 @@ import acainfo.back.attendance.domain.model.AttendanceDomain;
 import acainfo.back.attendance.infrastructure.adapters.out.persistence.entities.AttendanceJpaEntity;
 import acainfo.back.enrollment.infrastructure.adapters.out.persistence.entities.EnrollmentJpaEntity;
 import acainfo.back.session.infrastructure.adapters.out.persistence.entities.SessionJpaEntity;
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
 import org.springframework.stereotype.Component;
 
 /**

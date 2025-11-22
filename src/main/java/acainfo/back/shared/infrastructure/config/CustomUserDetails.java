@@ -1,7 +1,7 @@
 package acainfo.back.shared.infrastructure.config;
 
-import acainfo.back.shared.domain.model.User;
-import acainfo.back.shared.domain.model.UserStatus;
+import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
+import acainfo.back.user.domain.model.UserStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

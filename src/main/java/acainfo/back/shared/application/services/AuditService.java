@@ -2,7 +2,7 @@ package acainfo.back.shared.application.services;
 
 import acainfo.back.shared.domain.model.AuditAction;
 import acainfo.back.shared.domain.model.AuditLog;
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
 import acainfo.back.shared.infrastructure.adapters.out.AuditLogRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

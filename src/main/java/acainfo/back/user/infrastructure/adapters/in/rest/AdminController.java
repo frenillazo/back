@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 // TODO: ErrorResponse will be moved to a shared config module
-import acainfo.back.shared.infrastructure.adapters.in.dto.ErrorResponse;
+import acainfo.back.config.dto.ErrorResponse;
 
 @RestController
 @RequestMapping("/api/admin")

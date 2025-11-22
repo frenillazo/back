@@ -1,7 +1,7 @@
 package acainfo.back.shared.infrastructure.adapters.in.rest;
 
 import acainfo.back.shared.application.services.UserService;
-import acainfo.back.shared.infrastructure.adapters.in.dto.ErrorResponse;
+import acainfo.back.config.dto.ErrorResponse;
 import acainfo.back.shared.infrastructure.adapters.in.dto.UserResponse;
 import acainfo.back.shared.infrastructure.config.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
