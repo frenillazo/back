@@ -1,6 +1,6 @@
 package acainfo.back.enrollment.application.ports.in;
 
-import acainfo.back.enrollment.domain.model.GroupRequest;
+import acainfo.back.enrollment.domain.model.GroupRequestDomain;
 
 /**
  * Use case for managing group requests (approve/reject).
@@ -16,7 +16,7 @@ public interface ManageGroupRequestUseCase {
      * @param adminId the admin ID who approves
      * @return the approved group request
      */
-    GroupRequest approveRequest(Long requestId, Long adminId);
+    GroupRequestDomain approveRequest(Long requestId, Long adminId);
 
     /**
      * Rejects a group request with a reason.
@@ -26,5 +26,5 @@ public interface ManageGroupRequestUseCase {
      * @param reason the rejection reason
      * @return the rejected group request
      */
-    GroupRequest rejectRequest(Long requestId, Long adminId, String reason);
+    GroupRequestDomain rejectRequest(Long requestId, Long adminId, String reason);
 }

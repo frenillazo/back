@@ -1,6 +1,6 @@
 package acainfo.back.enrollment.application.ports.in;
 
-import acainfo.back.enrollment.domain.model.GroupRequest;
+import acainfo.back.enrollment.domain.model.GroupRequestDomain;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -16,14 +16,14 @@ public interface GetGroupRequestUseCase {
      * @param id the group request ID
      * @return the group request
      */
-    GroupRequest getRequestById(Long id);
+    GroupRequestDomain getRequestById(Long id);
 
     /**
      * Gets all pending group requests.
      *
      * @return list of pending group requests
      */
-    List<GroupRequest> getAllPendingRequests();
+    List<GroupRequestDomain> getAllPendingRequests();
 
     /**
      * Gets group requests for a specific subject.
@@ -31,7 +31,7 @@ public interface GetGroupRequestUseCase {
      * @param subjectId the subject ID
      * @return list of group requests
      */
-    List<GroupRequest> getRequestsBySubject(Long subjectId);
+    List<GroupRequestDomain> getRequestsBySubject(Long subjectId);
 
     /**
      * Gets group requests created by a student.
@@ -39,7 +39,7 @@ public interface GetGroupRequestUseCase {
      * @param studentId the student ID
      * @return list of group requests
      */
-    List<GroupRequest> getRequestsByRequester(Long studentId);
+    List<GroupRequestDomain> getRequestsByRequester(Long studentId);
 
     /**
      * Gets group requests supported by a student.
@@ -47,7 +47,7 @@ public interface GetGroupRequestUseCase {
      * @param studentId the student ID
      * @return list of group requests
      */
-    List<GroupRequest> getRequestsSupportedByStudent(Long studentId);
+    List<GroupRequestDomain> getRequestsSupportedByStudent(Long studentId);
 
     /**
      * Gets the count of pending requests created by a student.

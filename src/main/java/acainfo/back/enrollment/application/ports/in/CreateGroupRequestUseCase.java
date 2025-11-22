@@ -1,6 +1,6 @@
 package acainfo.back.enrollment.application.ports.in;
 
-import acainfo.back.enrollment.domain.model.GroupRequest;
+import acainfo.back.enrollment.domain.model.GroupRequestDomain;
 
 /**
  * Use case for creating a group request.
@@ -16,5 +16,5 @@ public interface CreateGroupRequestUseCase {
      * @param comments optional comments about the request
      * @return the created group request
      */
-    GroupRequest createGroupRequest(Long subjectId, Long requesterId, String comments);
+    GroupRequestDomain createGroupRequest(Long subjectId, Long requesterId, String comments);
 }

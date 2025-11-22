@@ -1,6 +1,6 @@
 package acainfo.back.enrollment.application.ports.in;
 
-import acainfo.back.enrollment.domain.model.GroupRequest;
+import acainfo.back.enrollment.domain.model.GroupRequestDomain;
 
 /**
  * Use case for supporting a group request.
@@ -14,7 +14,7 @@ public interface SupportGroupRequestUseCase {
      * @param studentId the student ID
      * @return the updated group request
      */
-    GroupRequest supportRequest(Long requestId, Long studentId);
+    GroupRequestDomain supportRequest(Long requestId, Long studentId);
 
     /**
      * Removes a student's support from a group request.
@@ -23,5 +23,5 @@ public interface SupportGroupRequestUseCase {
      * @param studentId the student ID
      * @return the updated group request
      */
-    GroupRequest unsupportRequest(Long requestId, Long studentId);
+    GroupRequestDomain unsupportRequest(Long requestId, Long studentId);
 }

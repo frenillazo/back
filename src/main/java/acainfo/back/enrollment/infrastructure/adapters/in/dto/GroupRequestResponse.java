@@ -1,6 +1,6 @@
 package acainfo.back.enrollment.infrastructure.adapters.in.dto;
 
-import acainfo.back.enrollment.domain.model.GroupRequest;
+import acainfo.back.enrollment.domain.model.GroupRequestDomain;
 import acainfo.back.enrollment.domain.model.GroupRequestStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -112,12 +112,12 @@ public class GroupRequestResponse {
     /**
      * Converts a GroupRequest entity to a GroupRequestResponse DTO.
      */
-    public static GroupRequestResponse fromEntity(GroupRequest request) {
+    public static GroupRequestResponse fromEntity(GroupRequestDomain request) {
         GroupRequestResponseBuilder builder = GroupRequestResponse.builder()
                 .id(request.getId())
                 .status(request.getStatus())
                 .supportersCount(request.getSupportersCount())
-                .minimumSupporters(GroupRequest.MINIMUM_SUPPORTERS)
+                .minimumSupporters(GroupRequestDomain.MINIMUM_SUPPORTERS)
                 .supportersNeeded(request.getSupportersNeeded())
                 .supportersProgress(request.getSupportersProgress())
                 .hasMinimumSupporters(request.hasMinimumSupporters())
