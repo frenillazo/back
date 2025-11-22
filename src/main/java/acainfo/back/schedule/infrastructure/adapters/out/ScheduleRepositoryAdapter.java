@@ -3,6 +3,9 @@ package acainfo.back.schedule.infrastructure.adapters.out;
 import acainfo.back.schedule.application.ports.out.ScheduleRepositoryPort;
 import acainfo.back.schedule.domain.model.Classroom;
 import acainfo.back.schedule.domain.model.ScheduleDomain;
+import acainfo.back.schedule.infrastructure.adapters.out.persistence.entities.ScheduleJpaEntity;
+import acainfo.back.schedule.infrastructure.adapters.out.persistence.mappers.ScheduleJpaMapper;
+import acainfo.back.schedule.infrastructure.adapters.out.persistence.repositories.ScheduleJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -12,59 +15,57 @@ import java.util.Optional;
 
 /**
  * Adapter implementation for ScheduleRepositoryPort.
- * Delegates to Spring Data JPA ScheduleRepository.
- *
- * TODO: This adapter needs to be refactored to use ScheduleJpaMapper
- * to properly convert between ScheduleDomain and ScheduleJpaEntity.
- * Currently it's using the old Schedule entity directly.
+ * Delegates to Spring Data JPA ScheduleJpaRepository.
+ * Converts between ScheduleDomain (application layer) and ScheduleJpaEntity (infrastructure layer).
  */
 @Component
 @RequiredArgsConstructor
 public class ScheduleRepositoryAdapter implements ScheduleRepositoryPort {
 
-    private final ScheduleRepository scheduleRepository;
+    private final ScheduleJpaRepository scheduleRepository;
+    private final ScheduleJpaMapper mapper;
 
     @Override
     public ScheduleDomain save(ScheduleDomain schedule) {
-        // TODO: Use ScheduleJpaMapper to convert ScheduleDomain -> ScheduleJpaEntity
-        return (ScheduleDomain) (Object) scheduleRepository.save((acainfo.back.schedule.domain.model.Schedule) (Object) schedule);
+        ScheduleJpaEntity jpaEntity = mapper.toJpaEntity(schedule);
+        ScheduleJpaEntity savedEntity = scheduleRepository.save(jpaEntity);
+        return mapper.toDomain(savedEntity);
     }
 
     @Override
     public Optional<ScheduleDomain> findById(Long scheduleId) {
-        // TODO: Use ScheduleJpaMapper to convert ScheduleJpaEntity -> ScheduleDomain
-        return scheduleRepository.findById(scheduleId).map(s -> (ScheduleDomain) (Object) s);
+        return scheduleRepository.findById(scheduleId)
+                .map(mapper::toDomain);
     }
 
     @Override
     public List<ScheduleDomain> findAll() {
-        // TODO: Use ScheduleJpaMapper to convert list of ScheduleJpaEntity -> ScheduleDomain
-        return (List) scheduleRepository.findAll();
+        return mapper.toDomains(scheduleRepository.findAll());
     }
 
     @Override
     public List<ScheduleDomain> findByGroupId(Long groupId) {
-        return (List) scheduleRepository.findByGroupId(groupId);
+        return mapper.toDomains(scheduleRepository.findByGroupId(groupId));
     }
 
     @Override
     public List<ScheduleDomain> findByTeacherId(Long teacherId) {
-        return (List) scheduleRepository.findByTeacherId(teacherId);
+        return mapper.toDomains(scheduleRepository.findByTeacherId(teacherId));
     }
 
     @Override
     public List<ScheduleDomain> findByClassroom(Classroom classroom) {
-        return (List) scheduleRepository.findByClassroom(classroom);
+        return mapper.toDomains(scheduleRepository.findByClassroom(classroom));
     }
 
     @Override
     public List<ScheduleDomain> findByDayOfWeek(DayOfWeek dayOfWeek) {
-        return (List) scheduleRepository.findByDayOfWeek(dayOfWeek);
+        return mapper.toDomains(scheduleRepository.findByDayOfWeek(dayOfWeek));
     }
 
     @Override
     public List<ScheduleDomain> findBySubjectId(Long subjectId) {
-        return (List) scheduleRepository.findBySubjectId(subjectId);
+        return mapper.toDomains(scheduleRepository.findBySubjectId(subjectId));
     }
 
     @Override

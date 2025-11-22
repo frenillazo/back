@@ -186,22 +186,20 @@ public class SessionValidationService {
     /**
      * Validates that a teacher is available for the given time slot.
      *
-     * @param subjectGroup the subject group (contains teacher)
+     * @param teacherId the teacher ID
      * @param startTime the start time
      * @param endTime the end time
      * @param excludeSessionId session ID to exclude from conflict check (for updates)
      * @throws SessionConflictException if teacher has another session
      */
-    public void validateTeacherAvailability(SubjectGroup subjectGroup,
+    public void validateTeacherAvailability(Long teacherId,
                                            LocalDateTime startTime,
                                            LocalDateTime endTime,
                                            Long excludeSessionId) {
-        if (subjectGroup.getTeacher() == null) {
-            log.warn("Subject group {} has no teacher assigned", subjectGroup.getId());
+        if (teacherId == null) {
+            log.warn("No teacher ID provided for availability validation");
             return;
         }
-
-        Long teacherId = subjectGroup.getTeacher().getId();
 
         log.debug("Validating teacher {} availability from {} to {}",
             teacherId, startTime, endTime);
@@ -211,10 +209,8 @@ public class SessionValidationService {
         );
 
         if (hasConflict) {
-            String teacherName = subjectGroup.getTeacher().getFirstName() + " " +
-                                subjectGroup.getTeacher().getLastName();
             throw SessionConflictException.teacherConflict(
-                teacherName,
+                "Teacher #" + teacherId,
                 String.format("%s to %s", startTime, endTime)
             );
         }
@@ -237,7 +233,7 @@ public class SessionValidationService {
      * @throws IllegalStateException if session cannot be postponed
      * @throws IllegalArgumentException if reason is invalid
      */
-    public void validatePostponement(Session session, String reason) {
+    public void validatePostponement(SessionDomain session, String reason) {
         if (!session.isScheduled()) {
             throw new IllegalStateException(
                 "Only PROGRAMADA sessions can be postponed. Current status: " + session.getStatus()
@@ -276,7 +272,7 @@ public class SessionValidationService {
      * @throws IllegalStateException if session cannot be cancelled
      * @throws IllegalArgumentException if reason is invalid
      */
-    public void validateCancellation(Session session, String reason) {
+    public void validateCancellation(SessionDomain session, String reason) {
         if (!session.isScheduled()) {
             throw new IllegalStateException(
                 "Only PROGRAMADA sessions can be cancelled. Current status: " + session.getStatus()
@@ -307,7 +303,7 @@ public class SessionValidationService {
      * @param session the session to start
      * @throws IllegalStateException if session cannot be started
      */
-    public void validateSessionStart(Session session) {
+    public void validateSessionStart(SessionDomain session) {
         if (!session.isScheduled()) {
             throw new IllegalStateException(
                 "Only PROGRAMADA sessions can be started. Current status: " + session.getStatus()
@@ -345,7 +341,7 @@ public class SessionValidationService {
      * @throws IllegalStateException if session cannot be completed
      * @throws IllegalArgumentException if topics covered is invalid
      */
-    public void validateSessionCompletion(Session session, String topicsCovered) {
+    public void validateSessionCompletion(SessionDomain session, String topicsCovered) {
         if (!session.isInProgress()) {
             throw new IllegalStateException(
                 "Only EN_CURSO sessions can be completed. Current status: " + session.getStatus()
@@ -368,7 +364,8 @@ public class SessionValidationService {
     /**
      * Validates all requirements for creating a new session.
      *
-     * @param subjectGroup the subject group
+     * @param subjectGroupId the subject group ID
+     * @param teacherId the teacher ID (optional)
      * @param scheduledStart the start time
      * @param scheduledEnd the end time
      * @param mode the session mode
@@ -377,13 +374,14 @@ public class SessionValidationService {
      * @throws IllegalArgumentException if validation fails
      * @throws SessionConflictException if there are scheduling conflicts
      */
-    public void validateSessionCreation(SubjectGroup subjectGroup,
+    public void validateSessionCreation(Long subjectGroupId,
+                                        Long teacherId,
                                         LocalDateTime scheduledStart,
                                         LocalDateTime scheduledEnd,
                                         SessionMode mode,
                                         Classroom classroom,
                                         String zoomMeetingId) {
-        log.debug("Validating session creation for group {}", subjectGroup.getId());
+        log.debug("Validating session creation for group {}", subjectGroupId);
 
         // Validate time slot
         validateSessionTimeSlot(scheduledStart, scheduledEnd);
@@ -403,7 +401,9 @@ public class SessionValidationService {
         }
 
         // Validate teacher availability
-        validateTeacherAvailability(subjectGroup, scheduledStart, scheduledEnd, null);
+        if (teacherId != null) {
+            validateTeacherAvailability(teacherId, scheduledStart, scheduledEnd, null);
+        }
 
         log.debug("Session creation validation passed");
     }

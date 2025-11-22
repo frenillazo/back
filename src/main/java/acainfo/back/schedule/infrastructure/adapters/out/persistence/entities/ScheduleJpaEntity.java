@@ -77,7 +77,7 @@ public class ScheduleJpaEntity {
      */
     @OneToMany(mappedBy = "generatedFromSchedule", fetch = FetchType.LAZY)
     @Builder.Default
-    private List<Session> generatedSessions = new ArrayList<>();
+    private List<SessionJpaEntity> generatedSessions = new ArrayList<>();
 
     /**
      * JPA validation: start time must be before end time
