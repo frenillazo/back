@@ -1,6 +1,6 @@
 package acainfo.back.enrollment.application.ports.out;
 
-import acainfo.back.enrollment.domain.model.Enrollment;
+import acainfo.back.enrollment.domain.model.EnrollmentDomain;
 import acainfo.back.enrollment.domain.model.EnrollmentStatus;
 import acainfo.back.enrollment.domain.model.AttendanceMode;
 
@@ -19,7 +19,7 @@ public interface EnrollmentRepositoryPort {
      * @param enrollment the enrollment to save
      * @return the saved enrollment
      */
-    Enrollment save(Enrollment enrollment);
+    EnrollmentDomain save(EnrollmentDomain enrollment);
 
     /**
      * Finds an enrollment by ID.
@@ -27,14 +27,14 @@ public interface EnrollmentRepositoryPort {
      * @param id the enrollment ID
      * @return Optional containing the enrollment if found
      */
-    Optional<Enrollment> findById(Long id);
+    Optional<EnrollmentDomain> findById(Long id);
 
     /**
      * Finds all enrollments.
      *
      * @return list of all enrollments
      */
-    List<Enrollment> findAll();
+    List<EnrollmentDomain> findAll();
 
     /**
      * Finds enrollments by student ID.
@@ -42,7 +42,7 @@ public interface EnrollmentRepositoryPort {
      * @param studentId the student ID
      * @return list of enrollments
      */
-    List<Enrollment> findByStudentId(Long studentId);
+    List<EnrollmentDomain> findByStudentId(Long studentId);
 
     /**
      * Finds enrollments by student ID and status.
@@ -51,7 +51,7 @@ public interface EnrollmentRepositoryPort {
      * @param status the enrollment status
      * @return list of enrollments
      */
-    List<Enrollment> findByStudentIdAndStatus(Long studentId, EnrollmentStatus status);
+    List<EnrollmentDomain> findByStudentIdAndStatus(Long studentId, EnrollmentStatus status);
 
     /**
      * Finds enrollments by subject group ID.
@@ -59,7 +59,7 @@ public interface EnrollmentRepositoryPort {
      * @param groupId the subject group ID
      * @return list of enrollments
      */
-    List<Enrollment> findBySubjectGroupId(Long groupId);
+    List<EnrollmentDomain> findBySubjectGroupId(Long groupId);
 
     /**
      * Finds enrollments by subject group ID and status.
@@ -68,7 +68,7 @@ public interface EnrollmentRepositoryPort {
      * @param status the enrollment status
      * @return list of enrollments
      */
-    List<Enrollment> findBySubjectGroupIdAndStatus(Long groupId, EnrollmentStatus status);
+    List<EnrollmentDomain> findBySubjectGroupIdAndStatus(Long groupId, EnrollmentStatus status);
 
     /**
      * Finds enrollments in waiting queue for a group, ordered by enrollment date (FIFO).
@@ -77,7 +77,7 @@ public interface EnrollmentRepositoryPort {
      * @param status the enrollment status (typically EN_ESPERA)
      * @return list of enrollments in waiting queue, ordered by enrollment date ascending
      */
-    List<Enrollment> findBySubjectGroupIdAndStatusOrderByEnrollmentDateAsc(Long groupId, EnrollmentStatus status);
+    List<EnrollmentDomain> findBySubjectGroupIdAndStatusOrderByEnrollmentDateAsc(Long groupId, EnrollmentStatus status);
 
     /**
      * Checks if a student is enrolled in a specific group with given status.
@@ -131,7 +131,7 @@ public interface EnrollmentRepositoryPort {
      * @param studentId the student ID
      * @return list of active enrollments
      */
-    List<Enrollment> findActiveEnrollmentsByStudentId(Long studentId);
+    List<EnrollmentDomain> findActiveEnrollmentsByStudentId(Long studentId);
 
     /**
      * Finds enrollments by attendance mode.
@@ -140,7 +140,7 @@ public interface EnrollmentRepositoryPort {
      * @param mode the attendance mode
      * @return list of enrollments
      */
-    List<Enrollment> findBySubjectGroupIdAndAttendanceMode(Long groupId, AttendanceMode mode);
+    List<EnrollmentDomain> findBySubjectGroupIdAndAttendanceMode(Long groupId, AttendanceMode mode);
 
     /**
      * Finds enrollment by student ID and group ID.
@@ -149,7 +149,7 @@ public interface EnrollmentRepositoryPort {
      * @param groupId the subject group ID
      * @return Optional containing the enrollment if found
      */
-    Optional<Enrollment> findByStudentIdAndSubjectGroupId(Long studentId, Long groupId);
+    Optional<EnrollmentDomain> findByStudentIdAndSubjectGroupId(Long studentId, Long groupId);
 
     /**
      * Deletes an enrollment by ID.
@@ -172,5 +172,5 @@ public interface EnrollmentRepositoryPort {
      * @param status the enrollment status
      * @return list of enrollments
      */
-    List<Enrollment> findByStatus(EnrollmentStatus status);
+    List<EnrollmentDomain> findByStatus(EnrollmentStatus status);
 }

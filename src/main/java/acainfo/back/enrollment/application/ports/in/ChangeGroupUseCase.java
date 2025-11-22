@@ -1,6 +1,6 @@
 package acainfo.back.enrollment.application.ports.in;
 
-import acainfo.back.enrollment.domain.model.Enrollment;
+import acainfo.back.enrollment.domain.model.EnrollmentDomain;
 
 /**
  * Use case for changing a student's enrollment to a different group.
@@ -14,5 +14,5 @@ public interface ChangeGroupUseCase {
      * @param newGroupId the new group ID
      * @return the new enrollment
      */
-    Enrollment changeGroup(Long enrollmentId, Long newGroupId);
+    EnrollmentDomain changeGroup(Long enrollmentId, Long newGroupId);
 }

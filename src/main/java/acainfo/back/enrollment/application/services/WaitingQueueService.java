@@ -3,12 +3,12 @@ package acainfo.back.enrollment.application.services;
 import acainfo.back.enrollment.application.ports.in.ProcessWaitingQueueUseCase;
 import acainfo.back.enrollment.application.ports.out.EnrollmentRepositoryPort;
 import acainfo.back.enrollment.domain.exception.EnrollmentNotFoundException;
-import acainfo.back.enrollment.domain.model.Enrollment;
+import acainfo.back.enrollment.domain.model.EnrollmentDomain;
 import acainfo.back.enrollment.domain.model.EnrollmentStatus;
 import acainfo.back.enrollment.domain.model.AttendanceMode;
 import acainfo.back.subjectgroup.application.ports.out.GroupRepositoryPort;
 import acainfo.back.subjectgroup.domain.exception.GroupNotFoundException;
-import acainfo.back.subjectgroup.domain.model.SubjectGroup;
+import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -49,11 +49,11 @@ public class WaitingQueueService implements ProcessWaitingQueueUseCase {
      */
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public Optional<Enrollment> processWaitingQueue(Long groupId) {
+    public Optional<EnrollmentDomain> processWaitingQueue(Long groupId) {
         log.info("Processing waiting queue for group {}", groupId);
 
         // 1. Validate group exists
-        SubjectGroup group = groupRepository.findById(groupId)
+        SubjectGroupDomain group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupNotFoundException(groupId));
 
         // 2. Check if group has available places
@@ -64,7 +64,7 @@ public class WaitingQueueService implements ProcessWaitingQueueUseCase {
         }
 
         // 3. Get waiting queue (ordered by enrollment date - FIFO)
-        List<Enrollment> waitingQueue = enrollmentRepository
+        List<EnrollmentDomain> waitingQueue = enrollmentRepository
                 .findBySubjectGroupIdAndStatusOrderByEnrollmentDateAsc(groupId, EnrollmentStatus.EN_ESPERA);
 
         if (waitingQueue.isEmpty()) {
@@ -73,41 +73,41 @@ public class WaitingQueueService implements ProcessWaitingQueueUseCase {
         }
 
         // 4. Get first student in queue (FIFO)
-        Enrollment nextInQueue = waitingQueue.get(0);
+        EnrollmentDomain nextInQueue = waitingQueue.get(0);
 
         log.info("Activating student {} from waiting queue for group {}. " +
                 "Position in queue: 1/{}, Available places: {}",
-            nextInQueue.getStudent().getId(),
+            nextInQueue.getStudentId(),
             groupId,
             waitingQueue.size(),
             group.getAvailablePlaces());
 
-        // 5. Activate enrollment
-        nextInQueue.activate();
-        nextInQueue.changeAttendanceMode(AttendanceMode.PRESENCIAL);
+        // 5. Activate enrollment using domain methods
+        EnrollmentDomain activated = nextInQueue.activate();
+        activated = activated.changeAttendanceMode(AttendanceMode.PRESENCIAL);
 
         // 6. Increment group occupancy
-        group.incrementOccupancy();
-        groupRepository.save(group);
+        SubjectGroupDomain updatedGroup = group.incrementOccupancy();
+        groupRepository.save(updatedGroup);
 
         // 7. Save enrollment
-        Enrollment activatedEnrollment = enrollmentRepository.save(nextInQueue);
+        EnrollmentDomain activatedEnrollment = enrollmentRepository.save(activated);
 
         log.info("Student {} successfully activated from waiting queue. " +
                 "New group occupancy: {}/{}. Remaining in queue: {}",
-            nextInQueue.getStudent().getId(),
-            group.getCurrentOccupancy(),
-            group.getMaxCapacity(),
+            activatedEnrollment.getStudentId(),
+            updatedGroup.getCurrentOccupancy(),
+            updatedGroup.getMaxCapacity(),
             waitingQueue.size() - 1);
 
         // 8. TODO: Send notification to student
         // notificationService.notifyPlaceAvailable(activatedEnrollment);
 
         // 9. If there are still available places and more students waiting, process next
-        if (group.hasAvailablePlaces() && waitingQueue.size() > 1) {
+        if (updatedGroup.hasAvailablePlaces() && waitingQueue.size() > 1) {
             log.info("Group {} still has {} available places and {} students waiting. " +
                     "Processing next in queue...",
-                groupId, group.getAvailablePlaces(), waitingQueue.size() - 1);
+                groupId, updatedGroup.getAvailablePlaces(), waitingQueue.size() - 1);
             // Recursively process next in queue
             processWaitingQueue(groupId);
         }
@@ -127,7 +127,7 @@ public class WaitingQueueService implements ProcessWaitingQueueUseCase {
         log.debug("Getting queue position for enrollment {}", enrollmentId);
 
         // Get enrollment
-        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+        EnrollmentDomain enrollment = enrollmentRepository.findById(enrollmentId)
                 .orElseThrow(() -> new EnrollmentNotFoundException(enrollmentId));
 
         // Check if enrollment is in waiting status
@@ -137,9 +137,9 @@ public class WaitingQueueService implements ProcessWaitingQueueUseCase {
         }
 
         // Get waiting queue for the group
-        List<Enrollment> waitingQueue = enrollmentRepository
+        List<EnrollmentDomain> waitingQueue = enrollmentRepository
                 .findBySubjectGroupIdAndStatusOrderByEnrollmentDateAsc(
-                    enrollment.getSubjectGroup().getId(),
+                    enrollment.getSubjectGroupId(),
                     EnrollmentStatus.EN_ESPERA
                 );
 
@@ -182,7 +182,7 @@ public class WaitingQueueService implements ProcessWaitingQueueUseCase {
      * @return list of enrollments in waiting queue (ordered by enrollment date)
      */
     @Transactional(readOnly = true)
-    public List<Enrollment> getWaitingQueue(Long groupId) {
+    public List<EnrollmentDomain> getWaitingQueue(Long groupId) {
         log.debug("Getting waiting queue for group {}", groupId);
 
         return enrollmentRepository.findBySubjectGroupIdAndStatusOrderByEnrollmentDateAsc(
@@ -203,7 +203,7 @@ public class WaitingQueueService implements ProcessWaitingQueueUseCase {
         log.info("Processing entire waiting queue for group {}", groupId);
 
         int activatedCount = 0;
-        Optional<Enrollment> activated;
+        Optional<EnrollmentDomain> activated;
 
         // Process queue until no more places or no more students waiting
         do {

@@ -1,6 +1,5 @@
 package acainfo.back.enrollment.infrastructure.adapters.in.dto;
 
-import acainfo.back.enrollment.domain.model.Enrollment;
 import acainfo.back.enrollment.domain.model.EnrollmentStatus;
 import acainfo.back.enrollment.domain.model.AttendanceMode;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -97,46 +96,5 @@ public class EnrollmentResponse {
 
         @Schema(description = "Current occupancy", example = "18/24")
         private String occupancy;
-    }
-
-    /**
-     * Converts an Enrollment entity to an EnrollmentResponse DTO.
-     */
-    public static EnrollmentResponse fromEntity(Enrollment enrollment) {
-        EnrollmentResponseBuilder builder = EnrollmentResponse.builder()
-                .id(enrollment.getId())
-                .status(enrollment.getStatus())
-                .attendanceMode(enrollment.getAttendanceMode())
-                .enrollmentDate(enrollment.getEnrollmentDate())
-                .withdrawalDate(enrollment.getWithdrawalDate())
-                .withdrawalReason(enrollment.getWithdrawalReason())
-                .updatedAt(enrollment.getUpdatedAt());
-
-        // Add student info
-        if (enrollment.getStudent() != null) {
-            var student = enrollment.getStudent();
-            builder.student(StudentBasicInfo.builder()
-                    .id(student.getId())
-                    .email(student.getEmail())
-                    .firstName(student.getFirstName())
-                    .lastName(student.getLastName())
-                    .fullName(student.getFullName())
-                    .build());
-        }
-
-        // Add subject group info
-        if (enrollment.getSubjectGroup() != null) {
-            var group = enrollment.getSubjectGroup();
-            builder.subjectGroup(SubjectGroupBasicInfo.builder()
-                    .id(group.getId())
-                    .subjectCode(group.getSubject() != null ? group.getSubject().getCode() : "N/A")
-                    .subjectName(group.getSubject() != null ? group.getSubject().getName() : "N/A")
-                    .groupType(group.getType().getDisplayName())
-                    .groupStatus(group.getStatus().getDisplayName())
-                    .occupancy(group.getCurrentOccupancy() + "/" + group.getMaxCapacity())
-                    .build());
-        }
-
-        return builder.build();
     }
 }

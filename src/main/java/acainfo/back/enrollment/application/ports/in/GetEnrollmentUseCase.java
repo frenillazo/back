@@ -1,6 +1,6 @@
 package acainfo.back.enrollment.application.ports.in;
 
-import acainfo.back.enrollment.domain.model.Enrollment;
+import acainfo.back.enrollment.domain.model.EnrollmentDomain;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ public interface GetEnrollmentUseCase {
      * @param id the enrollment ID
      * @return the enrollment
      */
-    Enrollment getEnrollmentById(Long id);
+    EnrollmentDomain getEnrollmentById(Long id);
 
     /**
      * Gets all active enrollments for a student.
@@ -23,7 +23,7 @@ public interface GetEnrollmentUseCase {
      * @param studentId the student ID
      * @return list of active enrollments
      */
-    List<Enrollment> getActiveEnrollmentsByStudent(Long studentId);
+    List<EnrollmentDomain> getActiveEnrollmentsByStudent(Long studentId);
 
     /**
      * Gets all enrollments for a student.
@@ -31,7 +31,7 @@ public interface GetEnrollmentUseCase {
      * @param studentId the student ID
      * @return list of enrollments
      */
-    List<Enrollment> getAllEnrollmentsByStudent(Long studentId);
+    List<EnrollmentDomain> getAllEnrollmentsByStudent(Long studentId);
 
     /**
      * Gets all enrollments for a subject group.
@@ -39,7 +39,7 @@ public interface GetEnrollmentUseCase {
      * @param groupId the subject group ID
      * @return list of enrollments
      */
-    List<Enrollment> getEnrollmentsByGroup(Long groupId);
+    List<EnrollmentDomain> getEnrollmentsByGroup(Long groupId);
 
     /**
      * Gets all active enrollments for a subject group.
@@ -47,7 +47,7 @@ public interface GetEnrollmentUseCase {
      * @param groupId the subject group ID
      * @return list of active enrollments
      */
-    List<Enrollment> getActiveEnrollmentsByGroup(Long groupId);
+    List<EnrollmentDomain> getActiveEnrollmentsByGroup(Long groupId);
 
     /**
      * Checks if a student is enrolled in a group.

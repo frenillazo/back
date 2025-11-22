@@ -1,6 +1,6 @@
 package acainfo.back.enrollment.application.ports.in;
 
-import acainfo.back.enrollment.domain.model.Enrollment;
+import acainfo.back.enrollment.domain.model.EnrollmentDomain;
 
 import java.util.Optional;
 
@@ -17,7 +17,7 @@ public interface ProcessWaitingQueueUseCase {
      * @param groupId the subject group ID
      * @return Optional containing the activated enrollment if any student was waiting, empty otherwise
      */
-    Optional<Enrollment> processWaitingQueue(Long groupId);
+    Optional<EnrollmentDomain> processWaitingQueue(Long groupId);
 
     /**
      * Gets the position of a student in the waiting queue for a group.
