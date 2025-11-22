@@ -1,8 +1,8 @@
 package acainfo.back.schedule.infrastructure.adapters.out.persistence.entities;
 
 import acainfo.back.schedule.domain.model.Classroom;
-import acainfo.back.session.domain.model.Session;
-import acainfo.back.subjectgroup.domain.model.SubjectGroup;
+import acainfo.back.session.infrastructure.adapters.out.persistence.entities.SessionJpaEntity;
+import acainfo.back.subjectgroup.infrastructure.adapters.out.persistence.entities.SubjectGroupJpaEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -43,7 +43,7 @@ public class ScheduleJpaEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)
     @NotNull(message = "SubjectGroup is required")
-    private SubjectGroup subjectGroup;
+    private SubjectGroupJpaEntity subjectGroup;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "day_of_week", nullable = false, length = 10)
