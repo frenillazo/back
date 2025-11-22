@@ -1,6 +1,6 @@
 package acainfo.back.shared.infrastructure.adapters.in.dto;
 
-import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
+import acainfo.back.user.domain.model.UserDomain;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -46,7 +46,7 @@ public class StudentProfileResponse {
     @Schema(description = "Account status", example = "ACTIVE")
     private String status;
 
-    public static StudentProfileResponse fromEntity(User user) {
+    public static StudentProfileResponse fromDomain(UserDomain user) {
         return StudentProfileResponse.builder()
             .id(user.getId())
             .email(user.getEmail())
@@ -58,5 +58,13 @@ public class StudentProfileResponse {
             .lastLogin(user.getLastLogin())
             .status(user.getStatus().name())
             .build();
+    }
+
+    /**
+     * @deprecated Use {@link #fromDomain(UserDomain)} instead
+     */
+    @Deprecated
+    public static StudentProfileResponse fromEntity(UserDomain user) {
+        return fromDomain(user);
     }
 }

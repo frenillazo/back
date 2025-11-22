@@ -1,6 +1,6 @@
 package acainfo.back.payment.infrastructure.adapters.in.dto;
 
-import acainfo.back.payment.domain.model.Payment;
+import acainfo.back.payment.domain.model.PaymentDomain;
 import acainfo.back.payment.domain.model.PaymentStatus;
 import acainfo.back.payment.domain.model.PaymentType;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -111,46 +111,22 @@ public class PaymentResponse {
     }
 
     /**
-     * Converts a Payment entity to a PaymentResponse DTO.
+     * Converts a Payment domain to a PaymentResponse DTO.
+     * @deprecated Use {@link PaymentResponseMapper#toResponse(PaymentDomain)} instead
      */
-    public static PaymentResponse fromEntity(Payment payment) {
-        PaymentResponseBuilder builder = PaymentResponse.builder()
-                .id(payment.getId())
-                .amount(payment.getAmount())
-                .paymentType(payment.getPaymentType())
-                .status(payment.getStatus())
-                .dueDate(payment.getDueDate())
-                .paidDate(payment.getPaidDate())
-                .invoiceNumber(payment.getInvoiceNumber())
-                .description(payment.getDescription())
-                .academicPeriod(payment.getAcademicPeriod())
-                .daysOverdue(payment.getDaysOverdue())
-                .blocksAccess(payment.blocksAccess())
-                .createdAt(payment.getCreatedAt())
-                .updatedAt(payment.getUpdatedAt());
+    @Deprecated
+    public static PaymentResponse fromEntity(PaymentDomain payment) {
+        throw new UnsupportedOperationException(
+            "fromEntity() is deprecated. Use PaymentResponseMapper.toResponse() instead.");
+    }
 
-        // Add student info
-        if (payment.getStudent() != null) {
-            var student = payment.getStudent();
-            builder.student(StudentBasicInfo.builder()
-                    .id(student.getId())
-                    .email(student.getEmail())
-                    .firstName(student.getFirstName())
-                    .lastName(student.getLastName())
-                    .fullName(student.getFullName())
-                    .build());
-        }
-
-        // Add processed by info
-        if (payment.getProcessedBy() != null) {
-            var processedBy = payment.getProcessedBy();
-            builder.processedBy(ProcessedByInfo.builder()
-                    .id(processedBy.getId())
-                    .email(processedBy.getEmail())
-                    .fullName(processedBy.getFullName())
-                    .build());
-        }
-
-        return builder.build();
+    /**
+     * Converts a Payment domain to a PaymentResponse DTO.
+     * @deprecated Use {@link PaymentResponseMapper#toResponse(PaymentDomain)} instead
+     */
+    @Deprecated
+    public static PaymentResponse fromDomain(PaymentDomain payment) {
+        throw new UnsupportedOperationException(
+            "fromDomain() is deprecated. Use PaymentResponseMapper.toResponse() instead.");
     }
 }

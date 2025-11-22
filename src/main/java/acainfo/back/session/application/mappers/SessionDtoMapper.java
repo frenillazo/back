@@ -1,13 +1,13 @@
 package acainfo.back.session.application.mappers;
 
-import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
-import acainfo.back.user.infrastructure.adapters.out.persistence.repositories.UserJpaRepository;
+import acainfo.back.session.domain.model.SessionDomain;
+import acainfo.back.session.infrastructure.adapters.in.dto.SessionResponse;
 import acainfo.back.subject.application.ports.out.SubjectRepositoryPort;
 import acainfo.back.subject.domain.model.SubjectDomain;
 import acainfo.back.subjectgroup.application.ports.out.GroupRepositoryPort;
 import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
-import acainfo.back.session.domain.model.SessionDomain;
-import acainfo.back.session.infrastructure.adapters.in.dto.SessionResponse;
+import acainfo.back.user.application.ports.out.UserRepositoryPort;
+import acainfo.back.user.domain.model.UserDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +26,7 @@ public class SessionDtoMapper {
 
     private final GroupRepositoryPort groupRepository;
     private final SubjectRepositoryPort subjectRepository;
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepository;
 
     /**
      * Converts Domain → Response DTO (API output)
