@@ -1,6 +1,6 @@
 package acainfo.back.session.application.ports.in;
 
-import acainfo.back.session.domain.model.Session;
+import acainfo.back.session.domain.model.SessionDomain;
 
 /**
  * Use case port for updating session mode (PRESENCIAL, DUAL, ONLINE).
@@ -18,7 +18,7 @@ public interface UpdateSessionModeUseCase {
      * @throws IllegalStateException if mode cannot be changed in current state
      * @throws acainfo.back.session.domain.exception.SessionNotFoundException if session not found
      */
-    Session updateSessionMode(UpdateSessionModeCommand command);
+    SessionDomain updateSessionMode(UpdateSessionModeCommand command);
 
     /**
      * Command object containing data needed to update session mode

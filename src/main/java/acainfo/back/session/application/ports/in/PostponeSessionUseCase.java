@@ -1,6 +1,6 @@
 package acainfo.back.session.application.ports.in;
 
-import acainfo.back.session.domain.model.Session;
+import acainfo.back.session.domain.model.SessionDomain;
 
 /**
  * Use case port for postponing a session.
@@ -19,7 +19,7 @@ public interface PostponeSessionUseCase {
      * @throws IllegalStateException if session cannot be postponed in current state
      * @throws acainfo.back.session.domain.exception.SessionNotFoundException if session not found
      */
-    Session postponeSession(PostponeSessionCommand command);
+    SessionDomain postponeSession(PostponeSessionCommand command);
 
     /**
      * Postpones a session and creates a new recovery session in one operation.
@@ -30,7 +30,7 @@ public interface PostponeSessionUseCase {
      * @throws IllegalStateException if session cannot be postponed
      * @throws acainfo.back.session.domain.exception.SessionConflictException if new time slot has conflicts
      */
-    Session postponeAndReschedule(PostponeAndRescheduleCommand command);
+    SessionDomain postponeAndReschedule(PostponeAndRescheduleCommand command);
 
     /**
      * Command object for postponing a session

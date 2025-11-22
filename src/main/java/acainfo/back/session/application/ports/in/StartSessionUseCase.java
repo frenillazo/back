@@ -1,6 +1,6 @@
 package acainfo.back.session.application.ports.in;
 
-import acainfo.back.session.domain.model.Session;
+import acainfo.back.session.domain.model.SessionDomain;
 
 /**
  * Use case port for starting a session.
@@ -19,7 +19,7 @@ public interface StartSessionUseCase {
      * @throws IllegalStateException if session cannot be started in current state
      * @throws acainfo.back.session.domain.exception.SessionNotFoundException if session not found
      */
-    Session startSession(StartSessionCommand command);
+    SessionDomain startSession(StartSessionCommand command);
 
     /**
      * Command object for starting a session

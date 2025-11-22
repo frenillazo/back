@@ -1,6 +1,6 @@
 package acainfo.back.session.application.ports.in;
 
-import acainfo.back.session.domain.model.Session;
+import acainfo.back.session.domain.model.SessionDomain;
 
 /**
  * Use case port for creating a new session.
@@ -17,7 +17,7 @@ public interface CreateSessionUseCase {
      * @throws IllegalArgumentException if validation fails
      * @throws acainfo.back.session.domain.exception.SessionConflictException if there are scheduling conflicts
      */
-    Session createSession(CreateSessionCommand command);
+    SessionDomain createSession(CreateSessionCommand command);
 
     /**
      * Command object containing all data needed to create a session

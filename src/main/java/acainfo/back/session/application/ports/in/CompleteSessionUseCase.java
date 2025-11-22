@@ -1,6 +1,6 @@
 package acainfo.back.session.application.ports.in;
 
-import acainfo.back.session.domain.model.Session;
+import acainfo.back.session.domain.model.SessionDomain;
 
 /**
  * Use case port for completing a session.
@@ -18,7 +18,7 @@ public interface CompleteSessionUseCase {
      * @throws IllegalStateException if session cannot be completed in current state
      * @throws acainfo.back.session.domain.exception.SessionNotFoundException if session not found
      */
-    Session completeSession(CompleteSessionCommand command);
+    SessionDomain completeSession(CompleteSessionCommand command);
 
     /**
      * Command object for completing a session
