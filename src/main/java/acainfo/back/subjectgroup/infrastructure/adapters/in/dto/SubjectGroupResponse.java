@@ -1,10 +1,7 @@
 package acainfo.back.subjectgroup.infrastructure.adapters.in.dto;
 
-import acainfo.back.shared.domain.model.User;
 import acainfo.back.subject.domain.model.Degree;
-import acainfo.back.subject.domain.model.Subject;
 import acainfo.back.subjectgroup.domain.model.AcademicPeriod;
-import acainfo.back.subjectgroup.domain.model.SubjectGroup;
 import acainfo.back.subjectgroup.domain.model.GroupStatus;
 import acainfo.back.subjectgroup.domain.model.GroupType;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -110,49 +107,5 @@ public class SubjectGroupResponse {
 
         @Schema(description = "Teacher full name", example = "Juan García")
         private String fullName;
-    }
-
-    /**
-     * Converts a SubjectGroup entity to a SubjectGroupResponse DTO.
-     */
-    public static SubjectGroupResponse fromEntity(SubjectGroup subjectGroup) {
-        SubjectGroupResponseBuilder builder = SubjectGroupResponse.builder()
-                .id(subjectGroup.getId())
-                .type(subjectGroup.getType())
-                .period(subjectGroup.getPeriod())
-                .status(subjectGroup.getStatus())
-                .maxCapacity(subjectGroup.getMaxCapacity())
-                .currentOccupancy(subjectGroup.getCurrentOccupancy())
-                .availablePlaces(subjectGroup.getAvailablePlaces())
-                .hasAvailablePlaces(subjectGroup.hasAvailablePlaces())
-                .isFull(subjectGroup.isFull())
-                .createdAt(subjectGroup.getCreatedAt())
-                .updatedAt(subjectGroup.getUpdatedAt());
-
-        // Add subject info
-        if (subjectGroup.getSubject() != null) {
-            Subject subject = subjectGroup.getSubject();
-            builder.subject(SubjectBasicInfo.builder()
-                    .id(subject.getId())
-                    .code(subject.getCode())
-                    .name(subject.getName())
-                    .year(subject.getYear())
-                    .degree(subject.getDegree())
-                    .build());
-        }
-
-        // Add teacher info (if assigned)
-        if (subjectGroup.getTeacher() != null) {
-            User teacher = subjectGroup.getTeacher();
-            builder.teacher(TeacherBasicInfo.builder()
-                    .id(teacher.getId())
-                    .email(teacher.getEmail())
-                    .firstName(teacher.getFirstName())
-                    .lastName(teacher.getLastName())
-                    .fullName(teacher.getFullName())
-                    .build());
-        }
-
-        return builder.build();
     }
 }

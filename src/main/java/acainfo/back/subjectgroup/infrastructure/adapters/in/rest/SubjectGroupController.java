@@ -1,13 +1,14 @@
 package acainfo.back.subjectgroup.infrastructure.adapters.in.rest;
 
-import acainfo.back.shared.domain.model.User;
-import acainfo.back.subjectgroup.application.services.SubjectGroupService;
-import acainfo.back.subjectgroup.domain.model.SubjectGroup;
-import acainfo.back.subjectgroup.domain.validation.SubjectGroupSpecifications;
-import acainfo.back.subject.domain.model.Subject;
+import acainfo.back.subjectgroup.application.mappers.SubjectGroupDtoMapper;
+import acainfo.back.subjectgroup.application.ports.in.CreateGroupUseCase;
+import acainfo.back.subjectgroup.application.ports.in.DeleteGroupUseCase;
+import acainfo.back.subjectgroup.application.ports.in.GetGroupUseCase;
+import acainfo.back.subjectgroup.application.ports.in.UpdateGroupUseCase;
 import acainfo.back.subjectgroup.domain.model.AcademicPeriod;
 import acainfo.back.subjectgroup.domain.model.GroupStatus;
 import acainfo.back.subjectgroup.domain.model.GroupType;
+import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
 import acainfo.back.subjectgroup.infrastructure.adapters.in.dto.CreateSubjectGroupRequest;
 import acainfo.back.subjectgroup.infrastructure.adapters.in.dto.SubjectGroupResponse;
 import acainfo.back.subjectgroup.infrastructure.adapters.in.dto.UpdateSubjectGroupRequest;
@@ -19,18 +20,21 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * REST Controller for subjectGroup management.
- * Provides endpoints for CRUD operations and advanced filtering.
+ * Provides endpoints for CRUD operations and filtering.
+ *
+ * Refactored to use pure hexagonal architecture:
+ * - Uses SubjectGroupDomain (pure domain model)
+ * - Delegates to individual use cases
+ * - Uses SubjectGroupDtoMapper for DTO conversions
  */
 @RestController
 @RequestMapping("/api/groups")
@@ -39,7 +43,11 @@ import java.util.stream.Collectors;
 @Tag(name = "Groups", description = "SubjectGroup management endpoints")
 public class SubjectGroupController {
 
-    private final SubjectGroupService subjectGroupService;
+    private final CreateGroupUseCase createGroupUseCase;
+    private final UpdateGroupUseCase updateGroupUseCase;
+    private final GetGroupUseCase getGroupUseCase;
+    private final DeleteGroupUseCase deleteGroupUseCase;
+    private final SubjectGroupDtoMapper groupDtoMapper;
 
     // ==================== CREATE ====================
 
@@ -55,23 +63,11 @@ public class SubjectGroupController {
     public ResponseEntity<SubjectGroupResponse> createGroup(@Valid @RequestBody CreateSubjectGroupRequest request) {
         log.info("Creating subjectGroup for subject ID: {}", request.getSubjectId());
 
-        // Build subjectGroup entity from request
-        SubjectGroup subjectGroup = SubjectGroup.builder()
-                .subject(Subject.builder().id(request.getSubjectId()).build())
-                .type(request.getType())
-                .period(request.getPeriod())
-                .maxCapacity(request.getMaxCapacity())
-                .build();
+        SubjectGroupDomain group = groupDtoMapper.toDomain(request);
+        SubjectGroupDomain createdGroup = createGroupUseCase.createGroup(group);
+        SubjectGroupResponse response = groupDtoMapper.toResponse(createdGroup);
 
-        // Set teacher if provided
-        if (request.getTeacherId() != null) {
-            subjectGroup.setTeacher(User.builder().id(request.getTeacherId()).build());
-        }
-
-        SubjectGroup createdSubjectGroup = subjectGroupService.createGroup(subjectGroup);
-        SubjectGroupResponse response = SubjectGroupResponse.fromEntity(createdSubjectGroup);
-
-        log.info("SubjectGroup created successfully with ID: {}", createdSubjectGroup.getId());
+        log.info("SubjectGroup created successfully with ID: {}", createdGroup.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -90,20 +86,10 @@ public class SubjectGroupController {
             @Parameter(description = "SubjectGroup ID") @PathVariable Long id,
             @Valid @RequestBody UpdateSubjectGroupRequest request) {
         log.info("Updating subjectGroup with ID: {}", id);
-        SubjectGroup subjectGroup = SubjectGroup.builder()
-                .type(request.getType())
-                .period(request.getPeriod())
-                .maxCapacity(request.getMaxCapacity())
-                .status(request.getStatus())
-                .build();
 
-        // Set teacher if provided
-        if (request.getTeacherId() != null) {
-            subjectGroup.setTeacher(User.builder().id(request.getTeacherId()).build());
-        }
-
-        SubjectGroup updatedSubjectGroup = subjectGroupService.updateGroup(id, subjectGroup);
-        SubjectGroupResponse response = SubjectGroupResponse.fromEntity(updatedSubjectGroup);
+        SubjectGroupDomain updateData = groupDtoMapper.toDomainFromUpdate(request);
+        SubjectGroupDomain updatedGroup = updateGroupUseCase.updateGroup(id, updateData);
+        SubjectGroupResponse response = groupDtoMapper.toResponse(updatedGroup);
 
         log.info("SubjectGroup updated successfully: {}", id);
         return ResponseEntity.ok(response);
@@ -123,8 +109,8 @@ public class SubjectGroupController {
             @Parameter(description = "Teacher ID") @RequestParam Long teacherId) {
         log.info("Assigning teacher {} to subjectGroup {}", teacherId, id);
 
-        SubjectGroup updatedSubjectGroup = subjectGroupService.assignTeacher(id, teacherId);
-        SubjectGroupResponse response = SubjectGroupResponse.fromEntity(updatedSubjectGroup);
+        SubjectGroupDomain updatedGroup = updateGroupUseCase.assignTeacher(id, teacherId);
+        SubjectGroupResponse response = groupDtoMapper.toResponse(updatedGroup);
 
         log.info("Teacher assigned successfully to subjectGroup {}", id);
         return ResponseEntity.ok(response);
@@ -141,7 +127,7 @@ public class SubjectGroupController {
     public ResponseEntity<Void> cancelGroup(@Parameter(description = "SubjectGroup ID") @PathVariable Long id) {
         log.info("Cancelling subjectGroup with ID: {}", id);
 
-        subjectGroupService.cancelGroup(id);
+        deleteGroupUseCase.cancelGroup(id);
 
         log.info("SubjectGroup cancelled successfully: {}", id);
         return ResponseEntity.noContent().build();
@@ -158,8 +144,8 @@ public class SubjectGroupController {
     public ResponseEntity<SubjectGroupResponse> getGroupById(@Parameter(description = "SubjectGroup ID") @PathVariable Long id) {
         log.debug("Fetching subjectGroup with ID: {}", id);
 
-        SubjectGroup subjectGroup = subjectGroupService.getGroupById(id);
-        SubjectGroupResponse response = SubjectGroupResponse.fromEntity(subjectGroup);
+        SubjectGroupDomain group = getGroupUseCase.getGroupById(id);
+        SubjectGroupResponse response = groupDtoMapper.toResponse(group);
 
         return ResponseEntity.ok(response);
     }
@@ -175,17 +161,13 @@ public class SubjectGroupController {
             @Parameter(description = "Filter by subjectGroup type") @RequestParam(required = false) GroupType type,
             @Parameter(description = "Filter by academic period") @RequestParam(required = false) AcademicPeriod period,
             @Parameter(description = "Filter by status") @RequestParam(required = false) GroupStatus status,
-            @Parameter(description = "Filter groups with available places") @RequestParam(required = false) Boolean hasAvailablePlaces,
-            @Parameter(description = "Filter by year") @RequestParam(required = false) Integer year) {
+            @Parameter(description = "Filter groups with available places") @RequestParam(required = false) Boolean hasAvailablePlaces) {
 
-        log.debug("Fetching subjectGroups with filters - subjectId: {}, teacherId: {}, type: {}, period: {}, " +
-                        "status: {}, hasAvailable: {}, year: {}",
-                subjectId, teacherId, type, period, status, hasAvailablePlaces, year);
+        log.debug("Fetching subjectGroups with filters - subjectId: {}, teacherId: {}, type: {}, period: {}, status: {}, hasAvailable: {}",
+                subjectId, teacherId, type, period, status, hasAvailablePlaces);
 
-        List<SubjectGroup> subjectGroups = applyFilters(subjectId, teacherId, type, period, status, hasAvailablePlaces, year);
-        List<SubjectGroupResponse> responses = subjectGroups.stream()
-                .map(SubjectGroupResponse::fromEntity)
-                .collect(Collectors.toList());
+        List<SubjectGroupDomain> groups = applyFilters(subjectId, teacherId, type, period, status, hasAvailablePlaces);
+        List<SubjectGroupResponse> responses = groupDtoMapper.toResponses(groups);
 
         log.debug("Found {} subjectGroups matching filters", responses.size());
         return ResponseEntity.ok(responses);
@@ -200,10 +182,8 @@ public class SubjectGroupController {
             @Parameter(description = "Subject ID") @PathVariable Long subjectId) {
         log.debug("Fetching subjectGroups for subject ID: {}", subjectId);
 
-        List<SubjectGroup> subjectGroups = subjectGroupService.getGroupsBySubject(subjectId);
-        List<SubjectGroupResponse> responses = subjectGroups.stream()
-                .map(SubjectGroupResponse::fromEntity)
-                .collect(Collectors.toList());
+        List<SubjectGroupDomain> groups = getGroupUseCase.getGroupsBySubject(subjectId);
+        List<SubjectGroupResponse> responses = groupDtoMapper.toResponses(groups);
 
         return ResponseEntity.ok(responses);
     }
@@ -217,10 +197,8 @@ public class SubjectGroupController {
             @Parameter(description = "Teacher ID") @PathVariable Long teacherId) {
         log.debug("Fetching subjectGroups for teacher ID: {}", teacherId);
 
-        List<SubjectGroup> subjectGroups = subjectGroupService.getGroupsByTeacher(teacherId);
-        List<SubjectGroupResponse> responses = subjectGroups.stream()
-                .map(SubjectGroupResponse::fromEntity)
-                .collect(Collectors.toList());
+        List<SubjectGroupDomain> groups = getGroupUseCase.getGroupsByTeacher(teacherId);
+        List<SubjectGroupResponse> responses = groupDtoMapper.toResponses(groups);
 
         return ResponseEntity.ok(responses);
     }
@@ -233,10 +211,8 @@ public class SubjectGroupController {
     public ResponseEntity<List<SubjectGroupResponse>> getGroupsWithAvailablePlaces() {
         log.debug("Fetching subjectGroups with available places");
 
-        List<SubjectGroup> subjectGroups = subjectGroupService.getGroupsWithAvailablePlaces();
-        List<SubjectGroupResponse> responses = subjectGroups.stream()
-                .map(SubjectGroupResponse::fromEntity)
-                .collect(Collectors.toList());
+        List<SubjectGroupDomain> groups = getGroupUseCase.getGroupsWithAvailablePlaces();
+        List<SubjectGroupResponse> responses = groupDtoMapper.toResponses(groups);
 
         return ResponseEntity.ok(responses);
     }
@@ -255,7 +231,7 @@ public class SubjectGroupController {
     public ResponseEntity<Void> deleteGroup(@Parameter(description = "SubjectGroup ID") @PathVariable Long id) {
         log.info("Deleting subjectGroup with ID: {}", id);
 
-        subjectGroupService.deleteGroup(id);
+        deleteGroupUseCase.deleteGroup(id);
 
         log.info("SubjectGroup deleted successfully: {}", id);
         return ResponseEntity.noContent().build();
@@ -264,22 +240,38 @@ public class SubjectGroupController {
     // ==================== PRIVATE HELPER METHODS ====================
 
     /**
-     * Applies dynamic filters using Specifications.
+     * Applies filters using specific use case methods
      */
-    private List<SubjectGroup> applyFilters(Long subjectId, Long teacherId, GroupType type, AcademicPeriod period,
-                                            GroupStatus status, Boolean hasAvailablePlaces, Integer year) {
+    private List<SubjectGroupDomain> applyFilters(Long subjectId, Long teacherId, GroupType type,
+                                                   AcademicPeriod period, GroupStatus status,
+                                                   Boolean hasAvailablePlaces) {
 
-        // If no filters provided, return all groups
-        if (subjectId == null && teacherId == null && type == null && period == null &&
-                status == null && hasAvailablePlaces == null && year == null) {
-            return subjectGroupService.getAllGroups();
+        // Priority order for filtering - most specific first
+        if (hasAvailablePlaces != null && hasAvailablePlaces) {
+            return getGroupUseCase.getGroupsWithAvailablePlaces();
         }
 
-        // Build specification with provided filters
-        Specification<SubjectGroup> spec = SubjectGroupSpecifications.combineFilters(
-                subjectId, teacherId, type, period, status, null, hasAvailablePlaces, year
-        );
+        if (subjectId != null) {
+            return getGroupUseCase.getGroupsBySubject(subjectId);
+        }
 
-        return subjectGroupService.findGroupsWithFilters(spec);
+        if (teacherId != null) {
+            return getGroupUseCase.getGroupsByTeacher(teacherId);
+        }
+
+        if (status != null) {
+            return getGroupUseCase.getGroupsByStatus(status);
+        }
+
+        if (type != null) {
+            return getGroupUseCase.getGroupsByType(type);
+        }
+
+        if (period != null) {
+            return getGroupUseCase.getGroupsByPeriod(period);
+        }
+
+        // No filters provided, return all
+        return getGroupUseCase.getAllGroups();
     }
 }
