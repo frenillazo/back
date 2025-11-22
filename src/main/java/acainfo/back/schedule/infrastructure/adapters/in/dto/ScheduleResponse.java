@@ -1,7 +1,6 @@
 package acainfo.back.schedule.infrastructure.adapters.in.dto;
 
 import acainfo.back.schedule.domain.model.Classroom;
-import acainfo.back.schedule.domain.model.Schedule;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -72,41 +71,4 @@ public class ScheduleResponse {
 
     @Schema(description = "Last modification timestamp")
     private LocalDateTime updatedAt;
-
-    /**
-     * Converts a Schedule entity to a ScheduleResponse DTO.
-     *
-     * @param schedule the schedule entity
-     * @return ScheduleResponse DTO
-     */
-    public static ScheduleResponse fromEntity(Schedule schedule) {
-        ScheduleResponseBuilder builder = ScheduleResponse.builder()
-                .id(schedule.getId())
-                .groupId(schedule.getSubjectGroup().getId())
-                .groupName(schedule.getSubjectGroup().getDisplayName())
-                .dayOfWeek(schedule.getDayOfWeek())
-                .dayOfWeekLocalized(schedule.getLocalizedDayName())
-                .startTime(schedule.getStartTime())
-                .endTime(schedule.getEndTime())
-                .durationInMinutes(schedule.getDurationInMinutes())
-                .classroom(schedule.getClassroom())
-                .classroomDisplayName(schedule.getClassroom().getDisplayName())
-                .formattedSchedule(schedule.getFormattedScheduleSpanish())
-                .createdAt(schedule.getCreatedAt())
-                .updatedAt(schedule.getUpdatedAt());
-
-        // Add subject info
-        if (schedule.getSubjectGroup().getSubject() != null) {
-            builder.subjectId(schedule.getSubjectGroup().getSubject().getId())
-                    .subjectName(schedule.getSubjectGroup().getSubject().getName());
-        }
-
-        // Add teacher info
-        if (schedule.getSubjectGroup().getTeacher() != null) {
-            builder.teacherId(schedule.getSubjectGroup().getTeacher().getId())
-                    .teacherName(schedule.getSubjectGroup().getTeacher().getFullName());
-        }
-
-        return builder.build();
-    }
 }

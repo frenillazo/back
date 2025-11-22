@@ -1,7 +1,7 @@
 package acainfo.back.schedule.application.ports.out;
 
 import acainfo.back.schedule.domain.model.Classroom;
-import acainfo.back.schedule.domain.model.Schedule;
+import acainfo.back.schedule.domain.model.ScheduleDomain;
 
 import java.time.DayOfWeek;
 import java.util.List;
@@ -9,6 +9,7 @@ import java.util.Optional;
 
 /**
  * Port interface for Schedule repository operations.
+ * Works with ScheduleDomain (pure domain model)
  */
 public interface ScheduleRepositoryPort {
 
@@ -18,7 +19,7 @@ public interface ScheduleRepositoryPort {
      * @param schedule the schedule to save
      * @return the saved schedule
      */
-    Schedule save(Schedule schedule);
+    ScheduleDomain save(ScheduleDomain schedule);
 
     /**
      * Finds a schedule by ID.
@@ -26,14 +27,14 @@ public interface ScheduleRepositoryPort {
      * @param scheduleId the schedule ID
      * @return Optional containing the schedule if found
      */
-    Optional<Schedule> findById(Long scheduleId);
+    Optional<ScheduleDomain> findById(Long scheduleId);
 
     /**
      * Finds all schedules.
      *
      * @return list of all schedules
      */
-    List<Schedule> findAll();
+    List<ScheduleDomain> findAll();
 
     /**
      * Finds all schedules for a specific subjectGroup.
@@ -41,7 +42,7 @@ public interface ScheduleRepositoryPort {
      * @param groupId the subjectGroup ID
      * @return list of schedules
      */
-    List<Schedule> findByGroupId(Long groupId);
+    List<ScheduleDomain> findByGroupId(Long groupId);
 
     /**
      * Finds all schedules for a specific teacher.
@@ -49,7 +50,7 @@ public interface ScheduleRepositoryPort {
      * @param teacherId the teacher ID
      * @return list of schedules
      */
-    List<Schedule> findByTeacherId(Long teacherId);
+    List<ScheduleDomain> findByTeacherId(Long teacherId);
 
     /**
      * Finds all schedules for a specific classroom.
@@ -57,7 +58,7 @@ public interface ScheduleRepositoryPort {
      * @param classroom the classroom
      * @return list of schedules
      */
-    List<Schedule> findByClassroom(Classroom classroom);
+    List<ScheduleDomain> findByClassroom(Classroom classroom);
 
     /**
      * Finds all schedules for a specific day of week.
@@ -65,7 +66,7 @@ public interface ScheduleRepositoryPort {
      * @param dayOfWeek the day of week
      * @return list of schedules
      */
-    List<Schedule> findByDayOfWeek(DayOfWeek dayOfWeek);
+    List<ScheduleDomain> findByDayOfWeek(DayOfWeek dayOfWeek);
 
     /**
      * Finds all schedules for a specific subject.
@@ -73,7 +74,7 @@ public interface ScheduleRepositoryPort {
      * @param subjectId the subject ID
      * @return list of schedules
      */
-    List<Schedule> findBySubjectId(Long subjectId);
+    List<ScheduleDomain> findBySubjectId(Long subjectId);
 
     /**
      * Deletes a schedule by ID.

@@ -1,9 +1,10 @@
 package acainfo.back.schedule.application.ports.in;
 
-import acainfo.back.schedule.domain.model.Schedule;
+import acainfo.back.schedule.domain.model.ScheduleDomain;
 
 /**
  * Use case interface for managing schedules (create, update, delete operations).
+ * Works with ScheduleDomain (pure domain model)
  */
 public interface ManageScheduleUseCase {
 
@@ -13,7 +14,7 @@ public interface ManageScheduleUseCase {
      * @param schedule the schedule to create
      * @return the created schedule with ID
      */
-    Schedule createSchedule(Schedule schedule);
+    ScheduleDomain createSchedule(ScheduleDomain schedule);
 
     /**
      * Updates an existing schedule.
@@ -22,7 +23,7 @@ public interface ManageScheduleUseCase {
      * @param schedule the schedule data
      * @return the updated schedule
      */
-    Schedule updateSchedule(Long scheduleId, Schedule schedule);
+    ScheduleDomain updateSchedule(Long scheduleId, ScheduleDomain schedule);
 
     /**
      * Deletes a schedule by ID.

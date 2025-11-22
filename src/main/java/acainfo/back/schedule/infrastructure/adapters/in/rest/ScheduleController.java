@@ -1,10 +1,10 @@
 package acainfo.back.schedule.infrastructure.adapters.in.rest;
 
+import acainfo.back.schedule.application.mappers.ScheduleDtoMapper;
 import acainfo.back.schedule.application.ports.in.GetScheduleUseCase;
 import acainfo.back.schedule.application.ports.in.ManageScheduleUseCase;
 import acainfo.back.schedule.domain.model.Classroom;
-import acainfo.back.subjectgroup.domain.model.SubjectGroup;
-import acainfo.back.schedule.domain.model.Schedule;
+import acainfo.back.schedule.domain.model.ScheduleDomain;
 import acainfo.back.schedule.infrastructure.adapters.in.dto.CreateScheduleRequest;
 import acainfo.back.schedule.infrastructure.adapters.in.dto.ScheduleResponse;
 import acainfo.back.schedule.infrastructure.adapters.in.dto.UpdateScheduleRequest;
@@ -25,11 +25,15 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.DayOfWeek;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * REST Controller for managing schedules.
  * Provides endpoints for CRUD operations and queries on schedules.
+ *
+ * Refactored to use pure hexagonal architecture:
+ * - Uses ScheduleDomain (pure domain model)
+ * - Delegates to use case interfaces
+ * - Uses ScheduleDtoMapper for DTO conversions
  */
 @RestController
 @RequestMapping("/api/schedules")
@@ -40,6 +44,7 @@ public class ScheduleController {
 
     private final ManageScheduleUseCase manageScheduleUseCase;
     private final GetScheduleUseCase getScheduleUseCase;
+    private final ScheduleDtoMapper scheduleDtoMapper;
 
     /**
      * Creates a new schedule.
@@ -62,18 +67,11 @@ public class ScheduleController {
     ) {
         log.info("Creating schedule for subjectGroup ID: {}", request.getGroupId());
 
-        Schedule schedule = Schedule.builder()
-                .subjectGroup(SubjectGroup.builder().id(request.getGroupId()).build())
-                .dayOfWeek(request.getDayOfWeek())
-                .startTime(request.getStartTime())
-                .endTime(request.getEndTime())
-                .classroom(request.getClassroom())
-                .build();
+        ScheduleDomain schedule = scheduleDtoMapper.toDomain(request);
+        ScheduleDomain createdSchedule = manageScheduleUseCase.createSchedule(schedule);
+        ScheduleResponse response = scheduleDtoMapper.toResponse(createdSchedule);
 
-        Schedule createdSchedule = manageScheduleUseCase.createSchedule(schedule);
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ScheduleResponse.fromEntity(createdSchedule));
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     /**
@@ -99,26 +97,8 @@ public class ScheduleController {
         log.debug("Fetching schedules with filters - groupId: {}, teacherId: {}, classroom: {}, dayOfWeek: {}, subjectId: {}",
                 groupId, teacherId, classroom, dayOfWeek, subjectId);
 
-        List<Schedule> schedules;
-
-        // Apply filters
-        if (groupId != null) {
-            schedules = getScheduleUseCase.getSchedulesByGroupId(groupId);
-        } else if (teacherId != null) {
-            schedules = getScheduleUseCase.getSchedulesByTeacherId(teacherId);
-        } else if (classroom != null) {
-            schedules = getScheduleUseCase.getSchedulesByClassroom(classroom);
-        } else if (dayOfWeek != null) {
-            schedules = getScheduleUseCase.getSchedulesByDayOfWeek(dayOfWeek);
-        } else if (subjectId != null) {
-            schedules = getScheduleUseCase.getSchedulesBySubjectId(subjectId);
-        } else {
-            schedules = getScheduleUseCase.getAllSchedules();
-        }
-
-        List<ScheduleResponse> response = schedules.stream()
-                .map(ScheduleResponse::fromEntity)
-                .collect(Collectors.toList());
+        List<ScheduleDomain> schedules = applyFilters(groupId, teacherId, classroom, dayOfWeek, subjectId);
+        List<ScheduleResponse> response = scheduleDtoMapper.toResponses(schedules);
 
         return ResponseEntity.ok(response);
     }
@@ -142,9 +122,10 @@ public class ScheduleController {
     ) {
         log.debug("Fetching schedule with ID: {}", id);
 
-        Schedule schedule = getScheduleUseCase.getScheduleById(id);
+        ScheduleDomain schedule = getScheduleUseCase.getScheduleById(id);
+        ScheduleResponse response = scheduleDtoMapper.toResponse(schedule);
 
-        return ResponseEntity.ok(ScheduleResponse.fromEntity(schedule));
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -166,11 +147,8 @@ public class ScheduleController {
     ) {
         log.debug("Fetching schedules for subjectGroup ID: {}", groupId);
 
-        List<Schedule> schedules = getScheduleUseCase.getSchedulesByGroupId(groupId);
-
-        List<ScheduleResponse> response = schedules.stream()
-                .map(ScheduleResponse::fromEntity)
-                .collect(Collectors.toList());
+        List<ScheduleDomain> schedules = getScheduleUseCase.getSchedulesByGroupId(groupId);
+        List<ScheduleResponse> response = scheduleDtoMapper.toResponses(schedules);
 
         return ResponseEntity.ok(response);
     }
@@ -193,11 +171,8 @@ public class ScheduleController {
     ) {
         log.debug("Fetching schedules for teacher ID: {}", teacherId);
 
-        List<Schedule> schedules = getScheduleUseCase.getSchedulesByTeacherId(teacherId);
-
-        List<ScheduleResponse> response = schedules.stream()
-                .map(ScheduleResponse::fromEntity)
-                .collect(Collectors.toList());
+        List<ScheduleDomain> schedules = getScheduleUseCase.getSchedulesByTeacherId(teacherId);
+        List<ScheduleResponse> response = scheduleDtoMapper.toResponses(schedules);
 
         return ResponseEntity.ok(response);
     }
@@ -220,11 +195,8 @@ public class ScheduleController {
     ) {
         log.debug("Fetching schedules for classroom: {}", classroom);
 
-        List<Schedule> schedules = getScheduleUseCase.getSchedulesByClassroom(classroom);
-
-        List<ScheduleResponse> response = schedules.stream()
-                .map(ScheduleResponse::fromEntity)
-                .collect(Collectors.toList());
+        List<ScheduleDomain> schedules = getScheduleUseCase.getSchedulesByClassroom(classroom);
+        List<ScheduleResponse> response = scheduleDtoMapper.toResponses(schedules);
 
         return ResponseEntity.ok(response);
     }
@@ -251,16 +223,17 @@ public class ScheduleController {
     ) {
         log.info("Updating schedule with ID: {}", id);
 
-        Schedule schedule = Schedule.builder()
-                .dayOfWeek(request.getDayOfWeek())
-                .startTime(request.getStartTime())
-                .endTime(request.getEndTime())
-                .classroom(request.getClassroom())
-                .build();
+        // Get existing schedule
+        ScheduleDomain existing = getScheduleUseCase.getScheduleById(id);
 
-        Schedule updatedSchedule = manageScheduleUseCase.updateSchedule(id, schedule);
+        // Merge update request with existing data
+        ScheduleDomain schedule = scheduleDtoMapper.updateDomainFromDto(existing, request);
 
-        return ResponseEntity.ok(ScheduleResponse.fromEntity(updatedSchedule));
+        // Update via use case
+        ScheduleDomain updatedSchedule = manageScheduleUseCase.updateSchedule(id, schedule);
+        ScheduleResponse response = scheduleDtoMapper.toResponse(updatedSchedule);
+
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -307,5 +280,27 @@ public class ScheduleController {
         manageScheduleUseCase.deleteSchedulesByGroupId(groupId);
 
         return ResponseEntity.noContent().build();
+    }
+
+    // ==================== HELPER METHODS ====================
+
+    /**
+     * Applies filters to schedule queries
+     */
+    private List<ScheduleDomain> applyFilters(Long groupId, Long teacherId, Classroom classroom,
+                                              DayOfWeek dayOfWeek, Long subjectId) {
+        if (groupId != null) {
+            return getScheduleUseCase.getSchedulesByGroupId(groupId);
+        } else if (teacherId != null) {
+            return getScheduleUseCase.getSchedulesByTeacherId(teacherId);
+        } else if (classroom != null) {
+            return getScheduleUseCase.getSchedulesByClassroom(classroom);
+        } else if (dayOfWeek != null) {
+            return getScheduleUseCase.getSchedulesByDayOfWeek(dayOfWeek);
+        } else if (subjectId != null) {
+            return getScheduleUseCase.getSchedulesBySubjectId(subjectId);
+        } else {
+            return getScheduleUseCase.getAllSchedules();
+        }
     }
 }

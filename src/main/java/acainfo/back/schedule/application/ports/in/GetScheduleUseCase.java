@@ -1,13 +1,14 @@
 package acainfo.back.schedule.application.ports.in;
 
 import acainfo.back.schedule.domain.model.Classroom;
-import acainfo.back.schedule.domain.model.Schedule;
+import acainfo.back.schedule.domain.model.ScheduleDomain;
 
 import java.time.DayOfWeek;
 import java.util.List;
 
 /**
  * Use case interface for retrieving schedule information.
+ * Works with ScheduleDomain (pure domain model)
  */
 public interface GetScheduleUseCase {
 
@@ -17,14 +18,14 @@ public interface GetScheduleUseCase {
      * @param scheduleId the schedule ID
      * @return the schedule
      */
-    Schedule getScheduleById(Long scheduleId);
+    ScheduleDomain getScheduleById(Long scheduleId);
 
     /**
      * Gets all schedules.
      *
      * @return list of all schedules
      */
-    List<Schedule> getAllSchedules();
+    List<ScheduleDomain> getAllSchedules();
 
     /**
      * Gets all schedules for a specific subjectGroup.
@@ -32,7 +33,7 @@ public interface GetScheduleUseCase {
      * @param groupId the subjectGroup ID
      * @return list of schedules
      */
-    List<Schedule> getSchedulesByGroupId(Long groupId);
+    List<ScheduleDomain> getSchedulesByGroupId(Long groupId);
 
     /**
      * Gets all schedules for a specific teacher.
@@ -40,7 +41,7 @@ public interface GetScheduleUseCase {
      * @param teacherId the teacher ID
      * @return list of schedules
      */
-    List<Schedule> getSchedulesByTeacherId(Long teacherId);
+    List<ScheduleDomain> getSchedulesByTeacherId(Long teacherId);
 
     /**
      * Gets all schedules for a specific classroom.
@@ -48,7 +49,7 @@ public interface GetScheduleUseCase {
      * @param classroom the classroom
      * @return list of schedules
      */
-    List<Schedule> getSchedulesByClassroom(Classroom classroom);
+    List<ScheduleDomain> getSchedulesByClassroom(Classroom classroom);
 
     /**
      * Gets all schedules for a specific day of week.
@@ -56,7 +57,7 @@ public interface GetScheduleUseCase {
      * @param dayOfWeek the day of week
      * @return list of schedules
      */
-    List<Schedule> getSchedulesByDayOfWeek(DayOfWeek dayOfWeek);
+    List<ScheduleDomain> getSchedulesByDayOfWeek(DayOfWeek dayOfWeek);
 
     /**
      * Gets all schedules for a specific subject.
@@ -64,5 +65,5 @@ public interface GetScheduleUseCase {
      * @param subjectId the subject ID
      * @return list of schedules
      */
-    List<Schedule> getSchedulesBySubjectId(Long subjectId);
+    List<ScheduleDomain> getSchedulesBySubjectId(Long subjectId);
 }
