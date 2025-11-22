@@ -1,6 +1,8 @@
-package acainfo.back.payment.domain.model;
+package acainfo.back.payment.infrastructure.adapters.out.persistence.entities;
 
 import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
+import acainfo.back.payment.domain.model.PaymentStatus;
+import acainfo.back.payment.domain.model.PaymentType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
@@ -42,7 +44,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Payment {
+public class PaymentJpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,7 +56,7 @@ public class Payment {
     @NotNull(message = "Student is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
-    private User student;
+    private UserJpaEntity student;
 
     /**
      * Payment amount in EUR
@@ -141,7 +143,7 @@ public class Payment {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "processed_by")
-    private User processedBy;
+    private UserJpaEntity processedBy;
 
     /**
      * Version for optimistic locking
@@ -154,7 +156,7 @@ public class Payment {
     /**
      * Mark payment as paid and record the payment date
      */
-    public void markAsPaid(User processedBy) {
+    public void markAsPaid(UserJpaEntity processedBy) {
         validateTransition(PaymentStatus.PAGADO);
         this.status = PaymentStatus.PAGADO;
         this.paidDate = LocalDate.now();
@@ -173,7 +175,7 @@ public class Payment {
     /**
      * Cancel the payment
      */
-    public void cancel(User processedBy, String reason) {
+    public void cancel(UserJpaEntity processedBy, String reason) {
         validateTransition(PaymentStatus.CANCELADO);
         this.status = PaymentStatus.CANCELADO;
         this.processedBy = processedBy;
@@ -186,7 +188,7 @@ public class Payment {
     /**
      * Process a refund for this payment
      */
-    public void refund(User processedBy, String reason) {
+    public void refund(UserJpaEntity processedBy, String reason) {
         if (this.status != PaymentStatus.PAGADO) {
             throw new IllegalStateException("Cannot refund a payment that is not PAID");
         }
@@ -274,8 +276,8 @@ public class Payment {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Payment)) return false;
-        Payment payment = (Payment) o;
+        if (!(o instanceof PaymentJpaEntity)) return false;
+        PaymentJpaEntity payment = (PaymentJpaEntity) o;
         return id != null && id.equals(payment.id);
     }
 
@@ -287,7 +289,7 @@ public class Payment {
     @Override
     public String toString() {
         return String.format(
-            "Payment{id=%d, student=%s, amount=%s, type=%s, status=%s, dueDate=%s}",
+            "PaymentJpaEntity{id=%d, student=%s, amount=%s, type=%s, status=%s, dueDate=%s}",
             id,
             student != null ? student.getEmail() : "null",
             amount,
