@@ -14,10 +14,10 @@ import acainfo.back.payment.domain.model.PaymentDomain;
 import acainfo.back.session.application.ports.out.SessionRepositoryPort;
 import acainfo.back.session.domain.model.SessionDomain;
 import acainfo.back.session.domain.model.SessionStatus;
+import acainfo.back.user.application.ports.out.UserRepositoryPort;
 import acainfo.back.user.domain.exception.UserNotFoundException;
-import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
+import acainfo.back.user.domain.model.UserDomain;
 import acainfo.back.shared.infrastructure.adapters.in.dto.*;
-import acainfo.back.user.infrastructure.adapters.out.persistence.repositories.UserJpaRepository; // TODO: Create UserRepositoryPort in application layer
 import acainfo.back.enrollment.infrastructure.adapters.in.dto.EnrollmentResponse;
 import acainfo.back.payment.infrastructure.adapters.in.dto.PaymentResponse;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class StudentService {
 
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepository;
     private final EnrollmentService enrollmentService;
     private final GroupRequestService groupRequestService;
     private final ManagePaymentUseCase managePaymentUseCase;
@@ -63,9 +63,9 @@ public class StudentService {
         log.info("Building dashboard for student {}", studentId);
 
         // 1. Get student profile
-        User student = userRepository.findById(studentId)
+        UserDomain student = userRepository.findById(studentId)
                 .orElseThrow(() -> new UserNotFoundException(studentId));
-        StudentProfileResponse profile = StudentProfileResponse.fromEntity(student);
+        StudentProfileResponse profile = StudentProfileResponse.fromDomain(student);
 
         // 2. Get active enrollments
         List<EnrollmentDomain> activeEnrollments = enrollmentService.getActiveEnrollmentsByStudent(studentId);
@@ -119,9 +119,9 @@ public class StudentService {
      * Get student profile.
      */
     public StudentProfileResponse getProfile(Long studentId) {
-        User student = userRepository.findById(studentId)
+        UserDomain student = userRepository.findById(studentId)
                 .orElseThrow(() -> new UserNotFoundException(studentId));
-        return StudentProfileResponse.fromEntity(student);
+        return StudentProfileResponse.fromDomain(student);
     }
 
     /**
@@ -131,22 +131,24 @@ public class StudentService {
     public StudentProfileResponse updateProfile(Long studentId, UpdateStudentProfileRequest request) {
         log.info("Updating profile for student {}", studentId);
 
-        User student = userRepository.findById(studentId)
+        UserDomain student = userRepository.findById(studentId)
                 .orElseThrow(() -> new UserNotFoundException(studentId));
 
-        // Update fields if provided
+        // Update fields using domain builder
+        UserDomain.UserDomainBuilder builder = student.toBuilder();
+
         if (request.getFirstName() != null) {
-            student.setFirstName(request.getFirstName());
+            builder.firstName(request.getFirstName());
         }
         if (request.getLastName() != null) {
-            student.setLastName(request.getLastName());
+            builder.lastName(request.getLastName());
         }
         if (request.getPhone() != null) {
-            student.setPhone(request.getPhone());
+            builder.phone(request.getPhone());
         }
 
-        User updated = userRepository.save(student);
-        return StudentProfileResponse.fromEntity(updated);
+        UserDomain updated = userRepository.save(builder.build());
+        return StudentProfileResponse.fromDomain(updated);
     }
 
     /**
@@ -243,15 +245,15 @@ public class StudentService {
      * Provides intelligent notifications about payments, attendance, and enrollment status.
      */
     private List<AlertDTO> generateAlerts(
-            User student,
-            List<Payment> pendingPayments,
+            UserDomain student,
+            List<PaymentDomain> pendingPayments,
             List<EnrollmentDomain> waitingEnrollments,
             AttendanceSummaryDTO attendance
     ) {
         List<AlertDTO> alerts = new ArrayList<>();
 
         // Payment alerts
-        for (Payment payment : pendingPayments) {
+        for (PaymentDomain payment : pendingPayments) {
             if (payment.isOverdue()) {
                 alerts.add(AlertDTO.error(
                     AlertDTO.AlertType.PAYMENT_OVERDUE,

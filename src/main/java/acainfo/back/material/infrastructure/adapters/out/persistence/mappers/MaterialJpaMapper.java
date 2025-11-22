@@ -49,7 +49,7 @@ public class MaterialJpaMapper {
      */
     public MaterialJpaEntity toJpaEntity(MaterialDomain domain,
                                          SubjectGroupJpaEntity subjectGroup,
-                                         User uploadedBy) {
+                                         UserJpaEntity uploadedBy) {
         if (domain == null) {
             return null;
         }

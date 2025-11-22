@@ -7,10 +7,10 @@ import acainfo.back.material.domain.exception.InvalidFileTypeException;
 import acainfo.back.material.domain.exception.UnauthorizedMaterialAccessException;
 import acainfo.back.material.domain.model.MaterialDomain;
 import acainfo.back.material.domain.model.MaterialType;
-import acainfo.back.user.domain.exception.UserNotFoundException;
-import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
-import acainfo.back.user.infrastructure.adapters.out.persistence.repositories.UserJpaRepository;
 import acainfo.back.subjectgroup.domain.exception.GroupNotFoundException;
+import acainfo.back.user.application.ports.out.UserRepositoryPort;
+import acainfo.back.user.domain.exception.UserNotFoundException;
+import acainfo.back.user.domain.model.UserDomain;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,7 @@ import java.time.LocalDateTime;
 public class UploadMaterialUseCaseImpl implements UploadMaterialUseCase {
 
     private final MaterialRepositoryPort materialRepository;
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepository;
     private final FileStorageService fileStorageService;
 
     @Override
@@ -58,7 +58,7 @@ public class UploadMaterialUseCaseImpl implements UploadMaterialUseCase {
         // This is checked when saving the material
 
         // 4. Validate uploader is a teacher
-        User uploader = userRepository.findById(uploaderId)
+        UserDomain uploader = userRepository.findById(uploaderId)
                 .orElseThrow(() -> new UserNotFoundException(uploaderId));
 
         if (!uploader.isTeacher() && !uploader.isAdmin()) {

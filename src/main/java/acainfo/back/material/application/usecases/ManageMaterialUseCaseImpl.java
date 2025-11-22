@@ -7,9 +7,9 @@ import acainfo.back.material.domain.exception.MaterialNotFoundException;
 import acainfo.back.material.domain.exception.UnauthorizedMaterialAccessException;
 import acainfo.back.material.domain.model.MaterialDomain;
 import acainfo.back.material.domain.model.MaterialType;
+import acainfo.back.user.application.ports.out.UserRepositoryPort;
 import acainfo.back.user.domain.exception.UserNotFoundException;
-import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
-import acainfo.back.user.infrastructure.adapters.out.persistence.repositories.UserJpaRepository;
+import acainfo.back.user.domain.model.UserDomain;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ import java.util.List;
 public class ManageMaterialUseCaseImpl implements ManageMaterialUseCase {
 
     private final MaterialRepositoryPort materialRepository;
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepository;
     private final FileStorageService fileStorageService;
 
     @Override
@@ -74,7 +74,7 @@ public class ManageMaterialUseCaseImpl implements ManageMaterialUseCase {
                 .orElseThrow(() -> new MaterialNotFoundException(materialId));
 
         // 2. Validate user is authorized (uploader or admin)
-        User user = userRepository.findById(userId)
+        UserDomain user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
         if (!user.isAdmin() && !material.getUploadedById().equals(userId)) {
@@ -112,7 +112,7 @@ public class ManageMaterialUseCaseImpl implements ManageMaterialUseCase {
                 .orElseThrow(() -> new MaterialNotFoundException(materialId));
 
         // 2. Validate user is authorized
-        User user = userRepository.findById(userId)
+        UserDomain user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
         if (!user.isAdmin() && !material.getUploadedById().equals(userId)) {
@@ -133,7 +133,7 @@ public class ManageMaterialUseCaseImpl implements ManageMaterialUseCase {
         log.info("Admin {} permanently deleting material {}", adminId, materialId);
 
         // 1. Validate admin
-        User admin = userRepository.findById(adminId)
+        UserDomain admin = userRepository.findById(adminId)
                 .orElseThrow(() -> new UserNotFoundException(adminId));
 
         if (!admin.isAdmin()) {
