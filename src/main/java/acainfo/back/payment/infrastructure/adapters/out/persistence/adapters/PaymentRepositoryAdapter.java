@@ -11,6 +11,7 @@ import acainfo.back.user.infrastructure.adapters.out.persistence.repositories.Us
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -100,5 +101,27 @@ public class PaymentRepositoryAdapter implements PaymentRepositoryPort {
         return paymentJpaRepository.findAll().stream()
                 .map(paymentMapper::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<PaymentDomain> findByAcademicPeriod(String period) {
+        return paymentJpaRepository.findByAcademicPeriod(period).stream()
+                .map(paymentMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public BigDecimal calculateRevenueBetween(LocalDate startDate, LocalDate endDate) {
+        return paymentJpaRepository.calculateRevenueBetween(startDate, endDate);
+    }
+
+    @Override
+    public BigDecimal calculateTotalPendingByStudentId(Long studentId) {
+        return paymentJpaRepository.calculateTotalPendingByStudentId(studentId);
+    }
+
+    @Override
+    public List<Long> findStudentIdsWithOverduePayments() {
+        return paymentJpaRepository.findStudentIdsWithOverduePayments();
     }
 }

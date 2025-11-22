@@ -51,4 +51,14 @@ public interface ManagePaymentUseCase {
     void checkAndMarkOverduePayments();
 
     boolean hasOverduePayments(Long studentId);
+
+    List<PaymentDomain> getPaymentsByStatus(PaymentStatus status);
+
+    List<PaymentDomain> getPaymentsByAcademicPeriod(String period);
+
+    BigDecimal calculateRevenueBetween(LocalDate startDate, LocalDate endDate);
+
+    BigDecimal calculateTotalPendingByStudent(Long studentId);
+
+    List<Long> getStudentsWithOverduePayments();
 }
