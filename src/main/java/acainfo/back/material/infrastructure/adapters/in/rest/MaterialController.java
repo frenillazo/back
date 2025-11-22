@@ -1,9 +1,10 @@
 package acainfo.back.material.infrastructure.adapters.in.rest;
 
+import acainfo.back.material.application.mappers.MaterialDtoMapper;
 import acainfo.back.material.application.ports.in.DownloadMaterialUseCase;
 import acainfo.back.material.application.ports.in.ManageMaterialUseCase;
 import acainfo.back.material.application.ports.in.UploadMaterialUseCase;
-import acainfo.back.material.domain.model.Material;
+import acainfo.back.material.domain.model.MaterialDomain;
 import acainfo.back.material.domain.model.MaterialType;
 import acainfo.back.material.infrastructure.adapters.in.dto.MaterialResponse;
 import acainfo.back.material.infrastructure.adapters.in.dto.UpdateMaterialRequest;
@@ -25,11 +26,15 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * REST Controller for educational material management.
  * Handles file upload, download, and material metadata operations.
+ *
+ * Refactored to use pure hexagonal architecture:
+ * - Uses MaterialDomain (pure domain model)
+ * - Delegates to use case interfaces
+ * - Uses MaterialDtoMapper for DTO conversions
  */
 @RestController
 @RequestMapping("/api/materials")
@@ -41,6 +46,7 @@ public class MaterialController {
     private final UploadMaterialUseCase uploadMaterialUseCase;
     private final DownloadMaterialUseCase downloadMaterialUseCase;
     private final ManageMaterialUseCase manageMaterialUseCase;
+    private final MaterialDtoMapper materialDtoMapper;
 
     // ==================== UPLOAD MATERIAL ====================
 
@@ -70,11 +76,11 @@ public class MaterialController {
         log.info("Upload request received. File: {}, Group: {}, Uploader: {}",
             file.getOriginalFilename(), subjectGroupId, uploaderId);
 
-        Material material = uploadMaterialUseCase.uploadMaterial(
+        MaterialDomain material = uploadMaterialUseCase.uploadMaterial(
             file, subjectGroupId, uploaderId, description, topic, requiresPayment
         );
 
-        MaterialResponse response = MaterialResponse.fromEntity(material);
+        MaterialResponse response = materialDtoMapper.toResponse(material);
 
         log.info("Material uploaded successfully with ID: {}", material.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -88,7 +94,7 @@ public class MaterialController {
         summary = "Download a material file",
         description = "Downloads the material file. " +
                       "Access control enforced: students need active enrollment, " +
-                      "materials with payment requirement need valid payment status (TODO)."
+                      "materials with payment requirement need valid payment status."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "File downloaded successfully"),
@@ -128,8 +134,8 @@ public class MaterialController {
     ) {
         log.debug("Fetching material by ID: {}", id);
 
-        Material material = manageMaterialUseCase.getMaterialById(id);
-        MaterialResponse response = MaterialResponse.fromEntity(material);
+        MaterialDomain material = manageMaterialUseCase.getMaterialById(id);
+        MaterialResponse response = materialDtoMapper.toResponse(material);
 
         return ResponseEntity.ok(response);
     }
@@ -149,10 +155,8 @@ public class MaterialController {
     ) {
         log.debug("Fetching materials for group {}", groupId);
 
-        List<Material> materials = manageMaterialUseCase.getMaterialsBySubjectGroup(groupId);
-        List<MaterialResponse> response = materials.stream()
-                .map(MaterialResponse::fromEntity)
-                .collect(Collectors.toList());
+        List<MaterialDomain> materials = manageMaterialUseCase.getMaterialsBySubjectGroup(groupId);
+        List<MaterialResponse> response = materialDtoMapper.toResponses(materials);
 
         return ResponseEntity.ok(response);
     }
@@ -173,10 +177,8 @@ public class MaterialController {
     ) {
         log.debug("Fetching materials for group {} and type {}", groupId, type);
 
-        List<Material> materials = manageMaterialUseCase.getMaterialsBySubjectGroupAndType(groupId, type);
-        List<MaterialResponse> response = materials.stream()
-                .map(MaterialResponse::fromEntity)
-                .collect(Collectors.toList());
+        List<MaterialDomain> materials = manageMaterialUseCase.getMaterialsBySubjectGroupAndType(groupId, type);
+        List<MaterialResponse> response = materialDtoMapper.toResponses(materials);
 
         return ResponseEntity.ok(response);
     }
@@ -196,10 +198,8 @@ public class MaterialController {
     ) {
         log.debug("Fetching materials for group {} and topic '{}'", groupId, topic);
 
-        List<Material> materials = manageMaterialUseCase.getMaterialsBySubjectGroupAndTopic(groupId, topic);
-        List<MaterialResponse> response = materials.stream()
-                .map(MaterialResponse::fromEntity)
-                .collect(Collectors.toList());
+        List<MaterialDomain> materials = manageMaterialUseCase.getMaterialsBySubjectGroupAndTopic(groupId, topic);
+        List<MaterialResponse> response = materialDtoMapper.toResponses(materials);
 
         return ResponseEntity.ok(response);
     }
@@ -219,10 +219,8 @@ public class MaterialController {
     ) {
         log.debug("Fetching materials uploaded by teacher {}", teacherId);
 
-        List<Material> materials = manageMaterialUseCase.getMaterialsByTeacher(teacherId);
-        List<MaterialResponse> response = materials.stream()
-                .map(MaterialResponse::fromEntity)
-                .collect(Collectors.toList());
+        List<MaterialDomain> materials = manageMaterialUseCase.getMaterialsByTeacher(teacherId);
+        List<MaterialResponse> response = materialDtoMapper.toResponses(materials);
 
         return ResponseEntity.ok(response);
     }
@@ -248,11 +246,11 @@ public class MaterialController {
     ) {
         log.info("User {} updating material {}", userId, id);
 
-        Material material = manageMaterialUseCase.updateMaterial(
+        MaterialDomain material = manageMaterialUseCase.updateMaterial(
             id, userId, request.getDescription(), request.getTopic(), request.getRequiresPayment()
         );
 
-        MaterialResponse response = MaterialResponse.fromEntity(material);
+        MaterialResponse response = materialDtoMapper.toResponse(material);
 
         log.info("Material {} updated successfully", id);
         return ResponseEntity.ok(response);

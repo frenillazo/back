@@ -1,8 +1,8 @@
 package acainfo.back.session.infrastructure.adapters.in.rest;
 
+import acainfo.back.session.application.mappers.SessionDtoMapper;
 import acainfo.back.session.application.ports.in.*;
-import acainfo.back.session.application.services.SessionService;
-import acainfo.back.session.domain.model.Session;
+import acainfo.back.session.domain.model.SessionDomain;
 import acainfo.back.session.domain.model.SessionStatus;
 import acainfo.back.session.infrastructure.adapters.in.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,6 +27,11 @@ import java.util.List;
 /**
  * REST Controller for session management.
  * Provides endpoints for CRUD operations and session lifecycle management.
+ *
+ * Refactored to use pure hexagonal architecture:
+ * - Uses SessionDomain (pure domain model)
+ * - Delegates to use case interfaces
+ * - Uses SessionDtoMapper for DTO conversions
  */
 @RestController
 @RequestMapping("/api/sessions")
@@ -36,7 +41,14 @@ import java.util.List;
 @SecurityRequirement(name = "bearer-jwt")
 public class SessionController {
 
-    private final SessionService sessionService;
+    private final CreateSessionUseCase createSessionUseCase;
+    private final GetSessionUseCase getSessionUseCase;
+    private final StartSessionUseCase startSessionUseCase;
+    private final CompleteSessionUseCase completeSessionUseCase;
+    private final UpdateSessionModeUseCase updateSessionModeUseCase;
+    private final PostponeSessionUseCase postponeSessionUseCase;
+    private final CancelSessionUseCase cancelSessionUseCase;
+    private final SessionDtoMapper sessionDtoMapper;
 
     // ==================== CREATE SESSION ====================
 
@@ -74,8 +86,8 @@ public class SessionController {
             request.originalSessionId()
         );
 
-        Session session = sessionService.createSession(command);
-        SessionResponse response = SessionResponse.fromEntity(session);
+        SessionDomain session = createSessionUseCase.createSession(command);
+        SessionResponse response = sessionDtoMapper.toResponse(session);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -97,8 +109,8 @@ public class SessionController {
     ) {
         log.debug("Fetching session with ID: {}", id);
 
-        Session session = sessionService.findSessionById(id);
-        SessionResponse response = SessionResponse.fromEntity(session);
+        SessionDomain session = getSessionUseCase.findSessionById(id);
+        SessionResponse response = sessionDtoMapper.toResponse(session);
 
         return ResponseEntity.ok(response);
     }
@@ -120,10 +132,8 @@ public class SessionController {
     ) {
         log.debug("Fetching sessions for group: {}", groupId);
 
-        List<Session> sessions = sessionService.getSessionsByGroup(groupId);
-        List<SessionResponse> responses = sessions.stream()
-            .map(SessionResponse::fromEntity)
-            .toList();
+        List<SessionDomain> sessions = getSessionUseCase.getSessionsByGroup(groupId);
+        List<SessionResponse> responses = sessionDtoMapper.toResponses(sessions);
 
         return ResponseEntity.ok(responses);
     }
@@ -149,10 +159,8 @@ public class SessionController {
     ) {
         log.debug("Fetching sessions for group {} from {} to {}", groupId, startDate, endDate);
 
-        List<Session> sessions = sessionService.getSessionsByGroupAndDateRange(groupId, startDate, endDate);
-        List<SessionResponse> responses = sessions.stream()
-            .map(SessionResponse::fromEntity)
-            .toList();
+        List<SessionDomain> sessions = getSessionUseCase.getSessionsByGroupAndDateRange(groupId, startDate, endDate);
+        List<SessionResponse> responses = sessionDtoMapper.toResponses(sessions);
 
         return ResponseEntity.ok(responses);
     }
@@ -174,10 +182,8 @@ public class SessionController {
     ) {
         log.debug("Fetching sessions for teacher: {}", teacherId);
 
-        List<Session> sessions = sessionService.getSessionsByTeacher(teacherId);
-        List<SessionResponse> responses = sessions.stream()
-            .map(SessionResponse::fromEntity)
-            .toList();
+        List<SessionDomain> sessions = getSessionUseCase.getSessionsByTeacher(teacherId);
+        List<SessionResponse> responses = sessionDtoMapper.toResponses(sessions);
 
         return ResponseEntity.ok(responses);
     }
@@ -223,10 +229,8 @@ public class SessionController {
     ) {
         log.debug("Fetching sessions for teacher {} from {} to {}", teacherId, startDate, endDate);
 
-        List<Session> sessions = sessionService.getSessionsByTeacherAndDateRange(teacherId, startDate, endDate);
-        List<SessionResponse> responses = sessions.stream()
-            .map(SessionResponse::fromEntity)
-            .toList();
+        List<SessionDomain> sessions = getSessionUseCase.getSessionsByTeacherAndDateRange(teacherId, startDate, endDate);
+        List<SessionResponse> responses = sessionDtoMapper.toResponses(sessions);
 
         return ResponseEntity.ok(responses);
     }
@@ -245,10 +249,8 @@ public class SessionController {
     public ResponseEntity<List<SessionResponse>> getUpcomingSessions() {
         log.debug("Fetching upcoming sessions");
 
-        List<Session> sessions = sessionService.getUpcomingSessions();
-        List<SessionResponse> responses = sessions.stream()
-            .map(SessionResponse::fromEntity)
-            .toList();
+        List<SessionDomain> sessions = getSessionUseCase.getUpcomingSessions();
+        List<SessionResponse> responses = sessionDtoMapper.toResponses(sessions);
 
         return ResponseEntity.ok(responses);
     }
@@ -267,10 +269,8 @@ public class SessionController {
     public ResponseEntity<List<SessionResponse>> getInProgressSessions() {
         log.debug("Fetching in-progress sessions");
 
-        List<Session> sessions = sessionService.getInProgressSessions();
-        List<SessionResponse> responses = sessions.stream()
-            .map(SessionResponse::fromEntity)
-            .toList();
+        List<SessionDomain> sessions = getSessionUseCase.getInProgressSessions();
+        List<SessionResponse> responses = sessionDtoMapper.toResponses(sessions);
 
         return ResponseEntity.ok(responses);
     }
@@ -289,10 +289,8 @@ public class SessionController {
     public ResponseEntity<List<SessionResponse>> getSessionsRequiringAction() {
         log.debug("Fetching sessions requiring action");
 
-        List<Session> sessions = sessionService.getSessionsRequiringAction();
-        List<SessionResponse> responses = sessions.stream()
-            .map(SessionResponse::fromEntity)
-            .toList();
+        List<SessionDomain> sessions = getSessionUseCase.getSessionsRequiringAction();
+        List<SessionResponse> responses = sessionDtoMapper.toResponses(sessions);
 
         return ResponseEntity.ok(responses);
     }
@@ -315,10 +313,8 @@ public class SessionController {
         log.debug("Fetching sessions with status: {}", status);
 
         SessionStatus sessionStatus = SessionStatus.valueOf(status.toUpperCase());
-        List<Session> sessions = sessionService.getSessionsByStatus(sessionStatus);
-        List<SessionResponse> responses = sessions.stream()
-            .map(SessionResponse::fromEntity)
-            .toList();
+        List<SessionDomain> sessions = getSessionUseCase.getSessionsByStatus(sessionStatus);
+        List<SessionResponse> responses = sessionDtoMapper.toResponses(sessions);
 
         return ResponseEntity.ok(responses);
     }
@@ -350,8 +346,8 @@ public class SessionController {
             request != null ? request.notes() : null
         );
 
-        Session session = sessionService.startSession(command);
-        SessionResponse response = SessionResponse.fromEntity(session);
+        SessionDomain session = startSessionUseCase.startSession(command);
+        SessionResponse response = sessionDtoMapper.toResponse(session);
 
         return ResponseEntity.ok(response);
     }
@@ -384,8 +380,8 @@ public class SessionController {
             request.notes()
         );
 
-        Session session = sessionService.completeSession(command);
-        SessionResponse response = SessionResponse.fromEntity(session);
+        SessionDomain session = completeSessionUseCase.completeSession(command);
+        SessionResponse response = sessionDtoMapper.toResponse(session);
 
         return ResponseEntity.ok(response);
     }
@@ -422,8 +418,8 @@ public class SessionController {
             request.reason()
         );
 
-        Session session = sessionService.updateSessionMode(command);
-        SessionResponse response = SessionResponse.fromEntity(session);
+        SessionDomain session = updateSessionModeUseCase.updateSessionMode(command);
+        SessionResponse response = sessionDtoMapper.toResponse(session);
 
         return ResponseEntity.ok(response);
     }
@@ -449,7 +445,7 @@ public class SessionController {
     ) {
         log.info("Postponing session {} by user {}", id, authentication.getName());
 
-        Session resultSession;
+        SessionDomain resultSession;
 
         if (request.hasReschedulingInfo()) {
             // Postpone and create recovery session
@@ -464,16 +460,16 @@ public class SessionController {
                     request.newZoomMeetingId()
                 );
 
-            resultSession = sessionService.postponeAndReschedule(command);
+            resultSession = postponeSessionUseCase.postponeAndReschedule(command);
         } else {
             // Just postpone
             PostponeSessionUseCase.PostponeSessionCommand command =
                 new PostponeSessionUseCase.PostponeSessionCommand(id, request.reason());
 
-            resultSession = sessionService.postponeSession(command);
+            resultSession = postponeSessionUseCase.postponeSession(command);
         }
 
-        SessionResponse response = SessionResponse.fromEntity(resultSession);
+        SessionResponse response = sessionDtoMapper.toResponse(resultSession);
         return ResponseEntity.ok(response);
     }
 
@@ -503,8 +499,8 @@ public class SessionController {
             request.reason()
         );
 
-        Session session = sessionService.cancelSession(command);
-        SessionResponse response = SessionResponse.fromEntity(session);
+        SessionDomain session = cancelSessionUseCase.cancelSession(command);
+        SessionResponse response = sessionDtoMapper.toResponse(session);
 
         return ResponseEntity.ok(response);
     }
@@ -529,7 +525,7 @@ public class SessionController {
         log.warn("Deleting session {} by admin user {}", id, authentication.getName());
 
         // Verify session exists
-        sessionService.findSessionById(id);
+        getSessionUseCase.findSessionById(id);
 
         // TODO: Implement actual deletion (needs repository method)
         // For now, just verify the session exists

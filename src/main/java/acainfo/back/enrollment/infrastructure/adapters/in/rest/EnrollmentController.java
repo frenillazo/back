@@ -1,7 +1,11 @@
 package acainfo.back.enrollment.infrastructure.adapters.in.rest;
 
-import acainfo.back.enrollment.application.services.EnrollmentService;
-import acainfo.back.enrollment.domain.model.Enrollment;
+import acainfo.back.enrollment.application.mappers.EnrollmentDtoMapper;
+import acainfo.back.enrollment.application.ports.in.ChangeGroupUseCase;
+import acainfo.back.enrollment.application.ports.in.EnrollStudentUseCase;
+import acainfo.back.enrollment.application.ports.in.GetEnrollmentUseCase;
+import acainfo.back.enrollment.application.ports.in.WithdrawEnrollmentUseCase;
+import acainfo.back.enrollment.domain.model.EnrollmentDomain;
 import acainfo.back.enrollment.infrastructure.adapters.in.dto.ChangeGroupRequest;
 import acainfo.back.enrollment.infrastructure.adapters.in.dto.EnrollStudentRequest;
 import acainfo.back.enrollment.infrastructure.adapters.in.dto.EnrollmentResponse;
@@ -19,11 +23,15 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * REST Controller for enrollment management.
  * Provides endpoints for student enrollments, withdrawals, and queries.
+ *
+ * Refactored to use pure hexagonal architecture:
+ * - Uses EnrollmentDomain (pure domain model)
+ * - Delegates to use case interfaces
+ * - Uses EnrollmentDtoMapper for DTO conversions
  */
 @RestController
 @RequestMapping("/api/enrollments")
@@ -32,7 +40,11 @@ import java.util.stream.Collectors;
 @Tag(name = "Enrollments", description = "Enrollment management endpoints")
 public class EnrollmentController {
 
-    private final EnrollmentService enrollmentService;
+    private final EnrollStudentUseCase enrollStudentUseCase;
+    private final WithdrawEnrollmentUseCase withdrawEnrollmentUseCase;
+    private final ChangeGroupUseCase changeGroupUseCase;
+    private final GetEnrollmentUseCase getEnrollmentUseCase;
+    private final EnrollmentDtoMapper enrollmentDtoMapper;
 
     // ==================== ENROLL ====================
 
@@ -53,8 +65,12 @@ public class EnrollmentController {
     public ResponseEntity<EnrollmentResponse> enrollStudent(@Valid @RequestBody EnrollStudentRequest request) {
         log.info("Enrolling student {} in group {}", request.getStudentId(), request.getGroupId());
 
-        Enrollment enrollment = enrollmentService.enrollStudent(request.getStudentId(), request.getGroupId());
-        EnrollmentResponse response = EnrollmentResponse.fromEntity(enrollment);
+        EnrollmentDomain enrollment = enrollStudentUseCase.enrollStudent(
+                request.getStudentId(),
+                request.getGroupId()
+        );
+
+        EnrollmentResponse response = enrollmentDtoMapper.toResponse(enrollment);
 
         log.info("Student {} enrolled successfully in group {} with status {}",
             request.getStudentId(), request.getGroupId(), enrollment.getStatus());
@@ -77,7 +93,7 @@ public class EnrollmentController {
             @Parameter(description = "Group ID") @RequestParam Long groupId) {
         log.debug("Checking if student {} can enroll in group {}", studentId, groupId);
 
-        boolean canEnroll = enrollmentService.canEnroll(studentId, groupId);
+        boolean canEnroll = enrollStudentUseCase.canEnroll(studentId, groupId);
         return ResponseEntity.ok(canEnroll);
     }
 
@@ -99,7 +115,7 @@ public class EnrollmentController {
             @Parameter(description = "Withdrawal reason") @RequestParam(required = false) String reason) {
         log.info("Withdrawing enrollment {}", id);
 
-        enrollmentService.withdrawEnrollment(id, reason);
+        withdrawEnrollmentUseCase.withdrawEnrollment(id, reason);
 
         log.info("Enrollment {} withdrawn successfully", id);
         return ResponseEntity.noContent().build();
@@ -125,8 +141,8 @@ public class EnrollmentController {
             @Valid @RequestBody ChangeGroupRequest request) {
         log.info("Changing enrollment {} to new group {}", id, request.getNewGroupId());
 
-        Enrollment newEnrollment = enrollmentService.changeGroup(id, request.getNewGroupId());
-        EnrollmentResponse response = EnrollmentResponse.fromEntity(newEnrollment);
+        EnrollmentDomain newEnrollment = changeGroupUseCase.changeGroup(id, request.getNewGroupId());
+        EnrollmentResponse response = enrollmentDtoMapper.toResponse(newEnrollment);
 
         log.info("Enrollment {} changed successfully to group {}", id, request.getNewGroupId());
         return ResponseEntity.ok(response);
@@ -146,8 +162,8 @@ public class EnrollmentController {
             @Parameter(description = "Enrollment ID") @PathVariable Long id) {
         log.debug("Fetching enrollment by ID: {}", id);
 
-        Enrollment enrollment = enrollmentService.getEnrollmentById(id);
-        EnrollmentResponse response = EnrollmentResponse.fromEntity(enrollment);
+        EnrollmentDomain enrollment = getEnrollmentUseCase.getEnrollmentById(id);
+        EnrollmentResponse response = enrollmentDtoMapper.toResponse(enrollment);
 
         return ResponseEntity.ok(response);
     }
@@ -166,10 +182,8 @@ public class EnrollmentController {
             @Parameter(description = "Student ID") @PathVariable Long studentId) {
         log.debug("Fetching all enrollments for student: {}", studentId);
 
-        List<Enrollment> enrollments = enrollmentService.getAllEnrollmentsByStudent(studentId);
-        List<EnrollmentResponse> response = enrollments.stream()
-                .map(EnrollmentResponse::fromEntity)
-                .collect(Collectors.toList());
+        List<EnrollmentDomain> enrollments = getEnrollmentUseCase.getAllEnrollmentsByStudent(studentId);
+        List<EnrollmentResponse> response = enrollmentDtoMapper.toResponses(enrollments);
 
         return ResponseEntity.ok(response);
     }
@@ -188,10 +202,8 @@ public class EnrollmentController {
             @Parameter(description = "Student ID") @PathVariable Long studentId) {
         log.debug("Fetching active enrollments for student: {}", studentId);
 
-        List<Enrollment> enrollments = enrollmentService.getActiveEnrollmentsByStudent(studentId);
-        List<EnrollmentResponse> response = enrollments.stream()
-                .map(EnrollmentResponse::fromEntity)
-                .collect(Collectors.toList());
+        List<EnrollmentDomain> enrollments = getEnrollmentUseCase.getActiveEnrollmentsByStudent(studentId);
+        List<EnrollmentResponse> response = enrollmentDtoMapper.toResponses(enrollments);
 
         return ResponseEntity.ok(response);
     }
@@ -211,10 +223,8 @@ public class EnrollmentController {
             @Parameter(description = "Group ID") @PathVariable Long groupId) {
         log.debug("Fetching all enrollments for group: {}", groupId);
 
-        List<Enrollment> enrollments = enrollmentService.getEnrollmentsByGroup(groupId);
-        List<EnrollmentResponse> response = enrollments.stream()
-                .map(EnrollmentResponse::fromEntity)
-                .collect(Collectors.toList());
+        List<EnrollmentDomain> enrollments = getEnrollmentUseCase.getEnrollmentsByGroup(groupId);
+        List<EnrollmentResponse> response = enrollmentDtoMapper.toResponses(enrollments);
 
         return ResponseEntity.ok(response);
     }
@@ -234,10 +244,8 @@ public class EnrollmentController {
             @Parameter(description = "Group ID") @PathVariable Long groupId) {
         log.debug("Fetching active enrollments for group: {}", groupId);
 
-        List<Enrollment> enrollments = enrollmentService.getActiveEnrollmentsByGroup(groupId);
-        List<EnrollmentResponse> response = enrollments.stream()
-                .map(EnrollmentResponse::fromEntity)
-                .collect(Collectors.toList());
+        List<EnrollmentDomain> enrollments = getEnrollmentUseCase.getActiveEnrollmentsByGroup(groupId);
+        List<EnrollmentResponse> response = enrollmentDtoMapper.toResponses(enrollments);
 
         return ResponseEntity.ok(response);
     }
@@ -257,7 +265,7 @@ public class EnrollmentController {
             @Parameter(description = "Group ID") @RequestParam Long groupId) {
         log.debug("Checking if student {} is enrolled in group {}", studentId, groupId);
 
-        boolean isEnrolled = enrollmentService.isStudentEnrolled(studentId, groupId);
+        boolean isEnrolled = getEnrollmentUseCase.isStudentEnrolled(studentId, groupId);
         return ResponseEntity.ok(isEnrolled);
     }
 }
