@@ -3,7 +3,7 @@ package acainfo.back.schedule.application.usecases;
 import acainfo.back.schedule.application.ports.in.ManageScheduleUseCase;
 import acainfo.back.schedule.application.ports.out.ScheduleRepositoryPort;
 import acainfo.back.schedule.domain.model.ScheduleDomain;
-import acainfo.back.shared.exception.ResourceNotFoundException;
+import acainfo.back.schedule.domain.exception.ScheduleNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,9 +39,7 @@ public class ManageScheduleUseCaseImpl implements ManageScheduleUseCase {
 
         // Verify schedule exists
         ScheduleDomain existing = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Schedule not found with ID: " + scheduleId
-                ));
+                .orElseThrow(() -> new ScheduleNotFoundException(scheduleId));
 
         // Build updated schedule preserving ID and creation date
         ScheduleDomain updated = ScheduleDomain.builder()
@@ -64,9 +62,7 @@ public class ManageScheduleUseCaseImpl implements ManageScheduleUseCase {
 
         // Verify schedule exists before deleting
         if (!scheduleRepository.existsById(scheduleId)) {
-            throw new ResourceNotFoundException(
-                    "Schedule not found with ID: " + scheduleId
-            );
+            throw new ScheduleNotFoundException(scheduleId);
         }
 
         scheduleRepository.deleteById(scheduleId);

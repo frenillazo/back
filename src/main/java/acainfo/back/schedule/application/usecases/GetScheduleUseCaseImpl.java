@@ -4,7 +4,7 @@ import acainfo.back.schedule.application.ports.in.GetScheduleUseCase;
 import acainfo.back.schedule.application.ports.out.ScheduleRepositoryPort;
 import acainfo.back.schedule.domain.model.Classroom;
 import acainfo.back.schedule.domain.model.ScheduleDomain;
-import acainfo.back.shared.exception.ResourceNotFoundException;
+import acainfo.back.schedule.domain.exception.ScheduleNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,9 +30,7 @@ public class GetScheduleUseCaseImpl implements GetScheduleUseCase {
         log.debug("Getting schedule by ID: {}", scheduleId);
 
         return scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Schedule not found with ID: " + scheduleId
-                ));
+                .orElseThrow(() -> new ScheduleNotFoundException(scheduleId));
     }
 
     @Override

@@ -3,13 +3,13 @@ package acainfo.back.shared.application.services.student;
 import acainfo.back.attendance.application.ports.out.AttendanceRepositoryPort;
 import acainfo.back.attendance.domain.model.AttendanceDomain;
 import acainfo.back.attendance.domain.model.AttendanceStatus;
-import acainfo.back.enrollment.application.services.EnrollmentService;
-import acainfo.back.enrollment.application.services.GroupRequestService;
+import acainfo.back.enrollment.application.services.EnrollmentService; // TODO: Replace with use cases/ports
+import acainfo.back.enrollment.application.services.GroupRequestService; // TODO: Replace with use cases/ports
 import acainfo.back.enrollment.domain.model.EnrollmentDomain;
 import acainfo.back.enrollment.domain.model.EnrollmentStatus;
 import acainfo.back.material.application.ports.out.MaterialRepositoryPort;
 import acainfo.back.material.domain.model.MaterialDomain;
-import acainfo.back.payment.application.services.PaymentService;
+import acainfo.back.payment.application.services.PaymentService; // TODO: Replace with use cases/ports
 import acainfo.back.payment.domain.model.Payment;
 import acainfo.back.session.application.ports.out.SessionRepositoryPort;
 import acainfo.back.session.domain.model.SessionDomain;
@@ -17,7 +17,7 @@ import acainfo.back.session.domain.model.SessionStatus;
 import acainfo.back.shared.domain.exception.UserNotFoundException;
 import acainfo.back.shared.domain.model.User;
 import acainfo.back.shared.infrastructure.adapters.in.dto.*;
-import acainfo.back.shared.infrastructure.adapters.out.UserRepository;
+import acainfo.back.shared.infrastructure.adapters.out.UserRepository; // TODO: Create UserRepositoryPort in application layer
 import acainfo.back.enrollment.infrastructure.adapters.in.dto.EnrollmentResponse;
 import acainfo.back.payment.infrastructure.adapters.in.dto.PaymentResponse;
 import lombok.RequiredArgsConstructor;
