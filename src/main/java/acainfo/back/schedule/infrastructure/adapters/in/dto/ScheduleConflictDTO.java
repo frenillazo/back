@@ -1,7 +1,7 @@
 package acainfo.back.schedule.infrastructure.adapters.in.dto;
 
 import acainfo.back.schedule.domain.model.Classroom;
-import acainfo.back.schedule.domain.model.Schedule;
+import acainfo.back.schedule.domain.model.ScheduleDomain;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -85,24 +85,22 @@ public class ScheduleConflictDTO {
         private String teacherName;
 
         /**
-         * Creates a ConflictingScheduleDTO from a Schedule entity.
+         * Creates a ConflictingScheduleDTO from a ScheduleDomain.
+         * Note: This is a simplified version that doesn't include group/teacher names
+         * which would require additional repository lookups.
          */
-        public static ConflictingScheduleDTO fromEntity(Schedule schedule) {
-            ConflictingScheduleDTOBuilder builder = ConflictingScheduleDTO.builder()
+        public static ConflictingScheduleDTO fromDomain(ScheduleDomain schedule) {
+            return ConflictingScheduleDTO.builder()
                     .scheduleId(schedule.getId())
-                    .groupId(schedule.getSubjectGroup().getId())
-                    .groupName(schedule.getSubjectGroup().getDisplayName())
+                    .groupId(schedule.getSubjectGroupId())
+                    .groupName("") // TODO: Fetch via SubjectGroupRepositoryPort if needed
                     .dayOfWeek(schedule.getDayOfWeek())
                     .startTime(schedule.getStartTime())
                     .endTime(schedule.getEndTime())
-                    .classroom(schedule.getClassroom());
-
-            if (schedule.getSubjectGroup().getTeacher() != null) {
-                builder.teacherId(schedule.getSubjectGroup().getTeacher().getId())
-                        .teacherName(schedule.getSubjectGroup().getTeacher().getFullName());
-            }
-
-            return builder.build();
+                    .classroom(schedule.getClassroom())
+                    .teacherId(null) // TODO: Fetch via SubjectGroupRepositoryPort if needed
+                    .teacherName(null) // TODO: Fetch via UserRepository if needed
+                    .build();
         }
     }
 
@@ -116,7 +114,7 @@ public class ScheduleConflictDTO {
             LocalTime endTime,
             Classroom classroom,
             Long teacherId,
-            List<Schedule> conflictingSchedules,
+            List<ScheduleDomain> conflictingSchedules,
             String message
     ) {
         return ScheduleConflictDTO.builder()
@@ -128,7 +126,7 @@ public class ScheduleConflictDTO {
                 .teacherId(teacherId)
                 .conflictingSchedules(
                         conflictingSchedules.stream()
-                                .map(ConflictingScheduleDTO::fromEntity)
+                                .map(ConflictingScheduleDTO::fromDomain)
                                 .collect(Collectors.toList())
                 )
                 .message(message)
