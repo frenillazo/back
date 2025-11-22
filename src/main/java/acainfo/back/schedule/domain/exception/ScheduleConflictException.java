@@ -1,7 +1,7 @@
 package acainfo.back.schedule.domain.exception;
 
 import acainfo.back.shared.domain.exception.DomainException;
-import acainfo.back.schedule.domain.model.Schedule;
+import acainfo.back.schedule.domain.model.ScheduleDomain;
 
 import java.util.List;
 
@@ -10,9 +10,9 @@ import java.util.List;
  */
 public class ScheduleConflictException extends DomainException {
 
-    private final List<Schedule> conflictingSchedules;
+    private final List<ScheduleDomain> conflictingSchedules;
 
-    public ScheduleConflictException(String message, List<Schedule> conflictingSchedules) {
+    public ScheduleConflictException(String message, List<ScheduleDomain> conflictingSchedules) {
         super(message);
         this.conflictingSchedules = conflictingSchedules;
     }
@@ -22,7 +22,7 @@ public class ScheduleConflictException extends DomainException {
         this.conflictingSchedules = List.of();
     }
 
-    public List<Schedule> getConflictingSchedules() {
+    public List<ScheduleDomain> getConflictingSchedules() {
         return conflictingSchedules;
     }
 

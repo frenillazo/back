@@ -3,8 +3,8 @@ package acainfo.back.schedule.application.services;
 import acainfo.back.schedule.domain.exception.ClassroomScheduleConflictException;
 import acainfo.back.schedule.domain.exception.TeacherScheduleConflictException;
 import acainfo.back.schedule.domain.model.Classroom;
-import acainfo.back.schedule.domain.model.Schedule;
-import acainfo.back.schedule.infrastructure.adapters.out.ScheduleRepository;
+import acainfo.back.schedule.domain.model.ScheduleDomain;
+import acainfo.back.schedule.application.ports.out.ScheduleRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ import java.util.List;
 @Slf4j
 public class ScheduleValidationService {
 
-    private final ScheduleRepository scheduleRepository;
+    private final ScheduleRepositoryPort scheduleRepository;
 
     /**
      * Validates that a teacher is available for the proposed schedule.
@@ -50,7 +50,7 @@ public class ScheduleValidationService {
         log.debug("Validating teacher availability: teacherId={}, day={}, time={}-{}",
                 teacherId, dayOfWeek, startTime, endTime);
 
-        List<Schedule> conflicts = scheduleRepository.findTeacherConflicts(
+        List<ScheduleDomain> conflicts = scheduleRepository.findTeacherConflicts(
                 teacherId, dayOfWeek, startTime, endTime
         );
 
@@ -109,7 +109,7 @@ public class ScheduleValidationService {
         log.debug("Validating classroom availability: classroom={}, day={}, time={}-{}",
                 classroom, dayOfWeek, startTime, endTime);
 
-        List<Schedule> conflicts = scheduleRepository.findClassroomConflicts(
+        List<ScheduleDomain> conflicts = scheduleRepository.findClassroomConflicts(
                 classroom, dayOfWeek, startTime, endTime
         );
 
@@ -141,24 +141,25 @@ public class ScheduleValidationService {
      * This is a convenience method that combines both validations.
      *
      * @param schedule Schedule to validate
+     * @param teacherId Teacher ID (from subject group)
      * @param excludeScheduleId Schedule ID to exclude from conflict check (for updates)
      * @throws TeacherScheduleConflictException if teacher conflicts are found
      * @throws ClassroomScheduleConflictException if classroom conflicts are found
      */
-    public void validateSchedule(Schedule schedule, Long excludeScheduleId) {
+    public void validateSchedule(ScheduleDomain schedule, Long teacherId, Long excludeScheduleId) {
         log.debug("Validating schedule: groupId={}, day={}, time={}-{}, classroom={}, teacherId={}",
-                schedule.getSubjectGroup().getId(),
+                schedule.getSubjectGroupId(),
                 schedule.getDayOfWeek(),
                 schedule.getStartTime(),
                 schedule.getEndTime(),
                 schedule.getClassroom(),
-                schedule.getSubjectGroup().getTeacher() != null ? schedule.getSubjectGroup().getTeacher().getId() : null
+                teacherId
         );
 
         // Validate teacher availability
-        if (schedule.getSubjectGroup().getTeacher() != null) {
+        if (teacherId != null) {
             validateTeacherAvailability(
-                    schedule.getSubjectGroup().getTeacher().getId(),
+                    teacherId,
                     schedule.getDayOfWeek(),
                     schedule.getStartTime(),
                     schedule.getEndTime(),
@@ -175,105 +176,6 @@ public class ScheduleValidationService {
                 excludeScheduleId
         );
 
-        log.debug("Schedule validation completed successfully");
-    }
-
-    /**
-     * Validates a new schedule (convenience method for creation).
-     *
-     * @param schedule Schedule to validate
-     */
-    public void validateNewSchedule(Schedule schedule) {
-        validateSchedule(schedule, null);
-    }
-
-    /**
-     * Checks if a teacher is available without throwing an exception.
-     * Useful for checking availability before attempting to create a schedule.
-     *
-     * @param teacherId Teacher ID to check
-     * @param dayOfWeek Day of the week
-     * @param startTime Start time
-     * @param endTime End time
-     * @return true if available, false if conflicts exist
-     */
-    public boolean isTeacherAvailable(
-            Long teacherId,
-            DayOfWeek dayOfWeek,
-            LocalTime startTime,
-            LocalTime endTime
-    ) {
-        if (teacherId == null) {
-            return true;
-        }
-
-        List<Schedule> conflicts = scheduleRepository.findTeacherConflicts(
-                teacherId, dayOfWeek, startTime, endTime
-        );
-
-        return conflicts.isEmpty();
-    }
-
-    /**
-     * Checks if a classroom is available without throwing an exception.
-     * Useful for checking availability before attempting to create a schedule.
-     *
-     * @param classroom Classroom to check
-     * @param dayOfWeek Day of the week
-     * @param startTime Start time
-     * @param endTime End time
-     * @return true if available, false if conflicts exist
-     */
-    public boolean isClassroomAvailable(
-            Classroom classroom,
-            DayOfWeek dayOfWeek,
-            LocalTime startTime,
-            LocalTime endTime
-    ) {
-        if (classroom == null || classroom.isVirtual()) {
-            return true;
-        }
-
-        List<Schedule> conflicts = scheduleRepository.findClassroomConflicts(
-                classroom, dayOfWeek, startTime, endTime
-        );
-
-        return conflicts.isEmpty();
-    }
-
-    /**
-     * Gets all conflicting schedules for a teacher at a given time.
-     *
-     * @param teacherId Teacher ID
-     * @param dayOfWeek Day of the week
-     * @param startTime Start time
-     * @param endTime End time
-     * @return List of conflicting schedules
-     */
-    public List<Schedule> getTeacherConflicts(
-            Long teacherId,
-            DayOfWeek dayOfWeek,
-            LocalTime startTime,
-            LocalTime endTime
-    ) {
-        return scheduleRepository.findTeacherConflicts(teacherId, dayOfWeek, startTime, endTime);
-    }
-
-    /**
-     * Gets all conflicting schedules for a classroom at a given time.
-     *
-     * @param classroom Classroom
-     * @param dayOfWeek Day of the week
-     * @param startTime Start time
-     * @param endTime End time
-     * @return List of conflicting schedules
-     */
-    public List<Schedule> getClassroomConflicts(
-            Classroom classroom,
-            DayOfWeek dayOfWeek,
-            LocalTime startTime,
-            LocalTime endTime
-    ) {
-        return scheduleRepository.findClassroomConflicts(classroom, dayOfWeek, startTime, endTime);
+        log.debug("Schedule validation passed");
     }
 }

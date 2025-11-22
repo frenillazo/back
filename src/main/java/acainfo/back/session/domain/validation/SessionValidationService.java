@@ -2,10 +2,10 @@ package acainfo.back.session.domain.validation;
 
 import acainfo.back.schedule.domain.model.Classroom;
 import acainfo.back.session.domain.exception.SessionConflictException;
-import acainfo.back.session.domain.model.Session;
+import acainfo.back.session.domain.model.SessionDomain;
 import acainfo.back.session.domain.model.SessionMode;
-import acainfo.back.session.infrastructure.adapters.out.SessionRepository;
-import acainfo.back.subjectgroup.domain.model.SubjectGroup;
+import acainfo.back.session.application.ports.out.SessionRepositoryPort;
+import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ import java.util.List;
 @Slf4j
 public class SessionValidationService {
 
-    private final SessionRepository sessionRepository;
+    private final SessionRepositoryPort sessionRepository;
 
     // ==================== MODE CHANGE VALIDATIONS ====================
 
@@ -44,7 +44,7 @@ public class SessionValidationService {
      * @throws IllegalStateException if mode cannot be changed
      * @throws IllegalArgumentException if validation fails
      */
-    public void validateModeChange(Session session, SessionMode newMode,
+    public void validateModeChange(SessionDomain session, SessionMode newMode,
                                    Classroom classroom, String zoomMeetingId) {
         log.debug("Validating mode change for session {} from {} to {}",
             session.getId(), session.getMode(), newMode);
@@ -95,7 +95,7 @@ public class SessionValidationService {
      * Checks if mode can be changed based on timing.
      * Must be at least 2 hours before session start.
      */
-    private boolean canChangeModeInTime(Session session) {
+    private boolean canChangeModeInTime(SessionDomain session) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime twoHoursBeforeStart = session.getScheduledStart().minusHours(2);
         return now.isBefore(twoHoursBeforeStart);
@@ -165,12 +165,12 @@ public class SessionValidationService {
         log.debug("Validating classroom {} availability from {} to {}",
             classroom, startTime, endTime);
 
-        List<Session> conflictingSessions = sessionRepository.findConflictingClassroomSessions(
+        List<SessionDomain> conflictingSessions = sessionRepository.findConflictingClassroomSessions(
             classroom, startTime, endTime, excludeSessionId != null ? excludeSessionId : -1L
         );
 
         if (!conflictingSessions.isEmpty()) {
-            Session conflict = conflictingSessions.get(0);
+            SessionDomain conflict = conflictingSessions.get(0);
             throw SessionConflictException.classroomOccupied(
                 classroom.getDisplayName(),
                 String.format("%s to %s (conflict with session #%d)",

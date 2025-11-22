@@ -1,6 +1,6 @@
 package acainfo.back.schedule.domain.exception;
 
-import acainfo.back.schedule.domain.model.Schedule;
+import acainfo.back.schedule.domain.model.ScheduleDomain;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
@@ -22,7 +22,7 @@ public class TeacherScheduleConflictException extends ScheduleConflictException 
             DayOfWeek dayOfWeek,
             LocalTime startTime,
             LocalTime endTime,
-            List<Schedule> conflictingSchedules
+            List<ScheduleDomain> conflictingSchedules
     ) {
         super(buildMessage(teacherId, dayOfWeek, startTime, endTime, conflictingSchedules.size()),
                 conflictingSchedules);
