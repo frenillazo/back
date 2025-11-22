@@ -1,4 +1,4 @@
-package acainfo.back.shared.domain.validation;
+package acainfo.back.user.domain.validation;
 
 import java.util.regex.Pattern;
 
