@@ -14,8 +14,8 @@ import acainfo.back.session.application.ports.out.SessionRepositoryPort;
 import acainfo.back.session.domain.exception.SessionNotFoundException;
 import acainfo.back.session.domain.model.SessionDomain;
 import acainfo.back.session.domain.model.SessionStatus;
+import acainfo.back.user.application.ports.out.UserRepositoryPort;
 import acainfo.back.user.domain.exception.UserNotFoundException;
-import acainfo.back.user.infrastructure.adapters.out.persistence.repositories.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -45,7 +45,7 @@ public class RegisterAttendanceUseCaseImpl implements RegisterAttendanceUseCase 
     private final AttendanceRepositoryPort attendanceRepository;
     private final SessionRepositoryPort sessionRepository;
     private final EnrollmentRepositoryPort enrollmentRepository;
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepository;
 
     @Override
     public AttendanceDomain registerAttendance(RegisterAttendanceCommand command) {
