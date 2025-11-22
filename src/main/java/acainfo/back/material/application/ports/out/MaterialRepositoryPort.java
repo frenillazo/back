@@ -1,6 +1,6 @@
 package acainfo.back.material.application.ports.out;
 
-import acainfo.back.material.domain.model.Material;
+import acainfo.back.material.domain.model.MaterialDomain;
 import acainfo.back.material.domain.model.MaterialType;
 
 import java.util.List;
@@ -18,7 +18,7 @@ public interface MaterialRepositoryPort {
      * @param material the material to save
      * @return the saved material
      */
-    Material save(Material material);
+    MaterialDomain save(MaterialDomain material);
 
     /**
      * Finds a material by ID.
@@ -26,7 +26,7 @@ public interface MaterialRepositoryPort {
      * @param id the material ID
      * @return Optional containing the material if found
      */
-    Optional<Material> findById(Long id);
+    Optional<MaterialDomain> findById(Long id);
 
     /**
      * Finds all active materials for a subject group.
@@ -34,7 +34,7 @@ public interface MaterialRepositoryPort {
      * @param subjectGroupId the subject group ID
      * @return list of active materials
      */
-    List<Material> findBySubjectGroupIdAndIsActiveTrue(Long subjectGroupId);
+    List<MaterialDomain> findBySubjectGroupIdAndIsActiveTrue(Long subjectGroupId);
 
     /**
      * Finds all materials for a subject group (including inactive).
@@ -42,7 +42,7 @@ public interface MaterialRepositoryPort {
      * @param subjectGroupId the subject group ID
      * @return list of all materials
      */
-    List<Material> findBySubjectGroupId(Long subjectGroupId);
+    List<MaterialDomain> findBySubjectGroupId(Long subjectGroupId);
 
     /**
      * Finds active materials by subject group and type.
@@ -51,7 +51,7 @@ public interface MaterialRepositoryPort {
      * @param type the material type
      * @return list of materials
      */
-    List<Material> findBySubjectGroupIdAndTypeAndIsActiveTrue(Long subjectGroupId, MaterialType type);
+    List<MaterialDomain> findBySubjectGroupIdAndTypeAndIsActiveTrue(Long subjectGroupId, MaterialType type);
 
     /**
      * Finds active materials by subject group and topic.
@@ -60,7 +60,7 @@ public interface MaterialRepositoryPort {
      * @param topic the topic/unit
      * @return list of materials
      */
-    List<Material> findBySubjectGroupIdAndTopicAndIsActiveTrue(Long subjectGroupId, String topic);
+    List<MaterialDomain> findBySubjectGroupIdAndTopicAndIsActiveTrue(Long subjectGroupId, String topic);
 
     /**
      * Finds all materials uploaded by a user.
@@ -68,7 +68,7 @@ public interface MaterialRepositoryPort {
      * @param uploaderId the uploader user ID
      * @return list of materials
      */
-    List<Material> findByUploadedById(Long uploaderId);
+    List<MaterialDomain> findByUploadedById(Long uploaderId);
 
     /**
      * Checks if a material exists and is active.
@@ -99,5 +99,20 @@ public interface MaterialRepositoryPort {
      * @param type the material type
      * @return list of materials
      */
-    List<Material> findByTypeAndIsActiveTrue(MaterialType type);
+    List<MaterialDomain> findByTypeAndIsActiveTrue(MaterialType type);
+
+    /**
+     * Finds all distinct topics for a subject group
+     */
+    List<String> findDistinctTopicsBySubjectGroupId(Long subjectGroupId);
+
+    /**
+     * Checks if a file path already exists
+     */
+    boolean existsByFilePath(String filePath);
+
+    /**
+     * Calculate total storage size for a subject group
+     */
+    Long calculateTotalSizeBySubjectGroupId(Long subjectGroupId);
 }
