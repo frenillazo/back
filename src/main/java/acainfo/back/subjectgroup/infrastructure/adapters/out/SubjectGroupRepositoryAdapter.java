@@ -2,9 +2,12 @@ package acainfo.back.subjectgroup.infrastructure.adapters.out;
 
 import acainfo.back.subjectgroup.application.ports.out.GroupRepositoryPort;
 import acainfo.back.subjectgroup.domain.model.AcademicPeriod;
-import acainfo.back.subjectgroup.domain.model.SubjectGroup;
+import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
 import acainfo.back.subjectgroup.domain.model.GroupStatus;
 import acainfo.back.subjectgroup.domain.model.GroupType;
+import acainfo.back.subjectgroup.infrastructure.adapters.out.persistence.entities.SubjectGroupJpaEntity;
+import acainfo.back.subjectgroup.infrastructure.adapters.out.persistence.mappers.SubjectGroupJpaMapper;
+import acainfo.back.subjectgroup.infrastructure.adapters.out.persistence.repositories.SubjectGroupJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
@@ -15,62 +18,67 @@ import java.util.Optional;
 /**
  * Adapter that implements GroupRepositoryPort using Spring Data JPA.
  * This adapter bridges the application layer with the infrastructure layer.
+ * Converts between SubjectGroupDomain (application layer) and SubjectGroupJpaEntity (infrastructure layer).
  */
 @Component
 @RequiredArgsConstructor
 public class SubjectGroupRepositoryAdapter implements GroupRepositoryPort {
 
-    private final SubjectGroupRepository subjectGroupRepository;
+    private final SubjectGroupJpaRepository subjectGroupRepository;
+    private final SubjectGroupJpaMapper mapper;
 
     @Override
-    public SubjectGroup save(SubjectGroup subjectGroup) {
-        return subjectGroupRepository.save(subjectGroup);
+    public SubjectGroupDomain save(SubjectGroupDomain subjectGroup) {
+        SubjectGroupJpaEntity jpaEntity = mapper.toJpaEntity(subjectGroup);
+        SubjectGroupJpaEntity savedEntity = subjectGroupRepository.save(jpaEntity);
+        return mapper.toDomain(savedEntity);
     }
 
     @Override
-    public Optional<SubjectGroup> findById(Long id) {
-        return subjectGroupRepository.findById(id);
+    public Optional<SubjectGroupDomain> findById(Long id) {
+        return subjectGroupRepository.findById(id)
+                .map(mapper::toDomain);
     }
 
     @Override
-    public List<SubjectGroup> findAll() {
-        return subjectGroupRepository.findAll();
+    public List<SubjectGroupDomain> findAll() {
+        return mapper.toDomains(subjectGroupRepository.findAll());
     }
 
     @Override
-    public List<SubjectGroup> findBySubjectId(Long subjectId) {
-        return subjectGroupRepository.findBySubjectId(subjectId);
+    public List<SubjectGroupDomain> findBySubjectId(Long subjectId) {
+        return mapper.toDomains(subjectGroupRepository.findBySubjectId(subjectId));
     }
 
     @Override
-    public List<SubjectGroup> findByTeacherId(Long teacherId) {
-        return subjectGroupRepository.findByTeacherId(teacherId);
+    public List<SubjectGroupDomain> findByTeacherId(Long teacherId) {
+        return mapper.toDomains(subjectGroupRepository.findByTeacherId(teacherId));
     }
 
     @Override
-    public List<SubjectGroup> findByStatus(GroupStatus status) {
-        return subjectGroupRepository.findByStatus(status);
+    public List<SubjectGroupDomain> findByStatus(GroupStatus status) {
+        return mapper.toDomains(subjectGroupRepository.findByStatus(status));
     }
 
     @Override
-    public List<SubjectGroup> findByType(GroupType type) {
-        return subjectGroupRepository.findByType(type);
+    public List<SubjectGroupDomain> findByType(GroupType type) {
+        return mapper.toDomains(subjectGroupRepository.findByType(type));
     }
 
     @Override
-    public List<SubjectGroup> findByPeriod(AcademicPeriod period) {
-        return subjectGroupRepository.findByPeriod(period);
+    public List<SubjectGroupDomain> findByPeriod(AcademicPeriod period) {
+        return mapper.toDomains(subjectGroupRepository.findByPeriod(period));
     }
 
 
     @Override
-    public List<SubjectGroup> findGroupsWithAvailablePlaces() {
-        return subjectGroupRepository.findGroupsWithAvailablePlaces();
+    public List<SubjectGroupDomain> findGroupsWithAvailablePlaces() {
+        return mapper.toDomains(subjectGroupRepository.findGroupsWithAvailablePlaces());
     }
 
     @Override
-    public List<SubjectGroup> findActiveBySubjectId(Long subjectId) {
-        return subjectGroupRepository.findActiveBySubjectId(subjectId);
+    public List<SubjectGroupDomain> findActiveBySubjectId(Long subjectId) {
+        return mapper.toDomains(subjectGroupRepository.findActiveBySubjectId(subjectId));
     }
 
     @Override
@@ -104,7 +112,7 @@ public class SubjectGroupRepositoryAdapter implements GroupRepositoryPort {
     }
 
     @Override
-    public List<SubjectGroup> findAll(Specification<SubjectGroup> spec) {
-        return subjectGroupRepository.findAll(spec);
+    public List<SubjectGroupDomain> findAll(Specification<SubjectGroupJpaEntity> spec) {
+        return mapper.toDomains(subjectGroupRepository.findAll(spec));
     }
 }

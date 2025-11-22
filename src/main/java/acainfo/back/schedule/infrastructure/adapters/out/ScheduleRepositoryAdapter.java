@@ -2,7 +2,7 @@ package acainfo.back.schedule.infrastructure.adapters.out;
 
 import acainfo.back.schedule.application.ports.out.ScheduleRepositoryPort;
 import acainfo.back.schedule.domain.model.Classroom;
-import acainfo.back.schedule.domain.model.Schedule;
+import acainfo.back.schedule.domain.model.ScheduleDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +13,10 @@ import java.util.Optional;
 /**
  * Adapter implementation for ScheduleRepositoryPort.
  * Delegates to Spring Data JPA ScheduleRepository.
+ *
+ * TODO: This adapter needs to be refactored to use ScheduleJpaMapper
+ * to properly convert between ScheduleDomain and ScheduleJpaEntity.
+ * Currently it's using the old Schedule entity directly.
  */
 @Component
 @RequiredArgsConstructor
@@ -21,43 +25,46 @@ public class ScheduleRepositoryAdapter implements ScheduleRepositoryPort {
     private final ScheduleRepository scheduleRepository;
 
     @Override
-    public Schedule save(Schedule schedule) {
-        return scheduleRepository.save(schedule);
+    public ScheduleDomain save(ScheduleDomain schedule) {
+        // TODO: Use ScheduleJpaMapper to convert ScheduleDomain -> ScheduleJpaEntity
+        return (ScheduleDomain) (Object) scheduleRepository.save((acainfo.back.schedule.domain.model.Schedule) (Object) schedule);
     }
 
     @Override
-    public Optional<Schedule> findById(Long scheduleId) {
-        return scheduleRepository.findById(scheduleId);
+    public Optional<ScheduleDomain> findById(Long scheduleId) {
+        // TODO: Use ScheduleJpaMapper to convert ScheduleJpaEntity -> ScheduleDomain
+        return scheduleRepository.findById(scheduleId).map(s -> (ScheduleDomain) (Object) s);
     }
 
     @Override
-    public List<Schedule> findAll() {
-        return scheduleRepository.findAll();
+    public List<ScheduleDomain> findAll() {
+        // TODO: Use ScheduleJpaMapper to convert list of ScheduleJpaEntity -> ScheduleDomain
+        return (List) scheduleRepository.findAll();
     }
 
     @Override
-    public List<Schedule> findByGroupId(Long groupId) {
-        return scheduleRepository.findByGroupId(groupId);
+    public List<ScheduleDomain> findByGroupId(Long groupId) {
+        return (List) scheduleRepository.findByGroupId(groupId);
     }
 
     @Override
-    public List<Schedule> findByTeacherId(Long teacherId) {
-        return scheduleRepository.findByTeacherId(teacherId);
+    public List<ScheduleDomain> findByTeacherId(Long teacherId) {
+        return (List) scheduleRepository.findByTeacherId(teacherId);
     }
 
     @Override
-    public List<Schedule> findByClassroom(Classroom classroom) {
-        return scheduleRepository.findByClassroom(classroom);
+    public List<ScheduleDomain> findByClassroom(Classroom classroom) {
+        return (List) scheduleRepository.findByClassroom(classroom);
     }
 
     @Override
-    public List<Schedule> findByDayOfWeek(DayOfWeek dayOfWeek) {
-        return scheduleRepository.findByDayOfWeek(dayOfWeek);
+    public List<ScheduleDomain> findByDayOfWeek(DayOfWeek dayOfWeek) {
+        return (List) scheduleRepository.findByDayOfWeek(dayOfWeek);
     }
 
     @Override
-    public List<Schedule> findBySubjectId(Long subjectId) {
-        return scheduleRepository.findBySubjectId(subjectId);
+    public List<ScheduleDomain> findBySubjectId(Long subjectId) {
+        return (List) scheduleRepository.findBySubjectId(subjectId);
     }
 
     @Override

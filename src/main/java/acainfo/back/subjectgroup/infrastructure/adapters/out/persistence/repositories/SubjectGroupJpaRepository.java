@@ -1,7 +1,7 @@
 package acainfo.back.subjectgroup.infrastructure.adapters.out.persistence.repositories;
 
 import acainfo.back.shared.domain.model.User;
-import acainfo.back.subject.domain.model.Subject;
+import acainfo.back.subject.infrastructure.adapters.out.persistence.entities.SubjectJpaEntity;
 import acainfo.back.subjectgroup.domain.model.AcademicPeriod;
 import acainfo.back.subjectgroup.domain.model.GroupStatus;
 import acainfo.back.subjectgroup.domain.model.GroupType;
@@ -26,7 +26,7 @@ public interface SubjectGroupJpaRepository extends JpaRepository<SubjectGroupJpa
      * @param subject the subject
      * @return list of groups
      */
-    List<SubjectGroupJpaEntity> findBySubject(Subject subject);
+    List<SubjectGroupJpaEntity> findBySubject(SubjectJpaEntity subject);
 
     /**
      * Find all groups by subject ID
@@ -100,7 +100,7 @@ public interface SubjectGroupJpaRepository extends JpaRepository<SubjectGroupJpa
      * @param period the academic period
      * @return list of groups
      */
-    List<SubjectGroupJpaEntity> findBySubjectAndPeriod(Subject subject, AcademicPeriod period);
+    List<SubjectGroupJpaEntity> findBySubjectAndPeriod(SubjectJpaEntity subject, AcademicPeriod period);
 
     /**
      * Find all groups by subject ID and period
@@ -117,7 +117,7 @@ public interface SubjectGroupJpaRepository extends JpaRepository<SubjectGroupJpa
      * @return list of active groups
      */
     @Query("SELECT g FROM SubjectGroup g WHERE g.subject = :subject AND g.status = 'ACTIVO'")
-    List<SubjectGroupJpaEntity> findActiveBySubject(@Param("subject") Subject subject);
+    List<SubjectGroupJpaEntity> findActiveBySubject(@Param("subject") SubjectJpaEntity subject);
 
     /**
      * Find all active groups by subject ID
@@ -132,7 +132,7 @@ public interface SubjectGroupJpaRepository extends JpaRepository<SubjectGroupJpa
      * @param subject the subject
      * @return count of groups
      */
-    long countBySubject(Subject subject);
+    long countBySubject(SubjectJpaEntity subject);
 
     /**
      * Count groups by subject ID

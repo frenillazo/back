@@ -15,7 +15,7 @@ import acainfo.back.shared.domain.model.User;
 import acainfo.back.shared.infrastructure.adapters.out.UserRepository;
 import acainfo.back.subject.application.ports.out.SubjectRepositoryPort;
 import acainfo.back.subject.domain.exception.SubjectNotFoundException;
-import acainfo.back.subject.domain.model.Subject;
+import acainfo.back.subject.domain.model.SubjectDomain;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -59,7 +59,7 @@ public class GroupRequestService implements
         User requester = validateStudent(requesterId);
 
         // Validate subject exists
-        Subject subject = validateSubject(subjectId);
+        SubjectDomain subject = validateSubject(subjectId);
 
         // Check if pending request already exists for this subject
         if (groupRequestRepository.existsPendingRequestBySubjectId(subjectId)) {
@@ -329,7 +329,7 @@ public class GroupRequestService implements
     /**
      * Validates that the subject exists.
      */
-    private Subject validateSubject(Long subjectId) {
+    private SubjectDomain validateSubject(Long subjectId) {
         if (subjectId == null) {
             throw new IllegalArgumentException("Subject ID is required");
         }

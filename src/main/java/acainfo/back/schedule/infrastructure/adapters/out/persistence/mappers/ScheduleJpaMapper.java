@@ -2,7 +2,7 @@ package acainfo.back.schedule.infrastructure.adapters.out.persistence.mappers;
 
 import acainfo.back.schedule.domain.model.ScheduleDomain;
 import acainfo.back.schedule.infrastructure.adapters.out.persistence.entities.ScheduleJpaEntity;
-import acainfo.back.subjectgroup.domain.model.SubjectGroup;
+import acainfo.back.subjectgroup.infrastructure.adapters.out.persistence.entities.SubjectGroupJpaEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -25,12 +25,12 @@ public class ScheduleJpaMapper {
             return null;
         }
 
-        // Create a SubjectGroup reference with only the ID
+        // Create a SubjectGroupJpaEntity reference with only the ID
         // This is a JPA optimization: we don't need to load the full entity
         // just to persist a foreign key reference
-        SubjectGroup subjectGroupRef = null;
+        SubjectGroupJpaEntity subjectGroupRef = null;
         if (domain.getSubjectGroupId() != null) {
-            subjectGroupRef = new SubjectGroup();
+            subjectGroupRef = new SubjectGroupJpaEntity();
             subjectGroupRef.setId(domain.getSubjectGroupId());
         }
 
