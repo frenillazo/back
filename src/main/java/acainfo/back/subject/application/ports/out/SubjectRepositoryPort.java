@@ -1,9 +1,8 @@
 package acainfo.back.subject.application.ports.out;
 
 import acainfo.back.subject.domain.model.Degree;
-import acainfo.back.subject.domain.model.Subject;
+import acainfo.back.subject.domain.model.SubjectDomain;
 import acainfo.back.subject.domain.model.SubjectStatus;
-import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +19,7 @@ public interface SubjectRepositoryPort {
      * @param subject the subject to save
      * @return the saved subject
      */
-    Subject save(Subject subject);
+    SubjectDomain save(SubjectDomain subject);
 
     /**
      * Finds a subject by ID.
@@ -28,7 +27,7 @@ public interface SubjectRepositoryPort {
      * @param id the subject ID
      * @return Optional containing the subject if found
      */
-    Optional<Subject> findById(Long id);
+    Optional<SubjectDomain> findById(Long id);
 
     /**
      * Finds a subject by code.
@@ -36,7 +35,7 @@ public interface SubjectRepositoryPort {
      * @param code the subject code
      * @return Optional containing the subject if found
      */
-    Optional<Subject> findByCode(String code);
+    Optional<SubjectDomain> findByCode(String code);
 
     /**
      * Checks if a subject exists by code.
@@ -61,7 +60,7 @@ public interface SubjectRepositoryPort {
      *
      * @return list of all subjects
      */
-    List<Subject> findAll();
+    List<SubjectDomain> findAll();
 
     /**
      * Finds subjects by status.
@@ -69,7 +68,7 @@ public interface SubjectRepositoryPort {
      * @param status the subject status
      * @return list of subjects
      */
-    List<Subject> findByStatus(SubjectStatus status);
+    List<SubjectDomain> findByStatus(SubjectStatus status);
 
     /**
      * Finds subjects by degree.
@@ -77,7 +76,7 @@ public interface SubjectRepositoryPort {
      * @param degree the degree
      * @return list of subjects
      */
-    List<Subject> findByDegree(Degree degree);
+    List<SubjectDomain> findByDegree(Degree degree);
 
     /**
      * Finds subjects by degree and year.
@@ -86,7 +85,7 @@ public interface SubjectRepositoryPort {
      * @param year the academic year
      * @return list of subjects
      */
-    List<Subject> findByDegreeAndYear(Degree degree, Integer year);
+    List<SubjectDomain> findByDegreeAndYear(Degree degree, Integer year);
 
     /**
      * Searches subjects by code or name.
@@ -94,7 +93,7 @@ public interface SubjectRepositoryPort {
      * @param searchTerm the search term
      * @return list of matching subjects
      */
-    List<Subject> searchByCodeOrName(String searchTerm);
+    List<SubjectDomain> searchByCodeOrName(String searchTerm);
 
     /**
      * Deletes a subject by ID.
@@ -110,12 +109,4 @@ public interface SubjectRepositoryPort {
      * @return count of subjects
      */
     long countByStatus(SubjectStatus status);
-
-    /**
-     * Finds subjects matching the given specification (dynamic filtering).
-     *
-     * @param spec the specification to filter by
-     * @return list of matching subjects
-     */
-    List<Subject> findAll(Specification<Subject> spec);
 }

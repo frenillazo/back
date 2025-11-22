@@ -1,7 +1,7 @@
 package acainfo.back.subject.application.ports.in;
 
 import acainfo.back.subject.domain.exception.DuplicateSubjectCodeException;
-import acainfo.back.subject.domain.model.Subject;
+import acainfo.back.subject.domain.model.SubjectDomain;
 
 /**
  * Use case for creating a new subject.
@@ -15,5 +15,5 @@ public interface CreateSubjectUseCase {
      * @return the created subject with generated ID
      * @throws DuplicateSubjectCodeException if code already exists
      */
-    Subject createSubject(Subject subject);
+    SubjectDomain createSubject(SubjectDomain subject);
 }

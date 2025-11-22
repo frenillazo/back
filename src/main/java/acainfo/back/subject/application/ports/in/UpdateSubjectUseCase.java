@@ -2,7 +2,7 @@ package acainfo.back.subject.application.ports.in;
 
 import acainfo.back.subject.domain.exception.DuplicateSubjectCodeException;
 import acainfo.back.subject.domain.exception.SubjectNotFoundException;
-import acainfo.back.subject.domain.model.Subject;
+import acainfo.back.subject.domain.model.SubjectDomain;
 
 /**
  * Use case for updating an existing subject.
@@ -18,5 +18,5 @@ public interface UpdateSubjectUseCase {
      * @throws SubjectNotFoundException if subject not found
      * @throws DuplicateSubjectCodeException if new code already exists
      */
-    Subject updateSubject(Long id, Subject subject);
+    SubjectDomain updateSubject(Long id, SubjectDomain subject);
 }

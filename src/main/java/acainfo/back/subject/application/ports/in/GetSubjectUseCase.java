@@ -2,7 +2,7 @@ package acainfo.back.subject.application.ports.in;
 
 import acainfo.back.subject.domain.exception.SubjectNotFoundException;
 import acainfo.back.subject.domain.model.Degree;
-import acainfo.back.subject.domain.model.Subject;
+import acainfo.back.subject.domain.model.SubjectDomain;
 import acainfo.back.subject.domain.model.SubjectStatus;
 
 import java.util.List;
@@ -19,7 +19,7 @@ public interface GetSubjectUseCase {
      * @return the subject
      * @throws SubjectNotFoundException if not found
      */
-    Subject getSubjectById(Long id);
+    SubjectDomain getSubjectById(Long id);
 
     /**
      * Gets a subject by its code.
@@ -28,21 +28,21 @@ public interface GetSubjectUseCase {
      * @return the subject
      * @throws SubjectNotFoundException if not found
      */
-    Subject getSubjectByCode(String code);
+    SubjectDomain getSubjectByCode(String code);
 
     /**
      * Gets all subjects.
      *
      * @return list of all subjects
      */
-    List<Subject> getAllSubjects();
+    List<SubjectDomain> getAllSubjects();
 
     /**
      * Gets all active subjects.
      *
      * @return list of active subjects
      */
-    List<Subject> getActiveSubjects();
+    List<SubjectDomain> getActiveSubjects();
 
     /**
      * Gets subjects by degree.
@@ -50,7 +50,7 @@ public interface GetSubjectUseCase {
      * @param degree the degree
      * @return list of subjects
      */
-    List<Subject> getSubjectsByDegree(Degree degree);
+    List<SubjectDomain> getSubjectsByDegree(Degree degree);
 
     /**
      * Gets subjects by status.
@@ -58,7 +58,7 @@ public interface GetSubjectUseCase {
      * @param status the subject status
      * @return list of subjects
      */
-    List<Subject> getSubjectsByStatus(SubjectStatus status);
+    List<SubjectDomain> getSubjectsByStatus(SubjectStatus status);
 
     /**
      * Gets subjects by degree and year.
@@ -67,7 +67,7 @@ public interface GetSubjectUseCase {
      * @param year the academic year
      * @return list of subjects
      */
-    List<Subject> getSubjectsByDegreeAndYear(Degree degree, Integer year);
+    List<SubjectDomain> getSubjectsByDegreeAndYear(Degree degree, Integer year);
 
     /**
      * Searches subjects by code or name.
@@ -75,5 +75,5 @@ public interface GetSubjectUseCase {
      * @param searchTerm the search term
      * @return list of matching subjects
      */
-    List<Subject> searchSubjects(String searchTerm);
+    List<SubjectDomain> searchSubjects(String searchTerm);
 }

@@ -18,9 +18,9 @@ acainfo.back.{module}/
 │   └── validation/         # Validadores de negocio
 ├── application/
 │   ├── ports/
-│   │   ├── in/             # Use Cases (interfaces)
+│   │   ├── in/             # Use Cases (interfaces SOLO)
 │   │   └── out/            # Repository/Service Ports (interfaces)
-│   ├── services/           # Implementación de use cases
+│   ├── usecases/           # Implementaciones de Use Cases
 │   └── mappers/            # Mappers Domain ↔ DTO
 └── infrastructure/
     └── adapters/
@@ -45,6 +45,7 @@ acainfo.back.{module}/
 | Repository JPA | `{Entity}JpaRepository` | `UserJpaRepository` | infrastructure/.../persistence/repositories |
 | Repository Adapter | `{Entity}RepositoryAdapter` | `UserRepositoryAdapter` | infrastructure/.../persistence/adapters |
 | Use Case (IN Port) | `{Action}{Entity}UseCase` | `CreateUserUseCase` | application/ports/in |
+| Use Case Impl | `{Action}{Entity}UseCaseImpl` | `CreateUserUseCaseImpl` | application/usecases |
 | JPA Mapper | `{Entity}JpaMapper` | `UserJpaMapper` | infrastructure/.../persistence/mappers |
 | DTO Mapper | `{Entity}DtoMapper` | `UserDtoMapper` | application/mappers |
 | Request DTO | `{Action}{Entity}Request` | `CreateUserRequest` | infrastructure/.../in/dto |
