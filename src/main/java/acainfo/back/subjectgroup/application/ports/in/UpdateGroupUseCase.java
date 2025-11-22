@@ -2,11 +2,12 @@ package acainfo.back.subjectgroup.application.ports.in;
 
 import acainfo.back.shared.domain.exception.InvalidTeacherException;
 import acainfo.back.shared.domain.exception.UserNotFoundException;
-import acainfo.back.subjectgroup.domain.model.SubjectGroup;
+import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
 import acainfo.back.subjectgroup.domain.exception.GroupNotFoundException;
 
 /**
  * Use case for updating an existing subjectGroup.
+ * Works with SubjectGroupDomain (pure domain model)
  */
 public interface UpdateGroupUseCase {
 
@@ -20,7 +21,7 @@ public interface UpdateGroupUseCase {
      * @throws GroupNotFoundException if subjectGroup not found
      * @throws InvalidTeacherException if teacher is not valid
      */
-    SubjectGroup updateGroup(Long id, SubjectGroup subjectGroup);
+    SubjectGroupDomain updateGroup(Long id, SubjectGroupDomain subjectGroup);
 
     /**
      * Assigns a teacher to a subjectGroup.
@@ -32,5 +33,5 @@ public interface UpdateGroupUseCase {
      * @throws UserNotFoundException if teacher not found
      * @throws InvalidTeacherException if user is not a teacher
      */
-    SubjectGroup assignTeacher(Long groupId, Long teacherId);
+    SubjectGroupDomain assignTeacher(Long groupId, Long teacherId);
 }

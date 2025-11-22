@@ -2,7 +2,7 @@ package acainfo.back.subjectgroup.application.ports.in;
 
 import acainfo.back.subjectgroup.domain.exception.GroupNotFoundException;
 import acainfo.back.subjectgroup.domain.model.AcademicPeriod;
-import acainfo.back.subjectgroup.domain.model.SubjectGroup;
+import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
 import acainfo.back.subjectgroup.domain.model.GroupStatus;
 import acainfo.back.subjectgroup.domain.model.GroupType;
 
@@ -10,6 +10,7 @@ import java.util.List;
 
 /**
  * Use case for retrieving groups.
+ * Works with SubjectGroupDomain (pure domain model)
  */
 public interface GetGroupUseCase {
 
@@ -20,21 +21,21 @@ public interface GetGroupUseCase {
      * @return the subjectGroup
      * @throws GroupNotFoundException if not found
      */
-    SubjectGroup getGroupById(Long id);
+    SubjectGroupDomain getGroupById(Long id);
 
     /**
      * Gets all groups.
      *
      * @return list of all groups
      */
-    List<SubjectGroup> getAllGroups();
+    List<SubjectGroupDomain> getAllGroups();
 
     /**
      * Gets all active groups.
      *
      * @return list of active groups
      */
-    List<SubjectGroup> getActiveGroups();
+    List<SubjectGroupDomain> getActiveGroups();
 
     /**
      * Gets groups by subject.
@@ -42,7 +43,7 @@ public interface GetGroupUseCase {
      * @param subjectId the subject ID
      * @return list of groups
      */
-    List<SubjectGroup> getGroupsBySubject(Long subjectId);
+    List<SubjectGroupDomain> getGroupsBySubject(Long subjectId);
 
     /**
      * Gets groups by teacher.
@@ -50,7 +51,7 @@ public interface GetGroupUseCase {
      * @param teacherId the teacher ID
      * @return list of groups
      */
-    List<SubjectGroup> getGroupsByTeacher(Long teacherId);
+    List<SubjectGroupDomain> getGroupsByTeacher(Long teacherId);
 
     /**
      * Gets groups by status.
@@ -58,7 +59,7 @@ public interface GetGroupUseCase {
      * @param status the subjectGroup status
      * @return list of groups
      */
-    List<SubjectGroup> getGroupsByStatus(GroupStatus status);
+    List<SubjectGroupDomain> getGroupsByStatus(GroupStatus status);
 
     /**
      * Gets groups by type.
@@ -66,7 +67,7 @@ public interface GetGroupUseCase {
      * @param type the subjectGroup type
      * @return list of groups
      */
-    List<SubjectGroup> getGroupsByType(GroupType type);
+    List<SubjectGroupDomain> getGroupsByType(GroupType type);
 
     /**
      * Gets groups by period.
@@ -74,12 +75,12 @@ public interface GetGroupUseCase {
      * @param period the academic period
      * @return list of groups
      */
-    List<SubjectGroup> getGroupsByPeriod(AcademicPeriod period);
+    List<SubjectGroupDomain> getGroupsByPeriod(AcademicPeriod period);
 
     /**
      * Gets groups with available places.
      *
      * @return list of groups with available places
      */
-    List<SubjectGroup> getGroupsWithAvailablePlaces();
+    List<SubjectGroupDomain> getGroupsWithAvailablePlaces();
 }

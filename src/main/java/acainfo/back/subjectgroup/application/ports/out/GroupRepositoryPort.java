@@ -1,10 +1,9 @@
 package acainfo.back.subjectgroup.application.ports.out;
 
 import acainfo.back.subjectgroup.domain.model.AcademicPeriod;
-import acainfo.back.subjectgroup.domain.model.SubjectGroup;
+import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
 import acainfo.back.subjectgroup.domain.model.GroupStatus;
 import acainfo.back.subjectgroup.domain.model.GroupType;
-import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,6 +11,7 @@ import java.util.Optional;
 /**
  * Port for subjectGroup repository operations.
  * This interface defines the contract for subjectGroup persistence.
+ * Works with SubjectGroupDomain (pure domain model)
  */
 public interface GroupRepositoryPort {
 
@@ -21,7 +21,7 @@ public interface GroupRepositoryPort {
      * @param subjectGroup the subjectGroup to save
      * @return the saved subjectGroup
      */
-    SubjectGroup save(SubjectGroup subjectGroup);
+    SubjectGroupDomain save(SubjectGroupDomain subjectGroup);
 
     /**
      * Finds a subjectGroup by ID.
@@ -29,14 +29,14 @@ public interface GroupRepositoryPort {
      * @param id the subjectGroup ID
      * @return Optional containing the subjectGroup if found
      */
-    Optional<SubjectGroup> findById(Long id);
+    Optional<SubjectGroupDomain> findById(Long id);
 
     /**
      * Finds all groups.
      *
      * @return list of all groups
      */
-    List<SubjectGroup> findAll();
+    List<SubjectGroupDomain> findAll();
 
     /**
      * Finds groups by subject ID.
@@ -44,7 +44,7 @@ public interface GroupRepositoryPort {
      * @param subjectId the subject ID
      * @return list of groups
      */
-    List<SubjectGroup> findBySubjectId(Long subjectId);
+    List<SubjectGroupDomain> findBySubjectId(Long subjectId);
 
     /**
      * Finds groups by teacher ID.
@@ -52,7 +52,7 @@ public interface GroupRepositoryPort {
      * @param teacherId the teacher ID
      * @return list of groups
      */
-    List<SubjectGroup> findByTeacherId(Long teacherId);
+    List<SubjectGroupDomain> findByTeacherId(Long teacherId);
 
     /**
      * Finds groups by status.
@@ -60,7 +60,7 @@ public interface GroupRepositoryPort {
      * @param status the subjectGroup status
      * @return list of groups
      */
-    List<SubjectGroup> findByStatus(GroupStatus status);
+    List<SubjectGroupDomain> findByStatus(GroupStatus status);
 
     /**
      * Finds groups by type.
@@ -68,7 +68,7 @@ public interface GroupRepositoryPort {
      * @param type the subjectGroup type
      * @return list of groups
      */
-    List<SubjectGroup> findByType(GroupType type);
+    List<SubjectGroupDomain> findByType(GroupType type);
 
     /**
      * Finds groups by period.
@@ -76,7 +76,7 @@ public interface GroupRepositoryPort {
      * @param period the academic period
      * @return list of groups
      */
-    List<SubjectGroup> findByPeriod(AcademicPeriod period);
+    List<SubjectGroupDomain> findByPeriod(AcademicPeriod period);
 
 
     /**
@@ -84,7 +84,7 @@ public interface GroupRepositoryPort {
      *
      * @return list of groups with available places
      */
-    List<SubjectGroup> findGroupsWithAvailablePlaces();
+    List<SubjectGroupDomain> findGroupsWithAvailablePlaces();
 
     /**
      * Finds active groups by subject ID.
@@ -92,7 +92,7 @@ public interface GroupRepositoryPort {
      * @param subjectId the subject ID
      * @return list of active groups
      */
-    List<SubjectGroup> findActiveBySubjectId(Long subjectId);
+    List<SubjectGroupDomain> findActiveBySubjectId(Long subjectId);
 
     /**
      * Counts groups by subject ID.
@@ -140,12 +140,4 @@ public interface GroupRepositoryPort {
      * @return true if exists, false otherwise
      */
     Boolean existsById(Long id);
-
-    /**
-     * Finds groups matching the given specification (dynamic filtering).
-     *
-     * @param spec the specification to filter by
-     * @return list of matching groups
-     */
-    List<SubjectGroup> findAll(Specification<SubjectGroup> spec);
 }

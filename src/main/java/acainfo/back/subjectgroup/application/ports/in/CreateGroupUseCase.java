@@ -1,12 +1,13 @@
 package acainfo.back.subjectgroup.application.ports.in;
 
 import acainfo.back.shared.domain.exception.InvalidTeacherException;
-import acainfo.back.subjectgroup.domain.model.SubjectGroup;
+import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
 import acainfo.back.subject.domain.exception.SubjectInactiveException;
 import acainfo.back.subjectgroup.domain.exception.MaxGroupsPerSubjectException;
 
 /**
  * Use case for creating a new subjectGroup.
+ * Works with SubjectGroupDomain (pure domain model)
  */
 public interface CreateGroupUseCase {
 
@@ -24,5 +25,5 @@ public interface CreateGroupUseCase {
      * @throws SubjectInactiveException if subject is not active
      * @throws InvalidTeacherException if teacher is not valid
      */
-    SubjectGroup createGroup(SubjectGroup subjectGroup);
+    SubjectGroupDomain createGroup(SubjectGroupDomain subjectGroup);
 }
