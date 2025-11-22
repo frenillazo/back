@@ -41,7 +41,7 @@ public interface SubjectGroupJpaRepository extends JpaRepository<SubjectGroupJpa
      * @param teacher the teacher
      * @return list of groups
      */
-    List<SubjectGroupJpaEntity> findByTeacher(User teacher);
+    List<SubjectGroupJpaEntity> findByTeacher(UserJpaEntity teacher);
 
     /**
      * Find all groups by teacher ID
@@ -171,7 +171,7 @@ public interface SubjectGroupJpaRepository extends JpaRepository<SubjectGroupJpa
      * @param status the status
      * @return list of groups
      */
-    List<SubjectGroupJpaEntity> findByTeacherAndStatus(User teacher, GroupStatus status);
+    List<SubjectGroupJpaEntity> findByTeacherAndStatus(UserJpaEntity teacher, GroupStatus status);
 
     /**
      * Check if a subject has any active groups

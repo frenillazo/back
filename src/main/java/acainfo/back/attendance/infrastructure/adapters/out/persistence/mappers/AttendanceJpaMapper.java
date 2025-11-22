@@ -51,8 +51,8 @@ public class AttendanceJpaMapper {
             AttendanceDomain domain,
             SessionJpaEntity session,
             EnrollmentJpaEntity enrollment,
-            User recordedBy,
-            User justifiedBy
+            UserJpaEntity recordedBy,
+            UserJpaEntity justifiedBy
     ) {
         if (domain == null) {
             return null;
@@ -78,7 +78,7 @@ public class AttendanceJpaMapper {
      * Updates existing JPA Entity from Domain
      * Used for updates - preserves immutable fields (session, enrollment, recordedBy, recordedAt, createdAt)
      */
-    public void updateJpaEntity(AttendanceJpaEntity jpa, AttendanceDomain domain, User justifiedBy) {
+    public void updateJpaEntity(AttendanceJpaEntity jpa, AttendanceDomain domain, UserJpaEntity justifiedBy) {
         if (jpa == null || domain == null) {
             return;
         }

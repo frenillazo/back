@@ -352,7 +352,7 @@ public class PaymentController {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Revenue calculated successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid date range"),
-        @ApiResponse(responseCode = "403", description = "Insufficient permissions")
+        @ApiResponse(responseCode = "403", description = "Insufficient permissions")}
     )
     public ResponseEntity<BigDecimal> calculateRevenue(
             @Parameter(description = "Start date") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,

@@ -7,7 +7,7 @@ import acainfo.back.session.domain.model.SessionDomain;
 import acainfo.back.session.domain.model.SessionMode;
 import acainfo.back.session.domain.model.SessionStatus;
 import acainfo.back.session.domain.model.SessionType;
-import acainfo.back.subjectgroup.application.ports.out.GroupRepositoryPort;
+import acainfo.back.subjectgroup.application.ports.out.SubjectGroupRepositoryPort;
 import acainfo.back.subjectgroup.domain.exception.GroupNotFoundException;
 import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ import java.time.LocalDateTime;
 public class CreateSessionUseCaseImpl implements CreateSessionUseCase {
 
     private final SessionRepositoryPort sessionRepository;
-    private final GroupRepositoryPort groupRepository;
+    private final SubjectGroupRepositoryPort groupRepository;
 
     @Override
     public SessionDomain createSession(CreateSessionCommand command) {

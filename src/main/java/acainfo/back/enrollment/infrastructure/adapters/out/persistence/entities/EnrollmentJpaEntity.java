@@ -46,7 +46,7 @@ public class EnrollmentJpaEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
-    private User student;
+    private UserJpaEntity student;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_group_id", nullable = false)

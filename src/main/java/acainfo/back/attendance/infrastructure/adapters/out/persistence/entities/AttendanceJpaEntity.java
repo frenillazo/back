@@ -85,7 +85,7 @@ public class AttendanceJpaEntity {
     @NotNull(message = "Recorded by user is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recorded_by_id", nullable = false)
-    private User recordedBy;
+    private UserJpaEntity recordedBy;
 
     /**
      * Optional notes about the attendance
@@ -112,7 +112,7 @@ public class AttendanceJpaEntity {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "justified_by_id")
-    private User justifiedBy;
+    private UserJpaEntity justifiedBy;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

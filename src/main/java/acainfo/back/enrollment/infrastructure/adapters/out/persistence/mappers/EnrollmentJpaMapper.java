@@ -45,7 +45,7 @@ public class EnrollmentJpaMapper {
      */
     public EnrollmentJpaEntity toJpaEntity(
             EnrollmentDomain domain,
-            User student,
+            UserJpaEntity student,
             SubjectGroupJpaEntity subjectGroup
     ) {
         if (domain == null) {

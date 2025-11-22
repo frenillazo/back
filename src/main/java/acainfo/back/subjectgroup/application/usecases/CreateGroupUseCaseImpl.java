@@ -1,6 +1,7 @@
 package acainfo.back.subjectgroup.application.usecases;
 
 import acainfo.back.shared.domain.exception.InvalidTeacherException;
+import acainfo.back.user.application.ports.out.UserRepositoryPort;
 import acainfo.back.user.domain.exception.UserNotFoundException;
 import acainfo.back.user.domain.model.RoleType;
 import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
@@ -10,7 +11,7 @@ import acainfo.back.subject.domain.exception.SubjectInactiveException;
 import acainfo.back.subject.domain.exception.SubjectNotFoundException;
 import acainfo.back.subject.domain.model.SubjectDomain;
 import acainfo.back.subjectgroup.application.ports.in.CreateGroupUseCase;
-import acainfo.back.subjectgroup.application.ports.out.GroupRepositoryPort;
+import acainfo.back.subjectgroup.application.ports.out.SubjectGroupRepositoryPort;
 import acainfo.back.subjectgroup.domain.exception.MaxGroupsPerSubjectException;
 import acainfo.back.subjectgroup.domain.model.GroupStatus;
 import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
@@ -31,9 +32,9 @@ public class CreateGroupUseCaseImpl implements CreateGroupUseCase {
 
     private static final int MAX_GROUPS_PER_SUBJECT = 3;
 
-    private final GroupRepositoryPort groupRepository;
+    private final SubjectGroupRepositoryPort groupRepository;
     private final SubjectRepositoryPort subjectRepository;
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepository;
 
     @Override
     public SubjectGroupDomain createGroup(SubjectGroupDomain subjectGroup) {

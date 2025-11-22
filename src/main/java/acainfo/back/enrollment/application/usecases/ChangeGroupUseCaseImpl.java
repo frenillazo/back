@@ -6,7 +6,7 @@ import acainfo.back.enrollment.application.ports.in.WithdrawEnrollmentUseCase;
 import acainfo.back.enrollment.application.ports.out.EnrollmentRepositoryPort;
 import acainfo.back.enrollment.domain.exception.EnrollmentNotFoundException;
 import acainfo.back.enrollment.domain.model.EnrollmentDomain;
-import acainfo.back.subjectgroup.application.ports.out.GroupRepositoryPort;
+import acainfo.back.subjectgroup.application.ports.out.SubjectGroupRepositoryPort;
 import acainfo.back.subjectgroup.domain.exception.GroupNotFoundException;
 import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChangeGroupUseCaseImpl implements ChangeGroupUseCase {
 
     private final EnrollmentRepositoryPort enrollmentRepository;
-    private final GroupRepositoryPort groupRepository;
+    private final SubjectGroupRepositoryPort groupRepository;
     private final WithdrawEnrollmentUseCase withdrawEnrollmentUseCase;
     private final EnrollStudentUseCase enrollStudentUseCase;
 

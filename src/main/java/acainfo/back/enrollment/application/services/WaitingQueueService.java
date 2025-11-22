@@ -6,7 +6,7 @@ import acainfo.back.enrollment.domain.exception.EnrollmentNotFoundException;
 import acainfo.back.enrollment.domain.model.EnrollmentDomain;
 import acainfo.back.enrollment.domain.model.EnrollmentStatus;
 import acainfo.back.enrollment.domain.model.AttendanceMode;
-import acainfo.back.subjectgroup.application.ports.out.GroupRepositoryPort;
+import acainfo.back.subjectgroup.application.ports.out.SubjectGroupRepositoryPort;
 import acainfo.back.subjectgroup.domain.exception.GroupNotFoundException;
 import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +37,7 @@ import java.util.Optional;
 public class WaitingQueueService implements ProcessWaitingQueueUseCase {
 
     private final EnrollmentRepositoryPort enrollmentRepository;
-    private final GroupRepositoryPort groupRepository;
+    private final SubjectGroupRepositoryPort groupRepository;
 
     /**
      * Processes the waiting queue for a subject group.

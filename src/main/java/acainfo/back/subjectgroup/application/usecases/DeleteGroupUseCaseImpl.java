@@ -1,7 +1,7 @@
 package acainfo.back.subjectgroup.application.usecases;
 
 import acainfo.back.subjectgroup.application.ports.in.DeleteGroupUseCase;
-import acainfo.back.subjectgroup.application.ports.out.GroupRepositoryPort;
+import acainfo.back.subjectgroup.application.ports.out.SubjectGroupRepositoryPort;
 import acainfo.back.subjectgroup.domain.exception.GroupNotFoundException;
 import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class DeleteGroupUseCaseImpl implements DeleteGroupUseCase {
 
-    private final GroupRepositoryPort groupRepository;
+    private final SubjectGroupRepositoryPort groupRepository;
 
     @Override
     public void deleteGroup(Long id) {

@@ -32,7 +32,7 @@ public class EnrollmentRepositoryAdapterImpl implements EnrollmentRepositoryPort
 
     private final EnrollmentJpaRepository jpaRepository;
     private final EnrollmentJpaMapper mapper;
-    private final UserRepository userRepository;
+    private final UserJpaRepository userRepository;
     private final SubjectGroupJpaRepository subjectGroupRepository;
 
     @Override
@@ -42,7 +42,7 @@ public class EnrollmentRepositoryAdapterImpl implements EnrollmentRepositoryPort
         }
 
         // Fetch required entities for JPA relationships
-        User student = null;
+        UserJpaEntity student = null;
         if (enrollment.getStudentId() != null) {
             student = userRepository.findById(enrollment.getStudentId())
                     .orElseThrow(() -> new IllegalArgumentException(

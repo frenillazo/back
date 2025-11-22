@@ -1,7 +1,7 @@
 package acainfo.back.subjectgroup.application.usecases;
 
 import acainfo.back.subjectgroup.application.ports.in.GetGroupUseCase;
-import acainfo.back.subjectgroup.application.ports.out.GroupRepositoryPort;
+import acainfo.back.subjectgroup.application.ports.out.SubjectGroupRepositoryPort;
 import acainfo.back.subjectgroup.domain.exception.GroupNotFoundException;
 import acainfo.back.subjectgroup.domain.model.AcademicPeriod;
 import acainfo.back.subjectgroup.domain.model.GroupStatus;
@@ -24,7 +24,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class GetGroupUseCaseImpl implements GetGroupUseCase {
 
-    private final GroupRepositoryPort groupRepository;
+    private final SubjectGroupRepositoryPort groupRepository;
 
     @Override
     public SubjectGroupDomain getGroupById(Long id) {

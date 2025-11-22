@@ -1,12 +1,13 @@
 package acainfo.back.subjectgroup.application.usecases;
 
 import acainfo.back.shared.domain.exception.InvalidTeacherException;
+import acainfo.back.user.application.ports.out.UserRepositoryPort;
 import acainfo.back.user.domain.exception.UserNotFoundException;
 import acainfo.back.user.domain.model.RoleType;
 import acainfo.back.user.infrastructure.adapters.out.persistence.entities.UserJpaEntity;
 import acainfo.back.user.infrastructure.adapters.out.persistence.repositories.UserJpaRepository;
 import acainfo.back.subjectgroup.application.ports.in.UpdateGroupUseCase;
-import acainfo.back.subjectgroup.application.ports.out.GroupRepositoryPort;
+import acainfo.back.subjectgroup.application.ports.out.SubjectGroupRepositoryPort;
 import acainfo.back.subjectgroup.domain.exception.GroupNotFoundException;
 import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
 import lombok.RequiredArgsConstructor;
@@ -26,8 +27,8 @@ import java.time.LocalDateTime;
 @Transactional
 public class UpdateGroupUseCaseImpl implements UpdateGroupUseCase {
 
-    private final GroupRepositoryPort groupRepository;
-    private final UserRepository userRepository;
+    private final SubjectGroupRepositoryPort groupRepository;
+    private final UserRepositoryPort userRepository;
 
     @Override
     public SubjectGroupDomain updateGroup(Long id, SubjectGroupDomain subjectGroup) {

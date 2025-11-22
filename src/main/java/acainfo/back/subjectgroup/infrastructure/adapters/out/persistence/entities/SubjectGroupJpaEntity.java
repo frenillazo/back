@@ -55,7 +55,7 @@ public class SubjectGroupJpaEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id")
-    private User teacher;
+    private UserJpaEntity teacher;
 
     @NotNull(message = "SubjectGroup type is required")
     @Enumerated(EnumType.STRING)

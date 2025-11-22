@@ -4,7 +4,7 @@ import acainfo.back.material.domain.model.MaterialDomain;
 import acainfo.back.material.infrastructure.adapters.in.dto.MaterialResponse;
 import acainfo.back.subject.application.ports.out.SubjectRepositoryPort;
 import acainfo.back.subject.domain.model.SubjectDomain;
-import acainfo.back.subjectgroup.application.ports.out.GroupRepositoryPort;
+import acainfo.back.subjectgroup.application.ports.out.SubjectGroupRepositoryPort;
 import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
 import acainfo.back.user.application.ports.out.UserRepositoryPort;
 import acainfo.back.user.domain.model.UserDomain;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MaterialDtoMapper {
 
-    private final GroupRepositoryPort groupRepository;
+    private final SubjectGroupRepositoryPort groupRepository;
     private final SubjectRepositoryPort subjectRepository;
     private final UserRepositoryPort userRepository;
 

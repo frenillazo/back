@@ -1,6 +1,6 @@
 package acainfo.back.subjectgroup.infrastructure.adapters.out.persistence.adapters;
 
-import acainfo.back.subjectgroup.application.ports.out.GroupRepositoryPort;
+import acainfo.back.subjectgroup.application.ports.out.SubjectGroupRepositoryPort;
 import acainfo.back.subjectgroup.domain.model.AcademicPeriod;
 import acainfo.back.subjectgroup.domain.model.GroupStatus;
 import acainfo.back.subjectgroup.domain.model.GroupType;
@@ -24,7 +24,7 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class GroupRepositoryAdapterImpl implements GroupRepositoryPort {
+public class GroupRepositoryAdapterImpl implements SubjectGroupRepositoryPort {
 
     private final SubjectGroupJpaRepository jpaRepository;
     private final SubjectGroupJpaMapper mapper;

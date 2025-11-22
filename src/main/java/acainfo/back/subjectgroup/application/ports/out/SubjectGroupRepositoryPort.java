@@ -13,7 +13,7 @@ import java.util.Optional;
  * This interface defines the contract for subjectGroup persistence.
  * Works with SubjectGroupDomain (pure domain model)
  */
-public interface GroupRepositoryPort {
+public interface SubjectGroupRepositoryPort {
 
     /**
      * Saves a subjectGroup (create or update).

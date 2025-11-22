@@ -4,7 +4,7 @@ import acainfo.back.enrollment.domain.model.EnrollmentDomain;
 import acainfo.back.enrollment.infrastructure.adapters.in.dto.EnrollmentResponse;
 import acainfo.back.subject.application.ports.out.SubjectRepositoryPort;
 import acainfo.back.subject.domain.model.SubjectDomain;
-import acainfo.back.subjectgroup.application.ports.out.GroupRepositoryPort;
+import acainfo.back.subjectgroup.application.ports.out.SubjectGroupRepositoryPort;
 import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
 import acainfo.back.user.application.ports.out.UserRepositoryPort;
 import acainfo.back.user.domain.model.UserDomain;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class EnrollmentDtoMapper {
 
     private final UserRepositoryPort userRepository;
-    private final GroupRepositoryPort groupRepository;
+    private final SubjectGroupRepositoryPort groupRepository;
     private final SubjectRepositoryPort subjectRepository;
 
     /**

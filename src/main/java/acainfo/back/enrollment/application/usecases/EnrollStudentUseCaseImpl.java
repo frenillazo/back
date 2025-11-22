@@ -8,11 +8,12 @@ import acainfo.back.enrollment.domain.model.AttendanceMode;
 import acainfo.back.enrollment.domain.model.EnrollmentDomain;
 import acainfo.back.enrollment.domain.model.EnrollmentStatus;
 import acainfo.back.payment.application.ports.in.ManagePaymentUseCase;
+import acainfo.back.subjectgroup.application.ports.out.SubjectGroupRepositoryPort;
 import acainfo.back.user.application.ports.out.UserRepositoryPort;
 import acainfo.back.user.domain.exception.UserNotFoundException;
 import acainfo.back.user.domain.model.RoleType;
 import acainfo.back.user.domain.model.UserDomain;
-import acainfo.back.subjectgroup.application.ports.out.GroupRepositoryPort;
+import acainfo.back.subjectgroup.application.ports.out.SubjectGroupRepositoryPort;
 import acainfo.back.subjectgroup.domain.exception.GroupNotFoundException;
 import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +42,7 @@ import java.time.LocalDateTime;
 public class EnrollStudentUseCaseImpl implements EnrollStudentUseCase {
 
     private final EnrollmentRepositoryPort enrollmentRepository;
-    private final GroupRepositoryPort groupRepository;
+    private final SubjectGroupRepositoryPort groupRepository;
     private final UserRepositoryPort userRepository;
     private final ManagePaymentUseCase managePaymentUseCase;
 

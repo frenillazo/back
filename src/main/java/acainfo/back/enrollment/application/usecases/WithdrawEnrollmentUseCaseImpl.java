@@ -5,7 +5,7 @@ import acainfo.back.enrollment.application.ports.in.WithdrawEnrollmentUseCase;
 import acainfo.back.enrollment.application.ports.out.EnrollmentRepositoryPort;
 import acainfo.back.enrollment.domain.exception.EnrollmentNotFoundException;
 import acainfo.back.enrollment.domain.model.EnrollmentDomain;
-import acainfo.back.subjectgroup.application.ports.out.GroupRepositoryPort;
+import acainfo.back.subjectgroup.application.ports.out.SubjectGroupRepositoryPort;
 import acainfo.back.subjectgroup.domain.model.SubjectGroupDomain;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class WithdrawEnrollmentUseCaseImpl implements WithdrawEnrollmentUseCase {
 
     private final EnrollmentRepositoryPort enrollmentRepository;
-    private final GroupRepositoryPort groupRepository;
+    private final SubjectGroupRepositoryPort groupRepository;
     private final ProcessWaitingQueueUseCase processWaitingQueueUseCase;
 
     @Override

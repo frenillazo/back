@@ -61,7 +61,7 @@ public class MaterialJpaEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uploaded_by", nullable = false)
-    private User uploadedBy;
+    private UserJpaEntity uploadedBy;
 
     @CreatedDate
     @Column(name = "uploaded_at", nullable = false, updatable = false)
