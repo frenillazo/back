@@ -1,6 +1,6 @@
 package acainfo.back.attendance.application.ports.in;
 
-import acainfo.back.attendance.domain.model.Attendance;
+import acainfo.back.attendance.domain.model.AttendanceDomain;
 
 /**
  * Use case port for updating attendance records.
@@ -16,7 +16,7 @@ public interface UpdateAttendanceUseCase {
      * @throws acainfo.back.attendance.domain.exception.AttendanceNotFoundException if attendance not found
      * @throws acainfo.back.attendance.domain.exception.InvalidAttendanceOperationException if modification not allowed
      */
-    Attendance updateAttendanceStatus(UpdateAttendanceStatusCommand command);
+    AttendanceDomain updateAttendanceStatus(UpdateAttendanceStatusCommand command);
 
     /**
      * Justifies an absence with documentation/reason.
@@ -27,7 +27,7 @@ public interface UpdateAttendanceUseCase {
      * @throws acainfo.back.attendance.domain.exception.AttendanceNotFoundException if attendance not found
      * @throws IllegalStateException if current status cannot be justified
      */
-    Attendance justifyAbsence(JustifyAbsenceCommand command);
+    AttendanceDomain justifyAbsence(JustifyAbsenceCommand command);
 
     /**
      * Marks a student as late with specified minutes.
@@ -36,7 +36,7 @@ public interface UpdateAttendanceUseCase {
      * @return the updated attendance record with TARDANZA status
      * @throws acainfo.back.attendance.domain.exception.AttendanceNotFoundException if attendance not found
      */
-    Attendance markAsLate(MarkAsLateCommand command);
+    AttendanceDomain markAsLate(MarkAsLateCommand command);
 
     /**
      * Command object for updating attendance status

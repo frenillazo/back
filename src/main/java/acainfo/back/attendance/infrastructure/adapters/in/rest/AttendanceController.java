@@ -1,8 +1,8 @@
 package acainfo.back.attendance.infrastructure.adapters.in.rest;
 
+import acainfo.back.attendance.application.mappers.AttendanceDtoMapper;
 import acainfo.back.attendance.application.ports.in.*;
-import acainfo.back.attendance.application.services.AttendanceService;
-import acainfo.back.attendance.domain.model.Attendance;
+import acainfo.back.attendance.domain.model.AttendanceDomain;
 import acainfo.back.attendance.infrastructure.adapters.in.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -22,11 +22,15 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * REST Controller for attendance management.
  * Provides endpoints for attendance registration, queries, updates, and statistics.
+ *
+ * Refactored to use pure hexagonal architecture:
+ * - Uses AttendanceDomain (pure domain model)
+ * - Delegates to use case interfaces (not monolithic service)
+ * - Uses AttendanceDtoMapper for DTO conversions
  */
 @RestController
 @RequestMapping("/api/attendance")
@@ -36,7 +40,11 @@ import java.util.stream.Collectors;
 @SecurityRequirement(name = "bearer-jwt")
 public class AttendanceController {
 
-    private final AttendanceService attendanceService;
+    private final RegisterAttendanceUseCase registerAttendanceUseCase;
+    private final GetAttendanceUseCase getAttendanceUseCase;
+    private final UpdateAttendanceUseCase updateAttendanceUseCase;
+    private final GetAttendanceStatisticsUseCase getAttendanceStatisticsUseCase;
+    private final AttendanceDtoMapper attendanceDtoMapper;
 
     // ==================== REGISTER ATTENDANCE ====================
 
@@ -76,8 +84,8 @@ public class AttendanceController {
                 recordedById
             );
 
-        Attendance attendance = attendanceService.registerAttendance(command);
-        AttendanceResponse response = AttendanceResponse.fromEntity(attendance);
+        AttendanceDomain attendance = registerAttendanceUseCase.registerAttendance(command);
+        AttendanceResponse response = attendanceDtoMapper.toResponse(attendance);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -123,10 +131,8 @@ public class AttendanceController {
                 recordedById
             );
 
-        List<Attendance> attendances = attendanceService.registerBulkAttendance(command);
-        List<AttendanceResponse> responses = attendances.stream()
-            .map(AttendanceResponse::fromEntity)
-            .toList();
+        List<AttendanceDomain> attendances = registerAttendanceUseCase.registerBulkAttendance(command);
+        List<AttendanceResponse> responses = attendanceDtoMapper.toResponses(attendances);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responses);
     }
@@ -148,10 +154,8 @@ public class AttendanceController {
     ) {
         log.debug("Retrieving attendance for session {}", sessionId);
 
-        List<Attendance> attendances = attendanceService.getAttendanceBySession(sessionId);
-        List<AttendanceResponse> responses = attendances.stream()
-            .map(AttendanceResponse::fromEntity)
-            .toList();
+        List<AttendanceDomain> attendances = getAttendanceUseCase.getAttendanceBySession(sessionId);
+        List<AttendanceResponse> responses = attendanceDtoMapper.toResponses(attendances);
 
         return ResponseEntity.ok(responses);
     }
@@ -171,10 +175,8 @@ public class AttendanceController {
     ) {
         log.debug("Retrieving attendance history for student {}", studentId);
 
-        List<Attendance> attendances = attendanceService.getAttendanceHistoryByStudent(studentId);
-        List<AttendanceResponse> responses = attendances.stream()
-            .map(AttendanceResponse::fromEntity)
-            .toList();
+        List<AttendanceDomain> attendances = getAttendanceUseCase.getAttendanceHistoryByStudent(studentId);
+        List<AttendanceResponse> responses = attendanceDtoMapper.toResponses(attendances);
 
         return ResponseEntity.ok(responses);
     }
@@ -203,10 +205,8 @@ public class AttendanceController {
         GetAttendanceUseCase.AttendanceHistoryQuery query =
             new GetAttendanceUseCase.AttendanceHistoryQuery(studentId, startDate, endDate);
 
-        List<Attendance> attendances = attendanceService.getAttendanceHistoryByStudentAndDateRange(query);
-        List<AttendanceResponse> responses = attendances.stream()
-            .map(AttendanceResponse::fromEntity)
-            .toList();
+        List<AttendanceDomain> attendances = getAttendanceUseCase.getAttendanceHistoryByStudentAndDateRange(query);
+        List<AttendanceResponse> responses = attendanceDtoMapper.toResponses(attendances);
 
         return ResponseEntity.ok(responses);
     }
@@ -225,10 +225,8 @@ public class AttendanceController {
     ) {
         log.debug("Retrieving attendance for group {}", groupId);
 
-        List<Attendance> attendances = attendanceService.getAttendanceByGroup(groupId);
-        List<AttendanceResponse> responses = attendances.stream()
-            .map(AttendanceResponse::fromEntity)
-            .toList();
+        List<AttendanceDomain> attendances = getAttendanceUseCase.getAttendanceByGroup(groupId);
+        List<AttendanceResponse> responses = attendanceDtoMapper.toResponses(attendances);
 
         return ResponseEntity.ok(responses);
     }
@@ -248,8 +246,8 @@ public class AttendanceController {
     ) {
         log.debug("Retrieving attendance by ID: {}", attendanceId);
 
-        Attendance attendance = attendanceService.getAttendanceById(attendanceId);
-        AttendanceResponse response = AttendanceResponse.fromEntity(attendance);
+        AttendanceDomain attendance = getAttendanceUseCase.getAttendanceById(attendanceId);
+        AttendanceResponse response = attendanceDtoMapper.toResponse(attendance);
 
         return ResponseEntity.ok(response);
     }
@@ -286,8 +284,8 @@ public class AttendanceController {
                 updatedById
             );
 
-        Attendance attendance = attendanceService.updateAttendanceStatus(command);
-        AttendanceResponse response = AttendanceResponse.fromEntity(attendance);
+        AttendanceDomain attendance = updateAttendanceUseCase.updateAttendanceStatus(command);
+        AttendanceResponse response = attendanceDtoMapper.toResponse(attendance);
 
         return ResponseEntity.ok(response);
     }
@@ -323,8 +321,8 @@ public class AttendanceController {
                 justifiedById
             );
 
-        Attendance attendance = attendanceService.justifyAbsence(command);
-        AttendanceResponse response = AttendanceResponse.fromEntity(attendance);
+        AttendanceDomain attendance = updateAttendanceUseCase.justifyAbsence(command);
+        AttendanceResponse response = attendanceDtoMapper.toResponse(attendance);
 
         return ResponseEntity.ok(response);
     }
@@ -360,8 +358,8 @@ public class AttendanceController {
                 updatedById
             );
 
-        Attendance attendance = attendanceService.markAsLate(command);
-        AttendanceResponse response = AttendanceResponse.fromEntity(attendance);
+        AttendanceDomain attendance = updateAttendanceUseCase.markAsLate(command);
+        AttendanceResponse response = attendanceDtoMapper.toResponse(attendance);
 
         return ResponseEntity.ok(response);
     }
@@ -384,7 +382,7 @@ public class AttendanceController {
         log.debug("Retrieving attendance statistics for student {}", studentId);
 
         GetAttendanceStatisticsUseCase.StudentAttendanceStats stats =
-            attendanceService.getStudentAttendanceStats(studentId);
+            getAttendanceStatisticsUseCase.getStudentAttendanceStats(studentId);
 
         AttendanceStatisticsResponse.StudentStats response =
             AttendanceStatisticsResponse.StudentStats.fromUseCaseResult(stats);
@@ -416,7 +414,7 @@ public class AttendanceController {
             new GetAttendanceStatisticsUseCase.AttendanceStatsQuery(studentId, startDate, endDate);
 
         GetAttendanceStatisticsUseCase.StudentAttendanceStats stats =
-            attendanceService.getStudentAttendanceStatsByDateRange(query);
+            getAttendanceStatisticsUseCase.getStudentAttendanceStatsByDateRange(query);
 
         AttendanceStatisticsResponse.StudentStats response =
             AttendanceStatisticsResponse.StudentStats.fromUseCaseResult(stats);
@@ -440,7 +438,7 @@ public class AttendanceController {
         log.debug("Retrieving attendance statistics for group {}", groupId);
 
         GetAttendanceStatisticsUseCase.GroupAttendanceStats stats =
-            attendanceService.getGroupAttendanceStats(groupId);
+            getAttendanceStatisticsUseCase.getGroupAttendanceStats(groupId);
 
         AttendanceStatisticsResponse.GroupStats response =
             AttendanceStatisticsResponse.GroupStats.fromUseCaseResult(stats);
@@ -465,7 +463,7 @@ public class AttendanceController {
         log.debug("Retrieving attendance statistics for session {}", sessionId);
 
         GetAttendanceStatisticsUseCase.SessionAttendanceStats stats =
-            attendanceService.getSessionAttendanceStats(sessionId);
+            getAttendanceStatisticsUseCase.getSessionAttendanceStats(sessionId);
 
         AttendanceStatisticsResponse.SessionStats response =
             AttendanceStatisticsResponse.SessionStats.fromUseCaseResult(stats);
@@ -492,7 +490,7 @@ public class AttendanceController {
         log.debug("Checking if student {} meets {}% attendance requirement in group {}",
             studentId, minimumPercentage, groupId);
 
-        boolean meets = attendanceService.meetsAttendanceRequirements(
+        boolean meets = getAttendanceStatisticsUseCase.meetsAttendanceRequirements(
             studentId, groupId, minimumPercentage
         );
 

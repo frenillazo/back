@@ -1,6 +1,6 @@
 package acainfo.back.attendance.application.ports.in;
 
-import acainfo.back.attendance.domain.model.Attendance;
+import acainfo.back.attendance.domain.model.AttendanceDomain;
 import acainfo.back.attendance.domain.model.AttendanceStatus;
 
 import java.util.List;
@@ -20,7 +20,7 @@ public interface RegisterAttendanceUseCase {
      * @throws acainfo.back.attendance.domain.exception.InvalidAttendanceOperationException if session is not completed
      * @throws acainfo.back.session.domain.exception.SessionNotFoundException if session doesn't exist
      */
-    Attendance registerAttendance(RegisterAttendanceCommand command);
+    AttendanceDomain registerAttendance(RegisterAttendanceCommand command);
 
     /**
      * Registers attendance for multiple students in a session (bulk operation).
@@ -31,7 +31,7 @@ public interface RegisterAttendanceUseCase {
      * @throws acainfo.back.attendance.domain.exception.InvalidAttendanceOperationException if session is not completed
      * @throws acainfo.back.session.domain.exception.SessionNotFoundException if session doesn't exist
      */
-    List<Attendance> registerBulkAttendance(RegisterBulkAttendanceCommand command);
+    List<AttendanceDomain> registerBulkAttendance(RegisterBulkAttendanceCommand command);
 
     /**
      * Command object for registering a single attendance

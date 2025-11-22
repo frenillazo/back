@@ -1,6 +1,6 @@
 package acainfo.back.attendance.application.ports.in;
 
-import acainfo.back.attendance.domain.model.Attendance;
+import acainfo.back.attendance.domain.model.AttendanceDomain;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,7 +17,7 @@ public interface GetAttendanceUseCase {
      * @param sessionId the session ID
      * @return list of attendance records for the session
      */
-    List<Attendance> getAttendanceBySession(Long sessionId);
+    List<AttendanceDomain> getAttendanceBySession(Long sessionId);
 
     /**
      * Gets attendance history for a specific student.
@@ -25,7 +25,7 @@ public interface GetAttendanceUseCase {
      * @param studentId the student ID
      * @return list of all attendance records for the student
      */
-    List<Attendance> getAttendanceHistoryByStudent(Long studentId);
+    List<AttendanceDomain> getAttendanceHistoryByStudent(Long studentId);
 
     /**
      * Gets attendance history for a student within a date range.
@@ -33,7 +33,7 @@ public interface GetAttendanceUseCase {
      * @param query the query containing student ID and date range
      * @return list of attendance records within the specified period
      */
-    List<Attendance> getAttendanceHistoryByStudentAndDateRange(AttendanceHistoryQuery query);
+    List<AttendanceDomain> getAttendanceHistoryByStudentAndDateRange(AttendanceHistoryQuery query);
 
     /**
      * Gets attendance records for a subject group.
@@ -41,7 +41,7 @@ public interface GetAttendanceUseCase {
      * @param groupId the subject group ID
      * @return list of all attendance records for the group
      */
-    List<Attendance> getAttendanceByGroup(Long groupId);
+    List<AttendanceDomain> getAttendanceByGroup(Long groupId);
 
     /**
      * Gets a specific attendance record by ID.
@@ -50,7 +50,7 @@ public interface GetAttendanceUseCase {
      * @return the attendance record
      * @throws acainfo.back.attendance.domain.exception.AttendanceNotFoundException if not found
      */
-    Attendance getAttendanceById(Long attendanceId);
+    AttendanceDomain getAttendanceById(Long attendanceId);
 
     /**
      * Finds attendance record for a specific student in a specific session.
@@ -60,7 +60,7 @@ public interface GetAttendanceUseCase {
      * @return the attendance record if exists
      * @throws acainfo.back.attendance.domain.exception.AttendanceNotFoundException if not found
      */
-    Attendance getAttendanceBySessionAndStudent(Long sessionId, Long studentId);
+    AttendanceDomain getAttendanceBySessionAndStudent(Long sessionId, Long studentId);
 
     /**
      * Query object for attendance history with date range
