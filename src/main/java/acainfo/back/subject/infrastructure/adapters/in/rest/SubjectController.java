@@ -1,6 +1,6 @@
 package acainfo.back.subject.infrastructure.adapters.in.rest;
 
-import acainfo.back.shared.infrastructure.adapters.in.dto.ErrorResponse;
+import acainfo.back.config.dto.ErrorResponse;
 import acainfo.back.subject.application.ports.in.CreateSubjectUseCase;
 import acainfo.back.subject.application.ports.in.DeleteSubjectUseCase;
 import acainfo.back.subject.application.ports.in.GetSubjectUseCase;

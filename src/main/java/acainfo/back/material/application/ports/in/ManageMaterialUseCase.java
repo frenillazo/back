@@ -2,6 +2,7 @@ package acainfo.back.material.application.ports.in;
 
 import acainfo.back.material.domain.model.Material;
 import acainfo.back.material.domain.model.MaterialType;
+import acainfo.back.user.domain.exception.UnauthorizedException;
 
 import java.util.List;
 
@@ -58,7 +59,7 @@ public interface ManageMaterialUseCase {
      * @param requiresPayment new payment requirement (null to keep current)
      * @return the updated material
      * @throws acainfo.back.material.domain.exception.MaterialNotFoundException if not found
-     * @throws acainfo.back.shared.domain.exception.UnauthorizedException if user is not authorized
+     * @throws UnauthorizedException if user is not authorized
      */
     Material updateMaterial(
         Long materialId,
@@ -75,7 +76,7 @@ public interface ManageMaterialUseCase {
      * @param materialId the material ID
      * @param userId the user requesting deletion
      * @throws acainfo.back.material.domain.exception.MaterialNotFoundException if not found
-     * @throws acainfo.back.shared.domain.exception.UnauthorizedException if user is not authorized
+     * @throws UnauthorizedException if user is not authorized
      */
     void deactivateMaterial(Long materialId, Long userId);
 
@@ -86,7 +87,7 @@ public interface ManageMaterialUseCase {
      * @param materialId the material ID
      * @param adminId the admin ID
      * @throws acainfo.back.material.domain.exception.MaterialNotFoundException if not found
-     * @throws acainfo.back.shared.domain.exception.UnauthorizedException if user is not admin
+     * @throws UnauthorizedException if user is not admin
      */
     void deleteMaterialPermanently(Long materialId, Long adminId);
 

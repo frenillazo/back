@@ -1,6 +1,6 @@
 package acainfo.back.material.domain.model;
 
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.domain.model.User;
 import acainfo.back.subjectgroup.domain.model.SubjectGroup;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

@@ -1,16 +1,16 @@
 package acainfo.back.subjectgroup.application.services;
 
-import acainfo.back.shared.domain.exception.InvalidTeacherException;
-import acainfo.back.shared.domain.exception.UserNotFoundException;
-import acainfo.back.shared.domain.model.RoleType;
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.domain.exception.InvalidTeacherException;
+import acainfo.back.user.domain.exception.UserNotFoundException;
+import acainfo.back.user.domain.model.RoleType;
+import acainfo.back.user.domain.model.User;
 import acainfo.back.subjectgroup.application.ports.in.CreateGroupUseCase;
 import acainfo.back.subjectgroup.application.ports.in.DeleteGroupUseCase;
 import acainfo.back.subjectgroup.application.ports.in.GetGroupUseCase;
 import acainfo.back.subjectgroup.application.ports.in.UpdateGroupUseCase;
 import acainfo.back.subjectgroup.application.ports.out.GroupRepositoryPort;
 import acainfo.back.subject.application.ports.out.SubjectRepositoryPort;
-import acainfo.back.shared.infrastructure.adapters.out.UserRepository;
+import acainfo.back.user.infrastructure.adapters.out.UserRepository;
 import acainfo.back.subject.domain.exception.SubjectInactiveException;
 import acainfo.back.subject.domain.exception.SubjectNotFoundException;
 import acainfo.back.subject.domain.model.Subject;

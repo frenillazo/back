@@ -4,7 +4,7 @@ import acainfo.back.payment.application.services.PaymentService;
 import acainfo.back.payment.application.services.StripeService;
 import acainfo.back.payment.domain.model.Payment;
 import acainfo.back.payment.infrastructure.adapters.out.PaymentRepository;
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.domain.model.User;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

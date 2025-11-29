@@ -1,6 +1,6 @@
 package acainfo.back.material.domain.exception;
 
-import acainfo.back.shared.domain.exception.DomainException;
+import acainfo.back.config.exception.DomainException;
 
 /**
  * Exception thrown when a material is not found.

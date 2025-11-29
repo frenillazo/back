@@ -100,7 +100,7 @@ enrollment/
 ```java
 package acainfo.back.enrollment.domain.model;
 
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.domain.model.User;
 import acainfo.back.subjectgroup.domain.model.SubjectGroup;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -113,10 +113,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "enrollments", indexes = {
-    @Index(name = "idx_enrollment_student", columnList = "student_id"),
-    @Index(name = "idx_enrollment_group", columnList = "subject_group_id"),
-    @Index(name = "idx_enrollment_status", columnList = "status"),
-    @Index(name = "idx_enrollment_student_status", columnList = "student_id, status")
+        @Index(name = "idx_enrollment_student", columnList = "student_id"),
+        @Index(name = "idx_enrollment_group", columnList = "subject_group_id"),
+        @Index(name = "idx_enrollment_status", columnList = "status"),
+        @Index(name = "idx_enrollment_student_status", columnList = "student_id, status")
 })
 @EntityListeners(AuditingEntityListener.class)
 @Getter
@@ -220,7 +220,7 @@ public enum AttendanceMode {
 ```java
 package acainfo.back.enrollment.domain.model;
 
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.domain.model.User;
 import acainfo.back.subject.domain.model.Subject;
 import jakarta.persistence.*;
 import lombok.*;
@@ -253,9 +253,9 @@ public class GroupRequest {
 
     @ManyToMany
     @JoinTable(
-        name = "group_request_supporters",
-        joinColumns = @JoinColumn(name = "request_id"),
-        inverseJoinColumns = @JoinColumn(name = "student_id")
+            name = "group_request_supporters",
+            joinColumns = @JoinColumn(name = "request_id"),
+            inverseJoinColumns = @JoinColumn(name = "student_id")
     )
     private Set<User> supporters = new HashSet<>();
 
@@ -314,7 +314,7 @@ package acainfo.back.enrollment.application.services;
 import acainfo.back.enrollment.domain.model.*;
 import acainfo.back.enrollment.application.ports.out.EnrollmentRepository;
 import acainfo.back.subjectgroup.domain.model.SubjectGroup;
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.domain.model.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -345,7 +345,7 @@ public class EnrollmentService {
 
         // 1. Obtener entidades
         User student = userRepository.findById(studentId)
-            .orElseThrow(() -> new UserNotFoundException(studentId));
+                .orElseThrow(() -> new UserNotFoundException(studentId));
         SubjectGroup group = subjectGroupService.findById(groupId);
 
         // 2. Validaciones
@@ -362,11 +362,11 @@ public class EnrollmentService {
 
         // 5. Crear inscripción
         Enrollment enrollment = Enrollment.builder()
-            .student(student)
-            .subjectGroup(group)
-            .status(status)
-            .attendanceMode(mode)
-            .build();
+                .student(student)
+                .subjectGroup(group)
+                .status(status)
+                .attendanceMode(mode)
+                .build();
 
         // 6. Actualizar ocupación del grupo si es presencial
         if (mode == AttendanceMode.PRESENCIAL && status == EnrollmentStatus.ACTIVO) {
@@ -407,7 +407,7 @@ public class EnrollmentService {
 
         // Si no hay plazas, contar inscripciones activas del estudiante
         long activeEnrollments = enrollmentRepository.countByStudentIdAndStatus(
-            student.getId(), EnrollmentStatus.ACTIVO);
+                student.getId(), EnrollmentStatus.ACTIVO);
 
         // Si tiene 2 o más asignaturas -> puede asistir ONLINE
         if (activeEnrollments >= 2) {
@@ -434,7 +434,7 @@ public class EnrollmentService {
     @Transactional
     public Enrollment changeGroup(Long enrollmentId, Long newGroupId) {
         Enrollment currentEnrollment = enrollmentRepository.findById(enrollmentId)
-            .orElseThrow(() -> new EnrollmentNotFoundException(enrollmentId));
+                .orElseThrow(() -> new EnrollmentNotFoundException(enrollmentId));
 
         SubjectGroup newGroup = subjectGroupService.findById(newGroupId);
 
@@ -457,7 +457,7 @@ public class EnrollmentService {
     @Transactional
     public void withdraw(Long enrollmentId, String reason) {
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
-            .orElseThrow(() -> new EnrollmentNotFoundException(enrollmentId));
+                .orElseThrow(() -> new EnrollmentNotFoundException(enrollmentId));
 
         // Marcar como retirado
         enrollment.withdraw(reason);
@@ -814,7 +814,7 @@ material/
 ```java
 package acainfo.back.material.domain.model;
 
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.domain.model.User;
 import acainfo.back.subjectgroup.domain.model.SubjectGroup;
 import jakarta.persistence.*;
 import lombok.*;
@@ -825,9 +825,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "materials", indexes = {
-    @Index(name = "idx_material_group", columnList = "subject_group_id"),
-    @Index(name = "idx_material_type", columnList = "type"),
-    @Index(name = "idx_material_active", columnList = "is_active")
+        @Index(name = "idx_material_group", columnList = "subject_group_id"),
+        @Index(name = "idx_material_type", columnList = "type"),
+        @Index(name = "idx_material_active", columnList = "is_active")
 })
 @EntityListeners(AuditingEntityListener.class)
 @Getter
@@ -893,8 +893,8 @@ public class Material {
 
     public boolean isCode() {
         return this.type == MaterialType.JAVA ||
-               this.type == MaterialType.CPP ||
-               this.type == MaterialType.HEADER;
+                this.type == MaterialType.CPP ||
+                this.type == MaterialType.HEADER;
     }
 }
 ```
@@ -1256,7 +1256,7 @@ Crear estructura básica de pagos para controlar acceso a materiales. La integra
 ```java
 package acainfo.back.payment.domain.model;
 
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.domain.model.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -1267,9 +1267,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "payments", indexes = {
-    @Index(name = "idx_payment_student", columnList = "student_id"),
-    @Index(name = "idx_payment_status", columnList = "status"),
-    @Index(name = "idx_payment_due_date", columnList = "due_date")
+        @Index(name = "idx_payment_student", columnList = "student_id"),
+        @Index(name = "idx_payment_status", columnList = "status"),
+        @Index(name = "idx_payment_due_date", columnList = "due_date")
 })
 @Getter
 @Setter
@@ -1314,7 +1314,7 @@ public class Payment {
 
     public boolean isOverdue() {
         return this.status == PaymentStatus.PENDIENTE &&
-               LocalDate.now().isAfter(this.dueDate.plusDays(5));
+                LocalDate.now().isAfter(this.dueDate.plusDays(5));
     }
 
     public boolean isPaid() {

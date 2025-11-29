@@ -1,7 +1,7 @@
 package acainfo.back.subjectgroup.application.ports.in;
 
-import acainfo.back.shared.domain.exception.InvalidTeacherException;
-import acainfo.back.shared.domain.exception.UserNotFoundException;
+import acainfo.back.user.domain.exception.InvalidTeacherException;
+import acainfo.back.user.domain.exception.UserNotFoundException;
 import acainfo.back.subjectgroup.domain.model.SubjectGroup;
 import acainfo.back.subjectgroup.domain.exception.GroupNotFoundException;
 

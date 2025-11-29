@@ -1,6 +1,6 @@
 package acainfo.back.subjectgroup.application.ports.in;
 
-import acainfo.back.shared.domain.exception.InvalidTeacherException;
+import acainfo.back.user.domain.exception.InvalidTeacherException;
 import acainfo.back.subjectgroup.domain.model.SubjectGroup;
 import acainfo.back.subject.domain.exception.SubjectInactiveException;
 import acainfo.back.subjectgroup.domain.exception.MaxGroupsPerSubjectException;

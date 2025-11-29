@@ -1,6 +1,6 @@
 package acainfo.back.subjectgroup.domain.model;
 
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.domain.model.User;
 import acainfo.back.schedule.domain.model.Schedule;
 import acainfo.back.session.domain.model.Session;
 import acainfo.back.subject.domain.model.Subject;

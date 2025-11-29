@@ -1,6 +1,6 @@
 package acainfo.back.subjectgroup.infrastructure.adapters.in.dto;
 
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.domain.model.User;
 import acainfo.back.subject.domain.model.Degree;
 import acainfo.back.subject.domain.model.Subject;
 import acainfo.back.subjectgroup.domain.model.AcademicPeriod;

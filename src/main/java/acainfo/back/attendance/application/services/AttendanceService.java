@@ -15,15 +15,14 @@ import acainfo.back.session.domain.exception.SessionNotFoundException;
 import acainfo.back.session.domain.model.Session;
 import acainfo.back.session.domain.model.SessionStatus;
 import acainfo.back.session.infrastructure.adapters.out.SessionRepository;
-import acainfo.back.shared.domain.exception.UserNotFoundException;
-import acainfo.back.shared.domain.model.User;
-import acainfo.back.shared.infrastructure.adapters.out.UserRepository;
+import acainfo.back.user.domain.exception.UserNotFoundException;
+import acainfo.back.user.domain.model.User;
+import acainfo.back.user.infrastructure.adapters.out.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;

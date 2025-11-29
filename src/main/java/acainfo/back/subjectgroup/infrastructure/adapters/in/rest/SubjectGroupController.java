@@ -1,6 +1,6 @@
 package acainfo.back.subjectgroup.infrastructure.adapters.in.rest;
 
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.domain.model.User;
 import acainfo.back.subjectgroup.application.services.SubjectGroupService;
 import acainfo.back.subjectgroup.domain.model.SubjectGroup;
 import acainfo.back.subjectgroup.domain.validation.SubjectGroupSpecifications;

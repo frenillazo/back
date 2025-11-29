@@ -2,7 +2,7 @@ package acainfo.back.attendance.domain.model;
 
 import acainfo.back.enrollment.domain.model.Enrollment;
 import acainfo.back.session.domain.model.Session;
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.domain.model.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;

@@ -1,6 +1,6 @@
 package acainfo.back.subjectgroup.domain.exception;
 
-import acainfo.back.shared.domain.exception.DomainException;
+import acainfo.back.config.exception.DomainException;
 
 /**
  * Exception thrown when attempting to create more than the maximum allowed groups per subject.

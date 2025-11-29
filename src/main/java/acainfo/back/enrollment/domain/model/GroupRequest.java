@@ -1,6 +1,6 @@
 package acainfo.back.enrollment.domain.model;
 
-import acainfo.back.shared.domain.model.User;
+import acainfo.back.user.domain.model.User;
 import acainfo.back.subject.domain.model.Subject;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;

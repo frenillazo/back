@@ -1,6 +1,6 @@
 package acainfo.back.subject.domain.exception;
 
-import acainfo.back.shared.domain.exception.DomainException;
+import acainfo.back.config.exception.DomainException;
 
 /**
  * Exception thrown when attempting to create or update a subject with a code that already exists.

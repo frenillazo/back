@@ -1,6 +1,6 @@
 package acainfo.back.enrollment.domain.exception;
 
-import acainfo.back.shared.domain.exception.DomainException;
+import acainfo.back.config.exception.DomainException;
 
 /**
  * Exception thrown when a group request is not found.

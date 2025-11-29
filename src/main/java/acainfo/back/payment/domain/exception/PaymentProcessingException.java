@@ -1,6 +1,6 @@
 package acainfo.back.payment.domain.exception;
 
-import acainfo.back.shared.domain.exception.DomainException;
+import acainfo.back.config.exception.DomainException;
 
 /**
  * Exception thrown when payment processing fails (Stripe integration errors, etc.).
