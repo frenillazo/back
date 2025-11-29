@@ -14,6 +14,7 @@ import acainfo.back.payment.domain.model.Payment;
 import acainfo.back.session.domain.model.Session;
 import acainfo.back.session.domain.model.SessionStatus;
 import acainfo.back.session.infrastructure.adapters.out.SessionRepository;
+import acainfo.back.user.application.ports.in.StudentPortalUseCase;
 import acainfo.back.user.domain.exception.UserNotFoundException;
 import acainfo.back.user.domain.model.User;
 import acainfo.back.user.infrastructure.adapters.in.dto.*;
@@ -42,7 +43,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class StudentService {
+public class StudentService implements StudentPortalUseCase {
 
     private final UserRepository userRepository;
     private final EnrollmentService enrollmentService;

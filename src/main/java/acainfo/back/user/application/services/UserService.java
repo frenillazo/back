@@ -1,5 +1,7 @@
 package acainfo.back.user.application.services;
 
+import acainfo.back.user.application.ports.in.AuthUseCase;
+import acainfo.back.user.application.ports.in.UserManagementUseCase;
 import acainfo.back.user.domain.exception.UserAlreadyExistsException;
 import acainfo.back.user.domain.exception.UserNotFoundException;
 import acainfo.back.user.infrastructure.adapters.in.dto.CreateTeacherRequest;
@@ -22,7 +24,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class UserService {
+public class UserService implements UserManagementUseCase {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;

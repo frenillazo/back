@@ -1,5 +1,6 @@
 package acainfo.back.user.application.services;
 
+import acainfo.back.user.application.ports.in.AuthUseCase;
 import acainfo.back.user.domain.exception.InvalidCredentialsException;
 import acainfo.back.user.domain.exception.UnauthorizedException;
 import acainfo.back.user.domain.exception.UserAlreadyExistsException;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AuthService {
+public class AuthService implements AuthUseCase {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
