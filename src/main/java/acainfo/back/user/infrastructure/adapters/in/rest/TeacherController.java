@@ -3,7 +3,7 @@ package acainfo.back.user.infrastructure.adapters.in.rest;
 import acainfo.back.user.application.services.UserService;
 import acainfo.back.config.dto.ErrorResponse;
 import acainfo.back.user.infrastructure.adapters.in.dto.UserResponse;
-import acainfo.back.user.infrastructure.security.CustomUserDetails;
+import acainfo.back.config.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

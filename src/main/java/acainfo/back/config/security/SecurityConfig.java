@@ -1,6 +1,5 @@
 package acainfo.back.config.security;
 
-import acainfo.back.user.infrastructure.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

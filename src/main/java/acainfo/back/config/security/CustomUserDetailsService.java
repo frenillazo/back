@@ -1,4 +1,4 @@
-package acainfo.back.user.infrastructure.security;
+package acainfo.back.config.security;
 
 import acainfo.back.user.domain.model.User;
 import acainfo.back.user.infrastructure.adapters.out.UserRepository;

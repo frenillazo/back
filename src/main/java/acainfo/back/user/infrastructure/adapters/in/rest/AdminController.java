@@ -7,7 +7,7 @@ import acainfo.back.config.dto.ErrorResponse;
 import acainfo.back.config.dto.MessageResponse;
 import acainfo.back.user.infrastructure.adapters.in.dto.UpdateTeacherRequest;
 import acainfo.back.user.infrastructure.adapters.in.dto.UserResponse;
-import acainfo.back.user.infrastructure.security.CustomUserDetails;
+import acainfo.back.config.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

@@ -1,4 +1,4 @@
-package acainfo.back.user.infrastructure.security;
+package acainfo.back.config.security;
 
 import acainfo.back.config.properties.JwtProperties;
 import io.jsonwebtoken.Claims;
