@@ -84,7 +84,9 @@ Las entidades de dominio son **POJOs simples** con:
 #### 🔵 Domain Layer (POJOs)
 ```java
 @Getter
-@Setter
+@Setter  // Setters automáticos SIN validación (Lombok los genera)
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(of = "email")
 public class User {
     private Long id;
@@ -92,7 +94,7 @@ public class User {
     private UserStatus status;
     private Set<Role> roles = new HashSet<>();
 
-    // ✅ Métodos de consulta simples
+    // ✅ SOLO métodos de consulta (query methods)
     public boolean isAdmin() {
         return roles.stream().anyMatch(Role::isAdmin);
     }
@@ -101,13 +103,13 @@ public class User {
         return status == UserStatus.ACTIVE;
     }
 
-    // ✅ Validación básica de invariante
-    public void setEmail(String email) {
-        if (!isValidEmail(email)) {
-            throw new ValidationException("Invalid email");
-        }
-        this.email = email.toLowerCase().trim();
+    public String getFullName() {
+        return firstName + " " + lastName;
     }
+
+    // ❌ NO hay validaciones (ni en setters ni en métodos)
+    // ❌ NO hay lógica de negocio
+    // Los setters son generados por Lombok automáticamente
 }
 ```
 
@@ -115,6 +117,33 @@ public class User {
 ```java
 @Service
 public class UserService {
+
+    // ✅ Validaciones de negocio
+    public User createUser(String email, String password, String firstName, String lastName) {
+        // Validar formato de email
+        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            throw new ValidationException("Invalid email format");
+        }
+
+        // Validar email único
+        if (userRepository.existsByEmail(email)) {
+            throw new DuplicateEmailException(email);
+        }
+
+        // Validar password
+        if (password.length() < 6) {
+            throw new ValidationException("Password must be at least 6 characters");
+        }
+
+        User user = new User();
+        user.setEmail(email.toLowerCase().trim());
+        user.setPassword(passwordEncoder.encode(password));
+        user.setFirstName(firstName.trim());
+        user.setLastName(lastName.trim());
+        user.setStatus(UserStatus.PENDING_ACTIVATION);
+
+        return userRepository.save(user);
+    }
 
     // ✅ Lógica de negocio compleja
     public void activateUser(Long userId) {
@@ -135,12 +164,8 @@ public class UserService {
 
     // ✅ Reglas que requieren datos externos
     public boolean canEnroll(User user, SubjectGroup group) {
-        // Consultar pagos
         boolean hasPaymentsUpToDate = paymentService.isUpToDate(user.getId());
-
-        // Consultar otras inscripciones
         int currentEnrollments = enrollmentRepository.countByUserId(user.getId());
-
         return hasPaymentsUpToDate && currentEnrollments < MAX_ENROLLMENTS;
     }
 }

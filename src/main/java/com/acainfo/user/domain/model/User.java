@@ -1,6 +1,5 @@
 package com.acainfo.user.domain.model;
 
-import com.acainfo.shared.domain.exception.ValidationException;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -14,7 +13,7 @@ import java.util.Set;
 
 /**
  * User domain entity - Anemic model with Lombok.
- * Business logic resides in application services.
+ * Business logic (including validations) resides in application services.
  */
 @Getter
 @Setter
@@ -34,82 +33,47 @@ public class User {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // ========== Query Methods (Simple Checks) ==========
+    // ========== Query Methods Only (No Business Logic) ==========
 
     /**
-     * Check if user is an admin.
+     * Check if user has admin role.
      */
     public boolean isAdmin() {
         return roles.stream().anyMatch(Role::isAdmin);
     }
 
     /**
-     * Check if user is a teacher.
+     * Check if user has teacher role.
      */
     public boolean isTeacher() {
         return roles.stream().anyMatch(Role::isTeacher);
     }
 
     /**
-     * Check if user is a student.
+     * Check if user has student role.
      */
     public boolean isStudent() {
         return roles.stream().anyMatch(Role::isStudent);
     }
 
     /**
-     * Check if user account is active.
+     * Check if user account status is active.
      */
     public boolean isActive() {
         return status == UserStatus.ACTIVE;
     }
 
     /**
-     * Check if user account is blocked.
+     * Check if user account status is blocked.
      */
     public boolean isBlocked() {
         return status == UserStatus.BLOCKED;
     }
 
     /**
-     * Get full name.
+     * Get full name (computed property).
      */
     public String getFullName() {
         return firstName + " " + lastName;
-    }
-
-    // ========== Basic Invariant Validation (in Setters) ==========
-
-    /**
-     * Set email with basic format validation.
-     */
-    public void setEmail(String email) {
-        if (email == null || email.trim().isEmpty()) {
-            throw new ValidationException("Email cannot be null or empty");
-        }
-        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
-            throw new ValidationException("Invalid email format");
-        }
-        this.email = email.toLowerCase().trim();
-    }
-
-    /**
-     * Set first name with basic validation.
-     */
-    public void setFirstName(String firstName) {
-        if (firstName == null || firstName.trim().isEmpty()) {
-            throw new ValidationException("First name cannot be null or empty");
-        }
-        this.firstName = firstName.trim();
-    }
-
-    /**
-     * Set last name with basic validation.
-     */
-    public void setLastName(String lastName) {
-        if (lastName == null || lastName.trim().isEmpty()) {
-            throw new ValidationException("Last name cannot be null or empty");
-        }
-        this.lastName = lastName.trim();
     }
 }
