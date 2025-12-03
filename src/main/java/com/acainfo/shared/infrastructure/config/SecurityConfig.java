@@ -1,5 +1,7 @@
 package com.acainfo.shared.infrastructure.config;
 
+import com.acainfo.security.jwt.JwtAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,6 +14,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -20,19 +23,22 @@ import java.util.List;
 
 /**
  * Spring Security configuration.
- * Basic security setup without JWT (JWT will be added in Hito 1.8).
+ * Includes JWT authentication filter.
  *
  * This configuration provides:
  * - Password encoding with BCrypt
  * - Authentication manager for manual authentication
  * - CORS configuration for frontend integration
  * - Public endpoints for authentication
- * - Stateless session management (prepared for JWT)
+ * - Stateless session management with JWT
  */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     /**
      * Password encoder using BCrypt hashing algorithm.
@@ -59,11 +65,10 @@ public class SecurityConfig {
      * Configures:
      * - CSRF disabled (stateless REST API)
      * - CORS enabled
-     * - Stateless sessions (JWT-ready)
+     * - Stateless sessions with JWT
      * - Public endpoints for auth
      * - All other endpoints require authentication
-     *
-     * TODO: Add JWT authentication filter in Hito 1.8
+     * - JWT authentication filter
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -92,10 +97,10 @@ public class SecurityConfig {
 
                         // All other endpoints require authentication
                         .anyRequest().authenticated()
-                );
+                )
 
-        // TODO: Add JWT authentication filter in Hito 1.8
-        // http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                // Add JWT authentication filter before UsernamePasswordAuthenticationFilter
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
