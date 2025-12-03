@@ -14,10 +14,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
-import org.springframework.test.context.TestPropertySource;
 
 import java.util.Optional;
 import java.util.Set;
@@ -29,15 +29,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests persistence layer with real JPA operations including specifications.
  */
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
         UserRepositoryAdapter.class,
         UserPersistenceMapper.class,
         RoleRepositoryAdapter.class,
         RolePersistenceMapper.class
-})
-@TestPropertySource(properties = {
-        "spring.jpa.hibernate.ddl-auto=create-drop",
-        "spring.jpa.show-sql=true"
 })
 @DisplayName("UserRepositoryAdapter Integration Tests")
 class UserRepositoryAdapterIntegrationTest {
