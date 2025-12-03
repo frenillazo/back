@@ -28,7 +28,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Integration tests for UserRepositoryAdapter with H2 database.
  * Tests persistence layer with real JPA operations including specifications.
  */
-@DataJpaTest
+@DataJpaTest(excludeAutoConfiguration = {
+        org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
+})
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({

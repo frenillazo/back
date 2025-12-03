@@ -22,7 +22,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Integration tests for RoleRepositoryAdapter with H2 database.
  * Tests persistence layer with real JPA operations.
  */
-@DataJpaTest
+@DataJpaTest(excludeAutoConfiguration = {
+        org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
+})
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({TestJpaConfig.class, RoleRepositoryAdapter.class, RolePersistenceMapper.class})
