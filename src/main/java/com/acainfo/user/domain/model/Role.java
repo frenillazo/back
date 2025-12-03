@@ -1,23 +1,24 @@
 package com.acainfo.user.domain.model;
 
-import java.util.Objects;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 /**
- * Role domain entity - Pure POJO without framework annotations.
+ * Role domain entity - POJO with Lombok to reduce boilerplate.
  * Represents a role that can be assigned to users.
  */
+@Getter
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@EqualsAndHashCode(of = "type")
+@ToString
 public class Role {
 
     private Long id;
     private RoleType type;
     private String description;
-
-    // Private constructor to enforce builder pattern
-    private Role(Long id, RoleType type, String description) {
-        this.id = id;
-        this.type = type;
-        this.description = description;
-    }
 
     /**
      * Creates a new Role with the given type.
@@ -41,19 +42,6 @@ public class Role {
         }
     }
 
-    // Getters
-    public Long getId() {
-        return id;
-    }
-
-    public RoleType getType() {
-        return type;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
     // Business logic methods
     public boolean isAdmin() {
         return type == RoleType.ADMIN;
@@ -65,27 +53,5 @@ public class Role {
 
     public boolean isStudent() {
         return type == RoleType.STUDENT;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Role role = (Role) o;
-        return type == role.type;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(type);
-    }
-
-    @Override
-    public String toString() {
-        return "Role{" +
-                "id=" + id +
-                ", type=" + type +
-                ", description='" + description + '\'' +
-                '}';
     }
 }
