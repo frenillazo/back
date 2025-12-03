@@ -1,0 +1,18 @@
+package com.acainfo.user.infrastructure.adapter.in.rest.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+/**
+ * REST DTO for changing password.
+ */
+public record ChangePasswordRequest(
+
+        @NotBlank(message = "Current password is required")
+        String currentPassword,
+
+        @NotBlank(message = "New password is required")
+        @Size(min = 6, message = "New password must be at least 6 characters")
+        String newPassword
+) {
+}
