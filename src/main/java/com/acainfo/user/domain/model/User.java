@@ -16,7 +16,7 @@ import java.util.Set;
  */
 @Getter
 @EqualsAndHashCode(of = "email")
-@ToString(exclude = "password")
+@ToString(exclude = {"password", "roles"})
 public class User {
 
     private Long id;
@@ -25,7 +25,10 @@ public class User {
     private String firstName;
     private String lastName;
     private UserStatus status;
+
+    @Getter(AccessLevel.NONE) // Disable automatic getter, we provide custom one
     private Set<Role> roles;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
