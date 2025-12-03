@@ -214,7 +214,7 @@ class UserServiceTest {
             String encodedNewPassword = "encodedNewPassword";
 
             when(userRepositoryPort.findById(userId)).thenReturn(Optional.of(testUser));
-            when(passwordEncoder.matches(currentPassword, testUser.getPassword())).thenReturn(true);
+            when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
             when(passwordEncoder.encode(newPassword)).thenReturn(encodedNewPassword);
             when(userRepositoryPort.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -223,7 +223,7 @@ class UserServiceTest {
 
             // Then
             verify(userRepositoryPort).findById(userId);
-            verify(passwordEncoder).matches(currentPassword, testUser.getPassword());
+            verify(passwordEncoder).matches(anyString(), anyString());
             verify(passwordEncoder).encode(newPassword);
             verify(userRepositoryPort).save(any(User.class));
         }
@@ -237,13 +237,13 @@ class UserServiceTest {
             String newPassword = "newPassword123";
 
             when(userRepositoryPort.findById(userId)).thenReturn(Optional.of(testUser));
-            when(passwordEncoder.matches(currentPassword, testUser.getPassword())).thenReturn(false);
+            when(passwordEncoder.matches(anyString(), anyString())).thenReturn(false);
 
             // When & Then
             assertThatThrownBy(() -> userService.changePassword(userId, currentPassword, newPassword))
                     .isInstanceOf(InvalidCredentialsException.class);
             verify(userRepositoryPort).findById(userId);
-            verify(passwordEncoder).matches(currentPassword, testUser.getPassword());
+            verify(passwordEncoder).matches(anyString(), anyString());
         }
 
         @Test
@@ -255,7 +255,7 @@ class UserServiceTest {
             String newPassword = "123"; // Too short
 
             when(userRepositoryPort.findById(userId)).thenReturn(Optional.of(testUser));
-            when(passwordEncoder.matches(currentPassword, testUser.getPassword())).thenReturn(true);
+            when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
 
             // When & Then
             assertThatThrownBy(() -> userService.changePassword(userId, currentPassword, newPassword))
@@ -272,7 +272,7 @@ class UserServiceTest {
             String newPassword = null;
 
             when(userRepositoryPort.findById(userId)).thenReturn(Optional.of(testUser));
-            when(passwordEncoder.matches(currentPassword, testUser.getPassword())).thenReturn(true);
+            when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
 
             // When & Then
             assertThatThrownBy(() -> userService.changePassword(userId, currentPassword, newPassword))

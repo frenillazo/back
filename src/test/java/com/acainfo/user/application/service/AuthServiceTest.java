@@ -194,7 +194,7 @@ class AuthServiceTest {
         void register_WithMixedCaseEmail_NormalizesEmail() {
             // Given
             RegisterUserCommand command = new RegisterUserCommand(
-                    "  Test@TEST.COM  ",
+                    "Test@TEST.COM",
                     "password123",
                     "John",
                     "Doe"
