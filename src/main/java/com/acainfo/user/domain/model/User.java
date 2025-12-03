@@ -1,6 +1,7 @@
 package com.acainfo.user.domain.model;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder(toBuilder = true)
 @EqualsAndHashCode(of = "email")
 @ToString(exclude = "password")
 public class User {
