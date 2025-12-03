@@ -45,13 +45,13 @@ class UserStatusTest {
     }
 
     @Test
-    @DisplayName("Should have exactly 3 statuses")
-    void shouldHaveExactlyThreeStatuses() {
+    @DisplayName("Should have exactly 4 statuses")
+    void shouldHaveExactlyFourStatuses() {
         // When
         UserStatus[] statuses = UserStatus.values();
 
         // Then
-        assertThat(statuses).hasSize(3);
+        assertThat(statuses).hasSize(4);
     }
 
     @Test

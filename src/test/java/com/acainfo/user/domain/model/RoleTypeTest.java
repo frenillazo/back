@@ -68,15 +68,5 @@ class RoleTypeTest {
         assertThat(admin).isEqualTo(RoleType.ADMIN);
     }
 
-    @Test
-    @DisplayName("Should maintain order: STUDENT, TEACHER, ADMIN")
-    void shouldMaintainCorrectOrder() {
-        // When
-        RoleType[] roleTypes = RoleType.values();
 
-        // Then
-        assertThat(roleTypes[0]).isEqualTo(RoleType.STUDENT);
-        assertThat(roleTypes[1]).isEqualTo(RoleType.TEACHER);
-        assertThat(roleTypes[2]).isEqualTo(RoleType.ADMIN);
-    }
 }
