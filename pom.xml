@@ -29,6 +29,7 @@
     <properties>
         <java.version>21</java.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <org.mapstruct.defaultComponentModel>spring</org.mapstruct.defaultComponentModel>
     </properties>
     <dependencies>
         <!-- Spring Boot Starters -->
@@ -139,9 +140,6 @@
                             <version>0.2.0</version>
                         </path>
                     </annotationProcessorPaths>
-                    <compilerArgs>
-                        <arg>-Amapstruct.defaultComponentModel=spring</arg>
-                    </compilerArgs>
                 </configuration>
             </plugin>
             <plugin>

@@ -31,7 +31,10 @@ public class User {
     private String firstName;
     private String lastName;
     private UserStatus status;
+
+    @Builder.Default
     private Set<Role> roles = new HashSet<>();
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

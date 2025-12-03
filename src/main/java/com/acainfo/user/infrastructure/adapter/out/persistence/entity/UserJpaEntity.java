@@ -67,6 +67,7 @@ public class UserJpaEntity {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
+    @Builder.Default
     private Set<RoleJpaEntity> roles = new HashSet<>();
 
     @CreatedDate
