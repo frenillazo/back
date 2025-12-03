@@ -1,12 +1,11 @@
 package com.acainfo.user.infrastructure.adapter.out.persistence.repository;
 
+import com.acainfo.shared.config.TestJpaConfig;
 import com.acainfo.user.application.dto.UserFilters;
 import com.acainfo.user.domain.model.Role;
 import com.acainfo.user.domain.model.RoleType;
 import com.acainfo.user.domain.model.User;
 import com.acainfo.user.domain.model.UserStatus;
-import com.acainfo.user.infrastructure.adapter.out.persistence.entity.RoleJpaEntity;
-import com.acainfo.user.infrastructure.adapter.out.persistence.entity.UserJpaEntity;
 import com.acainfo.user.infrastructure.mapper.RolePersistenceMapper;
 import com.acainfo.user.infrastructure.mapper.UserPersistenceMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +17,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Optional;
 import java.util.Set;
@@ -29,8 +29,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests persistence layer with real JPA operations including specifications.
  */
 @DataJpaTest
+@ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({
+        TestJpaConfig.class,
         UserRepositoryAdapter.class,
         UserPersistenceMapper.class,
         RoleRepositoryAdapter.class,
