@@ -56,11 +56,121 @@ módulo/
 
 ### Reglas Fundamentales
 
-1. **Dominio Puro**: Entidades sin anotaciones de framework (@Entity, @Component, etc.)
+1. **Dominio Anémico con Lombok**: Entidades POJO con `@Getter/@Setter` y lógica mínima
 2. **Separación JPA**: Entidades JPA separadas con sufijo `*JpaEntity`
 3. **MapStruct**: Conversiones automáticas entre capas
-4. **Seguridad Simplificada**: `isAdmin()`, `isTeacher()`, `isStudent()` (sin entidad Permission)
-5. **RefreshToken**: No es dominio, vive en `security/` como infraestructura
+4. **Lógica en Services**: Reglas de negocio no triviales en capa de aplicación
+5. **Seguridad Simplificada**: `isAdmin()`, `isTeacher()`, `isStudent()` (sin entidad Permission)
+6. **RefreshToken**: No es dominio, vive en `security/` como infraestructura
+7. **Lombok para reducir boilerplate**: Aceptable en todas las capas (no viola arquitectura)
+
+---
+
+## 🏛️ Modelo de Dominio: Anémico vs Rico
+
+**Decisión Arquitectónica:** Utilizamos **Modelo de Dominio Anémico** (Anemic Domain Model)
+
+### Filosofía
+
+Las entidades de dominio son **POJOs simples** con:
+- ✅ `@Getter` y `@Setter` de Lombok
+- ✅ Validaciones básicas de invariantes
+- ✅ Métodos de consulta simples (query methods)
+- ❌ NO tienen lógica de negocio compleja
+- ❌ NO orquestan operaciones
+
+### Responsabilidades por Capa
+
+#### 🔵 Domain Layer (POJOs)
+```java
+@Getter
+@Setter
+@EqualsAndHashCode(of = "email")
+public class User {
+    private Long id;
+    private String email;
+    private UserStatus status;
+    private Set<Role> roles = new HashSet<>();
+
+    // ✅ Métodos de consulta simples
+    public boolean isAdmin() {
+        return roles.stream().anyMatch(Role::isAdmin);
+    }
+
+    public boolean isActive() {
+        return status == UserStatus.ACTIVE;
+    }
+
+    // ✅ Validación básica de invariante
+    public void setEmail(String email) {
+        if (!isValidEmail(email)) {
+            throw new ValidationException("Invalid email");
+        }
+        this.email = email.toLowerCase().trim();
+    }
+}
+```
+
+#### 🟢 Application Layer (Services)
+```java
+@Service
+public class UserService {
+
+    // ✅ Lógica de negocio compleja
+    public void activateUser(Long userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new UserNotFoundException(userId));
+
+        if (user.getStatus() == UserStatus.BLOCKED) {
+            throw new UserBlockedException(user.getEmail());
+        }
+
+        user.setStatus(UserStatus.ACTIVE);
+        userRepository.save(user);
+
+        // Orquestación: enviar email, log, etc.
+        emailService.sendActivationEmail(user);
+        auditService.log("User activated: " + user.getEmail());
+    }
+
+    // ✅ Reglas que requieren datos externos
+    public boolean canEnroll(User user, SubjectGroup group) {
+        // Consultar pagos
+        boolean hasPaymentsUpToDate = paymentService.isUpToDate(user.getId());
+
+        // Consultar otras inscripciones
+        int currentEnrollments = enrollmentRepository.countByUserId(user.getId());
+
+        return hasPaymentsUpToDate && currentEnrollments < MAX_ENROLLMENTS;
+    }
+}
+```
+
+### Ventajas del Modelo Anémico
+
+1. **Separación clara**: Datos (POJOs) vs Lógica (Services)
+2. **Testeable**: Services se testean fácilmente con mocks
+3. **Transaccional**: Lógica en Services permite control de @Transactional
+4. **Reutilizable**: Misma lógica desde diferentes casos de uso
+5. **Simple**: Menos complejidad en las entidades
+
+### Desventajas (aceptadas)
+
+1. No sigue DDD estricto (Rich Domain Model)
+2. Posible dispersión de lógica si no se organiza bien
+3. Tentación de hacer Services muy grandes (mitigar con casos de uso)
+
+### Qué va en cada lugar
+
+| Concepto | Dominio (POJO) | Aplicación (Service) |
+|----------|----------------|----------------------|
+| Validación de formato email | ✅ | ❌ |
+| Verificar si es admin | ✅ | ❌ |
+| Activar usuario | ❌ | ✅ |
+| Cambiar contraseña | ❌ | ✅ |
+| Registrar usuario completo | ❌ | ✅ |
+| Consultar pagos para inscribirse | ❌ | ✅ |
+| Enviar email | ❌ | ✅ |
 
 ---
 
