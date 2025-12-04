@@ -9,7 +9,7 @@ import com.acainfo.subject.domain.model.SubjectStatus;
  */
 public record SubjectFilters(
         String code,
-        String searchTerm,  // Search in code, name, description
+        String searchTerm,  // Search in code, name
         Degree degree,
         SubjectStatus status,
         Integer page,

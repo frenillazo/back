@@ -52,12 +52,6 @@ public class SubjectJpaEntity {
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    @Column(name = "description", length = 500)
-    private String description;
-
-    @Column(name = "credits", nullable = false)
-    private Integer credits;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "degree", nullable = false, length = 50)
     private Degree degree;

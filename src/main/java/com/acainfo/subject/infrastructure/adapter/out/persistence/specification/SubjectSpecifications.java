@@ -38,7 +38,7 @@ public class SubjectSpecifications {
                 ));
             }
 
-            // Filter by search term (search in code, name, description)
+            // Filter by search term (search in code, name)
             if (filters.searchTerm() != null && !filters.searchTerm().isBlank()) {
                 String searchPattern = "%" + filters.searchTerm().toLowerCase().trim() + "%";
                 Predicate codeLike = criteriaBuilder.like(
@@ -49,11 +49,7 @@ public class SubjectSpecifications {
                         criteriaBuilder.lower(root.get("name")),
                         searchPattern
                 );
-                Predicate descriptionLike = criteriaBuilder.like(
-                        criteriaBuilder.lower(root.get("description")),
-                        searchPattern
-                );
-                predicates.add(criteriaBuilder.or(codeLike, nameLike, descriptionLike));
+                predicates.add(criteriaBuilder.or(codeLike, nameLike));
             }
 
             // Filter by degree
@@ -111,7 +107,7 @@ public class SubjectSpecifications {
     }
 
     /**
-     * Specification to search subjects by term (code, name, description).
+     * Specification to search subjects by term (code, name).
      */
     public static Specification<SubjectJpaEntity> searchByTerm(String searchTerm) {
         return (root, query, criteriaBuilder) -> {
@@ -121,8 +117,7 @@ public class SubjectSpecifications {
             String pattern = "%" + searchTerm.toLowerCase().trim() + "%";
             return criteriaBuilder.or(
                     criteriaBuilder.like(criteriaBuilder.lower(root.get("code")), pattern),
-                    criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), pattern),
-                    criteriaBuilder.like(criteriaBuilder.lower(root.get("description")), pattern)
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), pattern)
             );
         };
     }
