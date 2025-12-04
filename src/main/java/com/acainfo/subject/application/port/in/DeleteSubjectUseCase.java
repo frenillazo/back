@@ -1,5 +1,7 @@
 package com.acainfo.subject.application.port.in;
 
+import com.acainfo.subject.domain.model.Subject;
+
 /**
  * Use case for deleting subjects.
  * Input port defining the contract for subject deletion and archiving.
@@ -19,6 +21,7 @@ public interface DeleteSubjectUseCase {
      * Sets status to ARCHIVED.
      *
      * @param id Subject ID
+     * @return The archived subject
      */
-    void archive(Long id);
+    Subject archive(Long id);
 }
