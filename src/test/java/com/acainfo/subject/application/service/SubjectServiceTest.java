@@ -370,7 +370,7 @@ class SubjectServiceTest {
             // When & Then
             assertThatThrownBy(() -> subjectService.delete(subjectId))
                     .isInstanceOf(InvalidSubjectDataException.class)
-                    .hasMessageContaining("Cannot delete subject with active groups");
+                    .hasMessageContaining("Cannot delete subject with existing groups");
 
             verify(subjectRepositoryPort).findById(subjectId);
             verify(subjectRepositoryPort, never()).delete(anyLong());

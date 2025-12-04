@@ -42,21 +42,29 @@ public class SubjectService implements
     public Subject create(CreateSubjectCommand command) {
         log.info("Creating subject with code: {}", command.code());
 
+        // Normalize code (uppercase and trim)
+        String normalizedCode = command.code().toUpperCase().trim();
+
+        // Validate name
+        if (command.name() == null || command.name().isBlank()) {
+            throw new InvalidSubjectDataException("Name is required");
+        }
+
         // Validate code format (3 letters + 3 digits, e.g., ING101)
-        if (!isValidCode(command.code())) {
+        if (!isValidCode(normalizedCode)) {
             throw new InvalidSubjectDataException(
-                    "Invalid code format. Must be 3 uppercase letters followed by 3 digits (e.g., ING101)"
+                    "Code must be 3 uppercase letters followed by 3 digits (e.g., ING101)"
             );
         }
 
         // Check if code already exists
-        if (subjectRepositoryPort.existsByCode(command.code())) {
-            throw new DuplicateSubjectCodeException(command.code());
+        if (subjectRepositoryPort.existsByCode(normalizedCode)) {
+            throw new DuplicateSubjectCodeException(normalizedCode);
         }
 
         // Create subject
         Subject subject = Subject.builder()
-                .code(command.code().toUpperCase().trim())
+                .code(normalizedCode)
                 .name(command.name().trim())
                 .degree(command.degree())
                 .status(SubjectStatus.ACTIVE)

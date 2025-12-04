@@ -191,7 +191,7 @@ class SubjectTest {
             String result = subject.getDisplayName();
 
             // Then
-            assertThat(result).isEqualTo("[ING101] Programación I");
+            assertThat(result).isEqualTo("ING101 - Programación I");
         }
 
         @Test
@@ -207,7 +207,7 @@ class SubjectTest {
             String result = subject.getDisplayName();
 
             // Then
-            assertThat(result).isEqualTo("[MAT201] Matemáticas Avanzadas");
+            assertThat(result).isEqualTo("MAT201 - Matemáticas Avanzadas");
         }
     }
 
