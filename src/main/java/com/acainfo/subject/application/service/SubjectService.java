@@ -136,14 +136,15 @@ public class SubjectService implements
 
     @Override
     @Transactional
-    public void archive(Long id) {
+    public Subject archive(Long id) {
         log.info("Archiving subject with ID: {}", id);
 
         Subject subject = getById(id);
         subject.setStatus(SubjectStatus.ARCHIVED);
-        subjectRepositoryPort.save(subject);
+        Subject archivedSubject = subjectRepositoryPort.save(subject);
 
-        log.info("Subject archived successfully: {}", subject.getCode());
+        log.info("Subject archived successfully: {}", archivedSubject.getCode());
+        return archivedSubject;
     }
 
     // Private validation methods
