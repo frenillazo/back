@@ -397,10 +397,10 @@ class SubjectTest {
         @DisplayName("Should create subject for specific degree")
         void forDegree_CreatesSubjectWithSpecifiedDegree() {
             // When
-            Subject subject = SubjectFactory.forDegree(Degree.INGENIERIA_SOFTWARE);
+            Subject subject = SubjectFactory.forDegree(Degree.INGENIERIA_INFORMATICA);
 
             // Then
-            assertThat(subject.getDegree()).isEqualTo(Degree.INGENIERIA_SOFTWARE);
+            assertThat(subject.getDegree()).isEqualTo(Degree.INGENIERIA_INFORMATICA);
         }
     }
 

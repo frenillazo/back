@@ -110,13 +110,8 @@ public class SubjectFactory {
         return this;
     }
 
-    public SubjectFactory asIngenieriaSoftware() {
-        this.degree = Degree.INGENIERIA_SOFTWARE;
-        return this;
-    }
-
-    public SubjectFactory asCienciasComputacion() {
-        this.degree = Degree.CIENCIAS_COMPUTACION;
+    public SubjectFactory asIngenieriaIndustrial() {
+        this.degree = Degree.INGENIERIA_INDUSTRIAL;
         return this;
     }
 
