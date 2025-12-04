@@ -35,8 +35,6 @@ public class SubjectService implements
     private final SubjectRepositoryPort subjectRepositoryPort;
 
     // Business rules constants
-    private static final int MIN_CREDITS = 3;
-    private static final int MAX_CREDITS = 12;
     private static final String CODE_PATTERN = "^[A-Z]{3}\\d{3}$";
 
     @Override
@@ -56,15 +54,10 @@ public class SubjectService implements
             throw new DuplicateSubjectCodeException(command.code());
         }
 
-        // Validate credits range
-        validateCredits(command.credits());
-
         // Create subject
         Subject subject = Subject.builder()
                 .code(command.code().toUpperCase().trim())
                 .name(command.name().trim())
-                .description(command.description() != null ? command.description().trim() : null)
-                .credits(command.credits())
                 .degree(command.degree())
                 .status(SubjectStatus.ACTIVE)
                 .currentGroupCount(0)
@@ -86,17 +79,6 @@ public class SubjectService implements
         // Update name if provided
         if (command.name() != null && !command.name().isBlank()) {
             subject.setName(command.name().trim());
-        }
-
-        // Update description if provided
-        if (command.description() != null) {
-            subject.setDescription(command.description().trim());
-        }
-
-        // Update credits if provided
-        if (command.credits() != null) {
-            validateCredits(command.credits());
-            subject.setCredits(command.credits());
         }
 
         // Update status if provided
@@ -173,14 +155,4 @@ public class SubjectService implements
         return code != null && code.matches(CODE_PATTERN);
     }
 
-    /**
-     * Validate credits are within valid range.
-     */
-    private void validateCredits(Integer credits) {
-        if (credits == null || credits < MIN_CREDITS || credits > MAX_CREDITS) {
-            throw new InvalidSubjectDataException(
-                    String.format("Credits must be between %d and %d", MIN_CREDITS, MAX_CREDITS)
-            );
-        }
-    }
 }

@@ -3,7 +3,7 @@ package com.acainfo.subject.domain.exception;
 import com.acainfo.shared.domain.exception.ValidationException;
 
 /**
- * Exception thrown when subject data is invalid (e.g., invalid credits, invalid code format).
+ * Exception thrown when subject data is invalid (e.g., invalid code format).
  */
 public class InvalidSubjectDataException extends ValidationException {
 

@@ -27,8 +27,6 @@ public class Subject {
     private Long id;
     private String code;           // e.g., "ING101"
     private String name;           // e.g., "Programación I"
-    private String description;
-    private Integer credits;       // e.g., 6 créditos
     private Degree degree;
     private SubjectStatus status;
 
