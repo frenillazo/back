@@ -105,16 +105,16 @@ public class GroupController {
         log.debug("REST: Getting groups with filters - subjectId: {}, teacherId: {}, type: {}, status: {}",
                 subjectId, teacherId, type, status);
 
-        GroupFilters filters = GroupFilters.builder()
-                .subjectId(subjectId)
-                .teacherId(teacherId)
-                .type(type)
-                .status(status)
-                .page(page)
-                .size(size)
-                .sortBy(sortBy)
-                .sortDirection(sortDirection)
-                .build();
+        GroupFilters filters = new GroupFilters(
+                subjectId,
+                teacherId,
+                type,
+                status,
+                page,
+                size,
+                sortBy,
+                sortDirection
+        );
 
         Page<SubjectGroup> groupsPage = getGroupUseCase.findWithFilters(filters);
         Page<GroupResponse> responsePage = groupsPage.map(groupRestMapper::toResponse);
