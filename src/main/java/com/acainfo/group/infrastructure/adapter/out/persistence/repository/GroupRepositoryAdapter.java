@@ -1,0 +1,70 @@
+package com.acainfo.group.infrastructure.adapter.out.persistence.repository;
+
+import com.acainfo.group.application.dto.GroupFilters;
+import com.acainfo.group.application.port.out.GroupRepositoryPort;
+import com.acainfo.group.domain.model.GroupType;
+import com.acainfo.group.domain.model.SubjectGroup;
+import com.acainfo.group.infrastructure.adapter.out.persistence.entity.SubjectGroupJpaEntity;
+import com.acainfo.group.infrastructure.adapter.out.persistence.specification.GroupSpecifications;
+import com.acainfo.group.infrastructure.mapper.GroupPersistenceMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
+
+/**
+ * Adapter implementing GroupRepositoryPort.
+ * Translates domain operations to JPA operations.
+ * Uses GroupPersistenceMapper to convert between domain and JPA entities.
+ */
+@Component
+@RequiredArgsConstructor
+public class GroupRepositoryAdapter implements GroupRepositoryPort {
+
+    private final JpaGroupRepository jpaGroupRepository;
+    private final GroupPersistenceMapper groupPersistenceMapper;
+
+    @Override
+    public SubjectGroup save(SubjectGroup group) {
+        SubjectGroupJpaEntity jpaEntity = groupPersistenceMapper.toJpaEntity(group);
+        SubjectGroupJpaEntity savedEntity = jpaGroupRepository.save(jpaEntity);
+        return groupPersistenceMapper.toDomain(savedEntity);
+    }
+
+    @Override
+    public Optional<SubjectGroup> findById(Long id) {
+        return jpaGroupRepository.findById(id)
+                .map(groupPersistenceMapper::toDomain);
+    }
+
+    @Override
+    public boolean existsBySubjectAndType(Long subjectId, GroupType type) {
+        return jpaGroupRepository.existsBySubjectIdAndType(subjectId, type);
+    }
+
+    @Override
+    public Page<SubjectGroup> findWithFilters(GroupFilters filters) {
+        // Build specification from filters
+        Specification<SubjectGroupJpaEntity> spec = GroupSpecifications.withFilters(filters);
+
+        // Build pagination and sorting
+        Sort sort = filters.sortDirection().equalsIgnoreCase("ASC")
+                ? Sort.by(filters.sortBy()).ascending()
+                : Sort.by(filters.sortBy()).descending();
+
+        PageRequest pageRequest = PageRequest.of(filters.page(), filters.size(), sort);
+
+        // Execute query and map to domain
+        return jpaGroupRepository.findAll(spec, pageRequest)
+                .map(groupPersistenceMapper::toDomain);
+    }
+
+    @Override
+    public void delete(Long id) {
+        jpaGroupRepository.deleteById(id);
+    }
+}
