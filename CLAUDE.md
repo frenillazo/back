@@ -63,6 +63,9 @@ módulo/
 5. **Seguridad Simplificada**: `isAdmin()`, `isTeacher()`, `isStudent()` (sin entidad Permission)
 6. **RefreshToken**: No es dominio, vive en `security/` como infraestructura
 7. **Lombok para reducir boilerplate**: Aceptable en todas las capas (no viola arquitectura)
+8. **Referencias entre Agregados**: Usar IDs (Long) en lugar de entidades completas para mantener independencia de agregados (DDD purismo)
+9. **DTOs de Aplicación**: Los `*Filters` y `*Command` son **records** (Java 14+) para inmutabilidad
+10. **Constructor vs Builder**: Los **records usan constructor parametrizado**, NO builder pattern (incompatible con Lombok @Builder)
 
 ---
 
@@ -196,6 +199,93 @@ public class UserService {
 | Registrar usuario completo | ❌ | ✅ |
 | Consultar pagos para inscribirse | ❌ | ✅ |
 | Enviar email | ❌ | ✅ |
+
+---
+
+## 🔧 Decisiones de Diseño Específicas
+
+### Referencias entre Agregados (DDD Purismo)
+
+**Decisión:** Usar **IDs (Long)** en lugar de entidades completas para referencias entre agregados independientes.
+
+**Ejemplo:**
+```java
+// ✅ CORRECTO - Mantiene independencia de agregados
+public class SubjectGroup {
+    private Long subjectId;  // ID, no Subject entity
+    private Long teacherId;  // ID, no User entity
+}
+
+// ❌ INCORRECTO - Crea acoplamiento entre agregados
+public class SubjectGroup {
+    private Subject subject;  // ❌
+    private User teacher;     // ❌
+}
+```
+
+**Razones:**
+1. Mantiene independencia entre agregados (Subject, User, Group son agregados separados)
+2. Evita lazy loading issues de JPA
+3. Facilita el mapeo entre capas (Domain ↔ JPA)
+4. Simplifica las transacciones
+
+**Excepción:** User-Role es un caso especial donde Role eventualmente se refactorizará a enum.
+
+### Records para DTOs (Java 14+)
+
+**Decisión:** Los DTOs de aplicación (`*Command`, `*Filters`) son **records** para inmutabilidad.
+
+**Ejemplo:**
+```java
+// ✅ CORRECTO - Record inmutable
+public record GroupFilters(
+    Long subjectId,
+    Long teacherId,
+    GroupType type,
+    GroupStatus status,
+    Integer page,
+    Integer size,
+    String sortBy,
+    String sortDirection
+) {}
+
+// Uso: Constructor parametrizado (NO builder)
+GroupFilters filters = new GroupFilters(
+    subjectId, teacherId, type, status,
+    page, size, sortBy, sortDirection
+);
+```
+
+**Razones:**
+1. Inmutabilidad por defecto (thread-safe)
+2. Constructor canónico automático
+3. equals(), hashCode(), toString() generados automáticamente
+4. Menos boilerplate que clases tradicionales
+
+**IMPORTANTE:** Los records **NO soportan** `@Builder` de Lombok. Usar constructor parametrizado.
+
+### Reglas de Negocio: Grupos por Asignatura
+
+**Decisión:** Una asignatura **puede tener múltiples grupos del mismo tipo**.
+
+**Ejemplo:**
+```java
+// ✅ VÁLIDO - Múltiples grupos REGULAR_Q1 para la misma asignatura
+Subject: "Programación I" (id=1)
+  ├─ Group 1: REGULAR_Q1, Teacher A, Capacity 24
+  ├─ Group 2: REGULAR_Q1, Teacher B, Capacity 24
+  └─ Group 3: INTENSIVE_Q1, Teacher C, Capacity 50
+```
+
+**Razones:**
+1. Flexibilidad para alta demanda de estudiantes
+2. Permite crear grupos paralelos con diferentes profesores
+3. No hay restricción de unicidad (subject_id, type)
+
+**Capacidades:**
+- `REGULAR`: Max 24 estudiantes (capacidad del aula)
+- `INTENSIVE`: Max 50 estudiantes (mayor flexibilidad)
+- Custom capacity: Permitido dentro de los límites del tipo
 
 ---
 
@@ -357,43 +447,51 @@ DELETE /api/admin/teachers/{id}    # Eliminar profesor (ADMIN)
 **Duración:** 2 semanas (67 horas)  
 **Objetivo:** Asignaturas, grupos y horarios
 
-### Semana 3: Módulo Subject + Group (35h)
+### Semana 3: Módulo Subject + Group (35h) ✅ COMPLETADO
 
-| # | Tarea | Horas | Entregable |
-|---|-------|-------|------------|
-| 2.1 | Crear `subject/domain/model/`: Subject, SubjectStatus, Degree | 3h | Dominio Subject |
-| 2.2 | Crear `subject/domain/exception/` y `validation/` | 2h | Excepciones y reglas |
-| 2.3 | Crear `subject/infrastructure/`: JPA entities, mappers, repository | 5h | Infraestructura Subject |
-| 2.4 | Crear `subject/application/`: ports, service, DTOs | 4h | Aplicación Subject |
-| 2.5 | Crear `subject/infrastructure/adapter/in/rest/`: Controller + DTOs | 3h | REST Subject |
-| 2.6 | Crear `group/domain/model/`: SubjectGroup, GroupStatus, GroupType, AcademicPeriod | 3h | Dominio Group |
-| 2.7 | Implementar reglas: máx 3 grupos por asignatura, control de capacidad | 2h | Validaciones |
-| 2.8 | Crear `group/infrastructure/`: JPA entities, mappers, repository | 5h | Infraestructura Group |
-| 2.9 | Crear `group/application/`: ports, service, DTOs | 4h | Aplicación Group |
-| 2.10 | Crear `group/infrastructure/adapter/in/rest/`: Controller + DTOs | 3h | REST Group |
-| 2.11 | Tests módulo Subject | 2h | Tests |
-| 2.12 | Tests módulo Group | 2h | Tests |
+| # | Tarea | Estado | Horas | Entregable |
+|---|-------|--------|-------|------------|
+| 2.1 | Crear `subject/domain/model/`: Subject, SubjectStatus, Degree | ✅ | 3h | Dominio Subject |
+| 2.2 | Crear `subject/domain/exception/` y `validation/` | ✅ | 2h | Excepciones y reglas |
+| 2.3 | Crear `subject/infrastructure/`: JPA entities, mappers, repository | ✅ | 5h | Infraestructura Subject |
+| 2.4 | Crear `subject/application/`: ports, service, DTOs | ✅ | 4h | Aplicación Subject |
+| 2.5 | Crear `subject/infrastructure/adapter/in/rest/`: Controller + DTOs | ✅ | 3h | REST Subject |
+| 2.6 | Crear `group/domain/model/`: SubjectGroup, GroupStatus, GroupType | ✅ | 3h | Dominio Group |
+| 2.7 | Implementar reglas: control de capacidad (24/50), sin límite de grupos | ✅ | 2h | Validaciones |
+| 2.8 | Crear `group/infrastructure/`: JPA entities, mappers, repository | ✅ | 5h | Infraestructura Group |
+| 2.9 | Crear `group/application/`: ports, service, DTOs | ✅ | 4h | Aplicación Group |
+| 2.10 | Crear `group/infrastructure/adapter/in/rest/`: Controller + DTOs | ✅ | 3h | REST Group |
+| 2.11 | Tests módulo Subject | ⏸️ | 2h | Tests (pendiente) |
+| 2.12 | Tests módulo Group | ⏸️ | 2h | Tests (pendiente) |
 
-### Semana 4: Módulo Schedule (32h)
+**Decisiones de Diseño Tomadas:**
+- ✅ Usar IDs (Long) para referencias entre agregados (subjectId, teacherId)
+- ✅ Eliminada restricción de unicidad (subject_id, type) - Una asignatura PUEDE tener múltiples grupos del mismo tipo
+- ✅ GroupType combina horario y período: REGULAR_Q1, INTENSIVE_Q1, REGULAR_Q2, INTENSIVE_Q2
+- ✅ Capacidades: REGULAR max 24, INTENSIVE max 50
+- ✅ DTOs como records (GroupFilters, CreateGroupCommand, etc.)
+- ✅ Constructor parametrizado para records (NO builder pattern)
 
-| # | Tarea | Horas | Entregable |
-|---|-------|-------|------------|
-| 2.13 | Crear `schedule/domain/model/`: Schedule, Classroom, DayOfWeek | 3h | Dominio Schedule |
-| 2.14 | Implementar validación de conflictos horarios | 4h | ScheduleBusinessRules |
-| 2.15 | Crear `schedule/domain/exception/`: ScheduleConflictException | 2h | Excepciones |
-| 2.16 | Crear `schedule/infrastructure/`: JPA entities, mappers, repository | 5h | Infraestructura |
-| 2.17 | Crear `schedule/application/`: ports, service, DTOs | 4h | Aplicación |
-| 2.18 | Crear `schedule/infrastructure/adapter/in/rest/`: Controller + DTOs | 3h | REST |
-| 2.19 | Crear Specifications para filtros avanzados (Subject, Group, Schedule) | 4h | Filtros Criteria |
-| 2.20 | Tests módulo Schedule | 3h | Tests |
-| 2.21 | Tests integración entre módulos (Subject-Group-Schedule) | 4h | Tests integración |
+### Semana 4: Módulo Schedule (32h) ⏸️ PENDIENTE
+
+| # | Tarea | Estado | Horas | Entregable |
+|---|-------|--------|-------|------------|
+| 2.13 | Crear `schedule/domain/model/`: Schedule, Classroom, DayOfWeek | ⏸️ | 3h | Dominio Schedule |
+| 2.14 | Implementar validación de conflictos horarios | ⏸️ | 4h | ScheduleBusinessRules |
+| 2.15 | Crear `schedule/domain/exception/`: ScheduleConflictException | ⏸️ | 2h | Excepciones |
+| 2.16 | Crear `schedule/infrastructure/`: JPA entities, mappers, repository | ⏸️ | 5h | Infraestructura |
+| 2.17 | Crear `schedule/application/`: ports, service, DTOs | ⏸️ | 4h | Aplicación |
+| 2.18 | Crear `schedule/infrastructure/adapter/in/rest/`: Controller + DTOs | ⏸️ | 3h | REST |
+| 2.19 | Crear Specifications para filtros avanzados (Subject, Group, Schedule) | ⏸️ | 4h | Filtros Criteria |
+| 2.20 | Tests módulo Schedule | ⏸️ | 3h | Tests |
+| 2.21 | Tests integración entre módulos (Subject-Group-Schedule) | ⏸️ | 4h | Tests integración |
 
 ### Entregables Fase 2
-- [ ] Módulo `subject/` completo
-- [ ] Módulo `group/` completo con validación de capacidad
+- [x] Módulo `subject/` completo (Domain, Application, Infrastructure, REST)
+- [x] Módulo `group/` completo con validación de capacidad
 - [ ] Módulo `schedule/` completo con detección de conflictos
-- [ ] Specifications con Criteria Builder funcionando
-- [ ] Tests unitarios e integración
+- [x] Specifications con Criteria Builder funcionando (SubjectSpecifications, GroupSpecifications)
+- [ ] Tests unitarios e integración (pendiente)
 
 ### Endpoints Fase 2
 
@@ -423,18 +521,30 @@ DELETE /api/schedules/{id}         # Eliminar (ADMIN)
 ### Reglas de Negocio Fase 2
 
 ```java
-// group/domain/validation/GroupBusinessRules.java
-public class GroupBusinessRules {
-    public static final int MAX_GROUPS_PER_SUBJECT = 3;
-    public static final int DEFAULT_CLASSROOM_CAPACITY = 24;
-    
-    public void validateNewGroup(Subject subject, int currentGroupCount) {
-        if (currentGroupCount >= MAX_GROUPS_PER_SUBJECT) {
-            throw new MaxGroupsPerSubjectException(subject.getId());
-        }
+// group/domain/model/SubjectGroup.java
+public class SubjectGroup {
+    public static final int REGULAR_MAX_CAPACITY = 24;
+    public static final int INTENSIVE_MAX_CAPACITY = 50;
+
+    // GroupType: REGULAR_Q1, INTENSIVE_Q1, REGULAR_Q2, INTENSIVE_Q2
+    // Una asignatura PUEDE tener múltiples grupos del mismo tipo
+    // Sin restricción de unicidad (subject_id, type)
+
+    public int getMaxCapacity() {
+        return capacity != null ? capacity
+            : (isIntensive() ? INTENSIVE_MAX_CAPACITY : REGULAR_MAX_CAPACITY);
+    }
+
+    public boolean canEnroll() {
+        return isOpen() && hasAvailableSeats();
     }
 }
 ```
+
+**Cambios respecto al plan original:**
+- ❌ Eliminada restricción `MAX_GROUPS_PER_SUBJECT = 3`
+- ✅ Una asignatura puede tener múltiples grupos del mismo tipo (sin límite)
+- ✅ Capacidad customizable dentro de límites del tipo (24 para REGULAR, 50 para INTENSIVE)
 
 ---
 
