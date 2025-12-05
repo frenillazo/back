@@ -26,37 +26,4 @@ public enum Classroom {
         this.capacity = capacity;
         this.isPhysical = isPhysical;
     }
-
-    /**
-     * Check if this is a physical classroom.
-     */
-    public boolean isPhysical() {
-        return isPhysical;
-    }
-
-    /**
-     * Check if this is a virtual classroom.
-     */
-    public boolean isVirtual() {
-        return !isPhysical;
-    }
-
-    /**
-     * Check if classroom has capacity limit.
-     */
-    public boolean hasCapacityLimit() {
-        return capacity != null;
-    }
-
-    /**
-     * Find classroom by code.
-     */
-    public static Classroom fromCode(String code) {
-        for (Classroom classroom : values()) {
-            if (classroom.code.equalsIgnoreCase(code)) {
-                return classroom;
-            }
-        }
-        throw new IllegalArgumentException("Unknown classroom code: " + code);
-    }
 }

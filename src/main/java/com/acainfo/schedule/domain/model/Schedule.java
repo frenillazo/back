@@ -31,62 +31,17 @@ public class Schedule {
 
     // Query methods
 
-    /**
-     * Check if this schedule conflicts with another schedule.
-     * Conflict occurs when:
-     * - Same day of week
-     * - Time overlaps
-     * - Same classroom (classroom conflict)
-     */
-    public boolean conflictsWith(Schedule other) {
-        if (other == null || this.id != null && this.id.equals(other.getId())) {
-            return false; // Don't check conflict with itself
-        }
-
-        if (!this.dayOfWeek.equals(other.dayOfWeek)) {
-            return false; // Different days, no conflict
-        }
-
-        return timeOverlaps(other) && classroomConflicts(other);
+    /**/
+    public boolean isPhysical(){
+        return classroom == Classroom.AULA_PORTAL1 || classroom == Classroom.AULA_PORTAL2;
     }
 
-    /**
-     * Check if time ranges overlap.
-     */
-    private boolean timeOverlaps(Schedule other) {
-        // Times overlap if: start1 < end2 AND end1 > start2
-        return this.startTime.isBefore(other.endTime) &&
-               this.endTime.isAfter(other.startTime);
+    public boolean isOnline(){
+        return classroom == Classroom.AULA_VIRTUAL;
     }
 
-    /**
-     * Check if classrooms conflict (same classroom).
-     */
-    private boolean classroomConflicts(Schedule other) {
-        if (this.classroom == null || other.classroom == null) {
-            return false; // No conflict if classroom not assigned
-        }
-        return this.classroom == other.classroom;
+    public long getDuration(){
+        return Duration.between(startTime, endTime).toMinutes();
     }
 
-    /**
-     * Get duration of the schedule.
-     */
-    public Duration getDuration() {
-        return Duration.between(startTime, endTime);
-    }
-
-    /**
-     * Get duration in minutes.
-     */
-    public long getDurationMinutes() {
-        return getDuration().toMinutes();
-    }
-
-    /**
-     * Check if schedule is valid (start before end).
-     */
-    public boolean isValidTimeRange() {
-        return startTime != null && endTime != null && startTime.isBefore(endTime);
-    }
 }
