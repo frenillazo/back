@@ -61,14 +61,6 @@ public class GroupService implements
             );
         }
 
-        // Validate that no duplicate group exists (same subject + type)
-        if (groupRepositoryPort.existsBySubjectAndType(command.subjectId(), command.type())) {
-            throw new InvalidGroupDataException(
-                    String.format("Group already exists for subject %d with type %s",
-                            command.subjectId(), command.type())
-            );
-        }
-
         // Validate custom capacity if provided
         if (command.capacity() != null) {
             int maxCapacity = command.type().isIntensive()
