@@ -17,9 +17,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(
     name = "subject_groups",
-    uniqueConstraints = {
-        @UniqueConstraint(name = "uk_subject_group_subject_type", columnNames = {"subject_id", "type"})
-    },
     indexes = {
         @Index(name = "idx_subject_group_subject_id", columnList = "subject_id"),
         @Index(name = "idx_subject_group_teacher_id", columnList = "teacher_id"),

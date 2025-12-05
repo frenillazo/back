@@ -2,7 +2,6 @@ package com.acainfo.group.infrastructure.adapter.out.persistence.repository;
 
 import com.acainfo.group.application.dto.GroupFilters;
 import com.acainfo.group.application.port.out.GroupRepositoryPort;
-import com.acainfo.group.domain.model.GroupType;
 import com.acainfo.group.domain.model.SubjectGroup;
 import com.acainfo.group.infrastructure.adapter.out.persistence.entity.SubjectGroupJpaEntity;
 import com.acainfo.group.infrastructure.adapter.out.persistence.specification.GroupSpecifications;
@@ -39,11 +38,6 @@ public class GroupRepositoryAdapter implements GroupRepositoryPort {
     public Optional<SubjectGroup> findById(Long id) {
         return jpaGroupRepository.findById(id)
                 .map(groupPersistenceMapper::toDomain);
-    }
-
-    @Override
-    public boolean existsBySubjectAndType(Long subjectId, GroupType type) {
-        return jpaGroupRepository.existsBySubjectIdAndType(subjectId, type);
     }
 
     @Override
