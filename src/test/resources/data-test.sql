@@ -11,10 +11,10 @@ INSERT INTO roles (id, type, description) VALUES
 (3, 'STUDENT', 'Student who can enroll in groups');
 
 -- Insert admin user
--- Password: Admin123! (BCrypt encoded)
--- Generated with: BCrypt.hashpw("Admin123!", BCrypt.gensalt())
+-- Password: password (BCrypt encoded - standard test password)
+-- Hash $2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG corresponds to "password"
 INSERT INTO users (id, email, password, first_name, last_name, status, created_at, updated_at) VALUES
-(1, 'admin@acainfo.com', '$2a$10$N9qo8uLOickgx2ZMRZoMy.MqrqOeJhPEi.3q6YJ7x4N8GYjfV.4mC', 'Admin', 'User', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(1, 'admin@acainfo.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Admin', 'User', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Assign ADMIN role to admin user
 INSERT INTO user_roles (user_id, role_id) VALUES

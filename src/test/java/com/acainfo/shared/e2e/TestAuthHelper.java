@@ -24,9 +24,10 @@ public class TestAuthHelper {
     // Default test credentials
     public static final String DEFAULT_PASSWORD = "Test123!";
 
-    // Admin credentials (must be created via data.sql or bootstrap)
+    // Admin credentials (must be created via data-test.sql)
+    // Password "password" corresponds to the BCrypt hash in data-test.sql
     public static final String ADMIN_EMAIL = "admin@acainfo.com";
-    public static final String ADMIN_PASSWORD = "Admin123!";
+    public static final String ADMIN_PASSWORD = "password";
 
     public TestAuthHelper(
             RegisterUserUseCase registerUserUseCase,
