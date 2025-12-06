@@ -1,5 +1,7 @@
 package com.acainfo.shared.infrastructure.rest;
 
+import com.acainfo.shared.domain.exception.BusinessRuleException;
+import com.acainfo.shared.domain.exception.NotFoundException;
 import com.acainfo.shared.infrastructure.rest.dto.ErrorResponse;
 import com.acainfo.user.domain.exception.DuplicateEmailException;
 import com.acainfo.user.domain.exception.InvalidCredentialsException;
@@ -27,11 +29,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFoundException(
-            UserNotFoundException ex,
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFoundException(
+            NotFoundException ex,
             HttpServletRequest request) {
-        log.error("User not found: {}", ex.getMessage());
+        log.error("Resource not found: {}", ex.getMessage());
         ErrorResponse error = ErrorResponse.of(
                 HttpStatus.NOT_FOUND.value(),
                 "Not Found",
@@ -39,6 +41,20 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(BusinessRuleException.class)
+    public ResponseEntity<ErrorResponse> handleBusinessRuleException(
+            BusinessRuleException ex,
+            HttpServletRequest request) {
+        log.error("Business rule violation: {}", ex.getMessage());
+        ErrorResponse error = ErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @ExceptionHandler(DuplicateEmailException.class)
