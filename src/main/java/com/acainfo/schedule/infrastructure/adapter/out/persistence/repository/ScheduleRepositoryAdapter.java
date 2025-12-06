@@ -2,7 +2,6 @@ package com.acainfo.schedule.infrastructure.adapter.out.persistence.repository;
 
 import com.acainfo.schedule.application.dto.ScheduleFilters;
 import com.acainfo.schedule.application.port.out.ScheduleRepositoryPort;
-import com.acainfo.schedule.domain.model.Classroom;
 import com.acainfo.schedule.domain.model.Schedule;
 import com.acainfo.schedule.infrastructure.adapter.out.persistence.entity.ScheduleJpaEntity;
 import com.acainfo.schedule.infrastructure.adapter.out.persistence.specification.ScheduleSpecifications;
@@ -14,8 +13,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
-import java.time.DayOfWeek;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,28 +62,6 @@ public class ScheduleRepositoryAdapter implements ScheduleRepositoryPort {
     public List<Schedule> findByGroupId(Long groupId) {
         return schedulePersistenceMapper.toDomainList(
                 jpaScheduleRepository.findByGroupId(groupId)
-        );
-    }
-
-    @Override
-    public List<Schedule> findByClassroomAndDayOfWeek(Classroom classroom, DayOfWeek dayOfWeek) {
-        return schedulePersistenceMapper.toDomainList(
-                jpaScheduleRepository.findByClassroomAndDayOfWeek(classroom, dayOfWeek)
-        );
-    }
-
-    @Override
-    public List<Schedule> findConflictingSchedules(
-            Classroom classroom,
-            DayOfWeek dayOfWeek,
-            LocalTime startTime,
-            LocalTime endTime,
-            Long excludeScheduleId
-    ) {
-        return schedulePersistenceMapper.toDomainList(
-                jpaScheduleRepository.findConflictingSchedules(
-                        classroom, dayOfWeek, startTime, endTime, excludeScheduleId
-                )
         );
     }
 
