@@ -54,17 +54,10 @@ public class Subject {
 
     /**
      * Check if a new group can be created for this subject.
-     * Based on business rule: maximum 3 groups per subject.
+     * A subject can have unlimited groups as long as it's active.
      */
     public boolean canCreateGroup() {
-        return isActive() && currentGroupCount < 3;
-    }
-
-    /**
-     * Get the number of remaining group slots available.
-     */
-    public int getRemainingGroupSlots() {
-        return Math.max(0, 3 - currentGroupCount);
+        return isActive();
     }
 
     /**

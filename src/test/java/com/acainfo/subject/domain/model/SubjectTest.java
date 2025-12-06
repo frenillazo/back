@@ -84,11 +84,12 @@ class SubjectTest {
     class GroupManagementTests {
 
         @Test
-        @DisplayName("Should allow creating group when count is less than maximum")
-        void canCreateGroup_WhenCountBelowMax_ReturnsTrue() {
+        @DisplayName("Should allow creating group when subject is active")
+        void canCreateGroup_WhenActive_ReturnsTrue() {
             // Given
             Subject subject = SubjectFactory.builder()
-                    .currentGroupCount(2)
+                    .status(SubjectStatus.ACTIVE)
+                    .currentGroupCount(10) // Many groups, doesn't matter
                     .buildDomain();
 
             // When
@@ -99,11 +100,12 @@ class SubjectTest {
         }
 
         @Test
-        @DisplayName("Should not allow creating group when count reaches maximum")
-        void canCreateGroup_WhenCountAtMax_ReturnsFalse() {
+        @DisplayName("Should not allow creating group when subject is inactive")
+        void canCreateGroup_WhenInactive_ReturnsFalse() {
             // Given
             Subject subject = SubjectFactory.builder()
-                    .currentGroupCount(3) // MAX_GROUPS_PER_SUBJECT
+                    .status(SubjectStatus.INACTIVE)
+                    .currentGroupCount(0)
                     .buildDomain();
 
             // When
@@ -114,10 +116,11 @@ class SubjectTest {
         }
 
         @Test
-        @DisplayName("Should allow creating group when count is zero")
-        void canCreateGroup_WhenCountIsZero_ReturnsTrue() {
+        @DisplayName("Should not allow creating group when subject is archived")
+        void canCreateGroup_WhenArchived_ReturnsFalse() {
             // Given
             Subject subject = SubjectFactory.builder()
+                    .status(SubjectStatus.ARCHIVED)
                     .currentGroupCount(0)
                     .buildDomain();
 
@@ -125,52 +128,23 @@ class SubjectTest {
             boolean result = subject.canCreateGroup();
 
             // Then
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("Should allow unlimited groups for active subject")
+        void canCreateGroup_WithManyGroups_StillReturnsTrue() {
+            // Given - Subject with many groups (no limit)
+            Subject subject = SubjectFactory.builder()
+                    .status(SubjectStatus.ACTIVE)
+                    .currentGroupCount(100)
+                    .buildDomain();
+
+            // When
+            boolean result = subject.canCreateGroup();
+
+            // Then
             assertThat(result).isTrue();
-        }
-
-        @Test
-        @DisplayName("Should calculate remaining group slots correctly")
-        void getRemainingGroupSlots_ReturnsCorrectValue() {
-            // Given
-            Subject subject = SubjectFactory.builder()
-                    .currentGroupCount(1)
-                    .buildDomain();
-
-            // When
-            int result = subject.getRemainingGroupSlots();
-
-            // Then
-            assertThat(result).isEqualTo(2); // 3 (MAX) - 1 (current) = 2
-        }
-
-        @Test
-        @DisplayName("Should return zero remaining slots when at maximum")
-        void getRemainingGroupSlots_WhenAtMax_ReturnsZero() {
-            // Given
-            Subject subject = SubjectFactory.builder()
-                    .currentGroupCount(3)
-                    .buildDomain();
-
-            // When
-            int result = subject.getRemainingGroupSlots();
-
-            // Then
-            assertThat(result).isEqualTo(0);
-        }
-
-        @Test
-        @DisplayName("Should return all slots when no groups exist")
-        void getRemainingGroupSlots_WhenNoGroups_ReturnsMax() {
-            // Given
-            Subject subject = SubjectFactory.builder()
-                    .currentGroupCount(0)
-                    .buildDomain();
-
-            // When
-            int result = subject.getRemainingGroupSlots();
-
-            // Then
-            assertThat(result).isEqualTo(3); // MAX_GROUPS_PER_SUBJECT
         }
     }
 
@@ -357,15 +331,14 @@ class SubjectTest {
         }
 
         @Test
-        @DisplayName("Should create subject with max groups correctly")
-        void subjectWithMaxGroups_CannotCreateMoreGroups() {
+        @DisplayName("Should create subject with specified group count")
+        void subjectWithGroups_HasCorrectCount() {
             // When
-            Subject subject = SubjectFactory.subjectWithMaxGroups();
+            Subject subject = SubjectFactory.subjectWithGroups(5);
 
             // Then
-            assertThat(subject.getCurrentGroupCount()).isEqualTo(3);
-            assertThat(subject.canCreateGroup()).isFalse();
-            assertThat(subject.getRemainingGroupSlots()).isEqualTo(0);
+            assertThat(subject.getCurrentGroupCount()).isEqualTo(5);
+            assertThat(subject.canCreateGroup()).isTrue(); // Active subjects can always create groups
         }
 
         @Test
@@ -377,7 +350,6 @@ class SubjectTest {
             // Then
             assertThat(subject.getCurrentGroupCount()).isEqualTo(0);
             assertThat(subject.canCreateGroup()).isTrue();
-            assertThat(subject.getRemainingGroupSlots()).isEqualTo(3);
         }
 
         @Test

@@ -19,7 +19,6 @@ public record SubjectResponse(
         Degree degree,
         SubjectStatus status,
         Integer currentGroupCount,
-        Integer remainingGroupSlots,
         boolean active,
         boolean archived,
         boolean canCreateGroup,

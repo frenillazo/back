@@ -95,8 +95,8 @@ public class SubjectFactory {
         return this;
     }
 
-    public SubjectFactory withMaxGroups() {
-        this.currentGroupCount = 3; // MAX_GROUPS_PER_SUBJECT
+    public SubjectFactory withGroups(int count) {
+        this.currentGroupCount = count;
         return this;
     }
 
@@ -187,14 +187,14 @@ public class SubjectFactory {
     }
 
     /**
-     * Create a subject with maximum groups (cannot create more).
+     * Create a subject with multiple groups.
      */
-    public static Subject subjectWithMaxGroups() {
-        return builder().withMaxGroups().buildDomain();
+    public static Subject subjectWithGroups(int count) {
+        return builder().withGroups(count).buildDomain();
     }
 
     /**
-     * Create a subject with no groups (can create groups).
+     * Create a subject with no groups.
      */
     public static Subject subjectWithNoGroups() {
         return builder().withNoGroups().buildDomain();

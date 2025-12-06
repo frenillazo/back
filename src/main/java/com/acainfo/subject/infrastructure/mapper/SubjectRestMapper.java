@@ -39,7 +39,6 @@ public interface SubjectRestMapper {
      * Uses Java expressions to map computed properties.
      */
     @Mapping(target = "displayName", expression = "java(subject.getDisplayName())")
-    @Mapping(target = "remainingGroupSlots", expression = "java(subject.getRemainingGroupSlots())")
     @Mapping(target = "active", expression = "java(subject.isActive())")
     @Mapping(target = "archived", expression = "java(subject.isArchived())")
     @Mapping(target = "canCreateGroup", expression = "java(subject.canCreateGroup())")
