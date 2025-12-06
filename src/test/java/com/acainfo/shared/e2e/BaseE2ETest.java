@@ -87,7 +87,7 @@ public abstract class BaseE2ETest {
      */
     protected ResultActions performGet(String url, String token) throws Exception {
         return mockMvc.perform(get(url)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", bearerHeader(token))
                 .contentType(MediaType.APPLICATION_JSON));
     }
 
@@ -105,7 +105,7 @@ public abstract class BaseE2ETest {
      */
     protected ResultActions performPost(String url, Object body, String token) throws Exception {
         return mockMvc.perform(post(url)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", bearerHeader(token))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(body)));
     }
@@ -115,7 +115,7 @@ public abstract class BaseE2ETest {
      */
     protected ResultActions performPost(String url, String token) throws Exception {
         return mockMvc.perform(post(url)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", bearerHeader(token))
                 .contentType(MediaType.APPLICATION_JSON));
     }
 
@@ -124,7 +124,7 @@ public abstract class BaseE2ETest {
      */
     protected ResultActions performPut(String url, Object body, String token) throws Exception {
         return mockMvc.perform(put(url)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", bearerHeader(token))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(body)));
     }
@@ -134,7 +134,7 @@ public abstract class BaseE2ETest {
      */
     protected ResultActions performDelete(String url, String token) throws Exception {
         return mockMvc.perform(delete(url)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", bearerHeader(token))
                 .contentType(MediaType.APPLICATION_JSON));
     }
 
@@ -147,7 +147,7 @@ public abstract class BaseE2ETest {
      */
     protected MockHttpServletRequestBuilder authenticatedGet(String url, String token) {
         return get(url)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", bearerHeader(token))
                 .contentType(MediaType.APPLICATION_JSON);
     }
 
@@ -156,7 +156,7 @@ public abstract class BaseE2ETest {
      */
     protected MockHttpServletRequestBuilder authenticatedPost(String url, String token) {
         return post(url)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", bearerHeader(token))
                 .contentType(MediaType.APPLICATION_JSON);
     }
 
@@ -165,7 +165,7 @@ public abstract class BaseE2ETest {
      */
     protected MockHttpServletRequestBuilder authenticatedPut(String url, String token) {
         return put(url)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", bearerHeader(token))
                 .contentType(MediaType.APPLICATION_JSON);
     }
 
@@ -174,7 +174,22 @@ public abstract class BaseE2ETest {
      */
     protected MockHttpServletRequestBuilder authenticatedDelete(String url, String token) {
         return delete(url)
-                .header("Authorization", "Bearer " + token)
+                .header("Authorization", bearerHeader(token))
                 .contentType(MediaType.APPLICATION_JSON);
+    }
+
+    // ===========================================
+    // Authorization Header Helper
+    // ===========================================
+
+    /**
+     * Create Bearer token header value.
+     * Handles the token prefix correctly to match JWT filter expectations.
+     * When token-prefix is "Bearer" (without trailing space), we add the space.
+     */
+    private String bearerHeader(String token) {
+        // The JWT filter expects "Bearer<space>token" format
+        // Since jwt.token-prefix=Bearer (no trailing space), we add it here
+        return "Bearer " + token;
     }
 }
