@@ -1,12 +1,9 @@
 package com.acainfo.schedule.application.port.out;
 
 import com.acainfo.schedule.application.dto.ScheduleFilters;
-import com.acainfo.schedule.domain.model.Classroom;
 import com.acainfo.schedule.domain.model.Schedule;
 import org.springframework.data.domain.Page;
 
-import java.time.DayOfWeek;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,35 +45,6 @@ public interface ScheduleRepositoryPort {
      * @return List of schedules for the group
      */
     List<Schedule> findByGroupId(Long groupId);
-
-    /**
-     * Find schedules by classroom and day of week.
-     * Useful for conflict detection.
-     *
-     * @param classroom Classroom to check
-     * @param dayOfWeek Day of week to check
-     * @return List of schedules in that classroom on that day
-     */
-    List<Schedule> findByClassroomAndDayOfWeek(Classroom classroom, DayOfWeek dayOfWeek);
-
-    /**
-     * Find potential conflicting schedules.
-     * Returns schedules in the same classroom, same day, that overlap with the given time range.
-     *
-     * @param classroom Classroom to check
-     * @param dayOfWeek Day of week
-     * @param startTime Start time of the range
-     * @param endTime End time of the range
-     * @param excludeScheduleId Schedule ID to exclude (for updates), can be null
-     * @return List of conflicting schedules
-     */
-    List<Schedule> findConflictingSchedules(
-            Classroom classroom,
-            DayOfWeek dayOfWeek,
-            LocalTime startTime,
-            LocalTime endTime,
-            Long excludeScheduleId
-    );
 
     /**
      * Delete a schedule by ID.
