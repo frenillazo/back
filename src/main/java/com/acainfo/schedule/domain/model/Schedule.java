@@ -40,7 +40,7 @@ public class Schedule {
         return classroom == Classroom.AULA_VIRTUAL;
     }
 
-    public long getDuration(){
+    public long getDurationMinutes(){
         return Duration.between(startTime, endTime).toMinutes();
     }
 
