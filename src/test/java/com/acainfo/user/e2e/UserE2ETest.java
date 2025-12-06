@@ -558,9 +558,10 @@ class UserE2ETest extends BaseE2ETest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.message").value("Teacher deleted successfully"));
 
-            // Verify teacher is no longer accessible (should return 404)
+            // Verify teacher is  accessible (should return 200) but status is blocked
             performGet("/api/teachers/" + createdTeacher.id(), adminToken)
-                    .andExpect(status().isNotFound());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value("BLOCKED"));
         }
 
         @Test

@@ -687,7 +687,7 @@ class SubjectGroupTest {
             int enrollmentCount = 15;
 
             // When
-            SubjectGroup group = GroupFactory.withEnrollments(enrollmentCount);
+            SubjectGroup group = GroupFactory.withEnrollmentsCount(enrollmentCount);
 
             // Then
             assertThat(group.getCurrentEnrollmentCount()).isEqualTo(enrollmentCount);

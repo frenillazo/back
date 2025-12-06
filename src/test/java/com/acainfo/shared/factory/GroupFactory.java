@@ -251,7 +251,7 @@ public class GroupFactory {
     /**
      * Create a group with specific enrollments.
      */
-    public static SubjectGroup withEnrollments(int count) {
+    public static SubjectGroup withEnrollmentsCount(int count) {
         return builder().withEnrollments(count).buildDomain();
     }
 
