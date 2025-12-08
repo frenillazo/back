@@ -21,11 +21,11 @@ import java.time.LocalTime;
 public class Schedule {
 
     private Long id;
-    private Long groupId;           // Reference to SubjectGroup (aggregate independence)
-    private DayOfWeek dayOfWeek;    // MONDAY, TUESDAY, etc.
-    private LocalTime startTime;    // 09:00
-    private LocalTime endTime;      // 11:00
-    private Classroom classroom;    // Enum: AULA_PORTAL1, AULA_PORTAL2, AULA_VIRTUAL
+    private Long groupId;
+    private DayOfWeek dayOfWeek;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private Classroom classroom;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
