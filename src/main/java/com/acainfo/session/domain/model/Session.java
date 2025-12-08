@@ -1,12 +1,14 @@
 package com.acainfo.session.domain.model;
 
+import com.acainfo.schedule.domain.model.Classroom;
 import lombok.*;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-
+//TODO: contemplar el siguiente caso de uso, se postponen sesiones de 3 grupos de una misma asignatura y se recuperan como una única sesión online para todos (repaso pre examen) ¿Hace falta algún atributo más o método de consulta?
 @Getter
 @Setter
 @NoArgsConstructor
@@ -15,9 +17,11 @@ import java.time.LocalTime;
 @EqualsAndHashCode(of = "id")
 @ToString
 public class Session {
+
     private Long id;
-    private Long subjectId; //Nullable en JPA, toda sesión está asociada a una asignatura salvo cuando -type == SCHEDULING-
-    private Long scheduleId; //Nullable en JPA, una session puede existir sin un schedule -type != REGULAR-, cada schedule da lugar a sesiones tipo REGULAR que pueden ser canceladas o postpuestas
+    private Long subjectId;
+    private Long scheduleId; //Nullable en JPA, una session puede existir sin un schedule salvo cuando -type != REGULAR-, cada schedule da lugar a sesiones tipo REGULAR que pueden ser canceladas o postpuestas
+    private Classroom classroom; //Lo coge del schedule referenfiado por el id, pero si no es de type REGULAR se rellena manualmente por el administrador
     private LocalDate sessionDate;
     private LocalTime startTime;
     private LocalTime endTime;
@@ -28,51 +32,61 @@ public class Session {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public Boolean isProgramada(){
+    public boolean isProgramada(){
         return status == SessionStatus.PROGRAMADA;
     }
 
-    public Boolean isEnCurso(){
+    public boolean isEnCurso(){
         return status == SessionStatus.EN_CURSO;
     }
 
-    public Boolean isCompletada(){
+    public boolean isCompletada(){
         return status == SessionStatus.COMPLETADA;
     }
 
-    public Boolean isCancelada(){
+    public boolean isCancelada(){
         return status == SessionStatus.CANCELADA;
     }
 
-    public Boolean isPostpuesta(){
+    public boolean isPostpuesta(){
         return status == SessionStatus.POSTPUESTA;
     }
 
-    public Boolean isRegular(){
+    public boolean isRegular(){
         return type == SessionType.REGULAR;
     }
 
-    public Boolean isRecuperacion(){
+    public boolean isRecuperacion(){
         return type == SessionType.POSTPONED;
     }
 
-    public Boolean isExtra(){
+    public boolean isExtra(){
         return type == SessionType.EXTRA;
     }
 
-    public Boolean isHorarios(){
+    public boolean isHorarios(){
         return type == SessionType.SCHEDULING;
     }
 
-    public Boolean isPhysical(){
+    public boolean isPhysical(){
         return mode == SessionMode.PRESENCIAL;
     }
 
-    public Boolean isOnline(){
+    public boolean isOnline(){
         return mode == SessionMode.ONLINE;
     }
 
-    public Boolean isDual(){
+    public boolean isDual(){
         return mode == SessionMode.DUAL;
+    }
+
+    public boolean canCancel(){ return isProgramada() || isPostpuesta() || isEnCurso(); }
+
+    public boolean canPostpone(){ return isProgramada(); }
+
+    public boolean canComplete(){ return isEnCurso(); }
+
+    public long getDurationMinutes(){
+        return Duration.between(startTime, endTime).toMinutes();
     }
 }
