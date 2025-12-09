@@ -8,7 +8,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-//TODO: contemplar el siguiente caso de uso, se postponen sesiones de 3 grupos de una misma asignatura y se recuperan como una única sesión online para todos (repaso pre examen) ¿Hace falta algún atributo más o método de consulta?
 @Getter
 @Setter
 @NoArgsConstructor
@@ -53,8 +52,6 @@ public class Session {
     }
 
     public boolean isRegular() { return type == SessionType.REGULAR; }
-
-    public boolean isPostponed() { return type == SessionType.POSTPONED; }
 
     public boolean isExtra() { return type == SessionType.EXTRA; }
 
