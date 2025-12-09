@@ -52,39 +52,19 @@ public class Session {
         return status == SessionStatus.POSTPUESTA;
     }
 
-    public boolean isRegular(){
-        return type == SessionType.REGULAR;
-    }
+    public boolean isRegular() { return type == SessionType.REGULAR; }
 
-    public boolean isRecuperacion(){
-        return type == SessionType.POSTPONED;
-    }
+    public boolean isPostponed() { return type == SessionType.POSTPONED; }
 
-    public boolean isExtra(){
-        return type == SessionType.EXTRA;
-    }
+    public boolean isExtra() { return type == SessionType.EXTRA; }
 
-    public boolean isHorarios(){
-        return type == SessionType.SCHEDULING;
-    }
+    public boolean isScheduling() { return type == SessionType.SCHEDULING; }
 
-    public boolean isPhysical(){
-        return mode == SessionMode.PRESENCIAL;
-    }
+    public boolean isPresencial() { return mode == SessionMode.PRESENCIAL; }
 
-    public boolean isOnline(){
-        return mode == SessionMode.ONLINE;
-    }
+    public boolean isOnline() { return mode == SessionMode.ONLINE; }
 
-    public boolean isDual(){
-        return mode == SessionMode.DUAL;
-    }
-
-    public boolean canCancel(){ return isProgramada() || isPostpuesta() || isEnCurso(); }
-
-    public boolean canPostpone(){ return isProgramada(); }
-
-    public boolean canComplete(){ return isEnCurso(); }
+    public boolean isDual() { return mode == SessionMode.DUAL; }
 
     public long getDurationMinutes(){
         return Duration.between(startTime, endTime).toMinutes();
