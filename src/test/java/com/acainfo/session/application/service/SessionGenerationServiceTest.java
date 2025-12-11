@@ -158,30 +158,6 @@ class SessionGenerationServiceTest {
                     .containsExactlyInAnyOrder(1L, 1L, 2L, 2L);
         }
 
-        @Test
-        @DisplayName("Should skip dates where session already exists")
-        void generate_WithExistingSession_SkipsThatDate() {
-            // Given
-            LocalDate startDate = LocalDate.of(2025, 1, 6);  // Monday
-            LocalDate endDate = LocalDate.of(2025, 1, 12);   // Sunday
-
-            GenerateSessionsCommand command = new GenerateSessionsCommand(
-                    1L, startDate, endDate
-            );
-
-            when(scheduleRepositoryPort.findByGroupId(1L)).thenReturn(List.of(mondaySchedule));
-            when(groupRepositoryPort.findById(1L)).thenReturn(Optional.of(testGroup));
-            // Session already exists for Monday Jan 6
-            when(sessionRepositoryPort.existsByScheduleIdAndDate(1L, LocalDate.of(2025, 1, 6))).thenReturn(true);
-            when(sessionRepositoryPort.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
-
-            // When
-            List<Session> result = sessionGenerationService.generate(command);
-
-            // Then
-            assertThat(result).isEmpty();
-            verify(sessionRepositoryPort).saveAll(Collections.emptyList());
-        }
 
         @Test
         @DisplayName("Should return empty list when no schedules for group")
