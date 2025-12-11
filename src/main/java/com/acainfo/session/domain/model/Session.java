@@ -8,6 +8,17 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+/**
+ * Session domain entity (anemic model with Lombok).
+ * Represents a scheduled class session for a subject group.
+ *
+ * <p>Session types and their field requirements:</p>
+ * <ul>
+ *   <li>REGULAR: Has scheduleId (derived from Schedule), groupId derived from schedule</li>
+ *   <li>EXTRA: Has groupId (required), no scheduleId - additional sessions for groups</li>
+ *   <li>SCHEDULING: Has subjectId only, no groupId - meetings to agree on schedules before group creation</li>
+ * </ul>
+ */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,52 +29,120 @@ import java.time.LocalTime;
 public class Session {
 
     private Long id;
+
+    /**
+     * Reference to the subject. Always present for all session types.
+     * For REGULAR/EXTRA: derived from the group's subject.
+     * For SCHEDULING: the subject for which schedules are being discussed.
+     */
     private Long subjectId;
-    private Long scheduleId; //Nullable en JPA, una session puede existir sin un schedule salvo cuando -type != REGULAR-, cada schedule da lugar a sesiones tipo REGULAR que pueden ser canceladas o postpuestas
-    private Classroom classroom; //Lo coge del schedule referenfiado por el id, pero si no es de type REGULAR se rellena manualmente por el administrador
-    private LocalDate sessionDate;
+
+    /**
+     * Reference to the group. Nullable.
+     * - REGULAR: derived from the schedule's groupId
+     * - EXTRA: required (the group receiving the extra session)
+     * - SCHEDULING: null (no group exists yet)
+     */
+    private Long groupId;
+
+    /**
+     * Reference to the schedule. Nullable.
+     * Only present for REGULAR sessions (generated from a Schedule).
+     * EXTRA and SCHEDULING sessions have no associated schedule.
+     */
+    private Long scheduleId;
+
+    /**
+     * Classroom where the session takes place.
+     * - REGULAR: inherited from the referenced schedule
+     * - EXTRA/SCHEDULING: manually set by administrator
+     */
+    private Classroom classroom;
+
+    private LocalDate date;
     private LocalTime startTime;
     private LocalTime endTime;
     private SessionStatus status;
     private SessionType type;
     private SessionMode mode;
+
+    /**
+     * New date when a session is postponed.
+     * Only set when status is POSTPONED.
+     */
     private LocalDate postponedToDate;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public boolean isProgramada(){
-        return status == SessionStatus.PROGRAMADA;
+    // ==================== Status Query Methods ====================
+
+    public boolean isScheduled() {
+        return status == SessionStatus.SCHEDULED;
     }
 
-    public boolean isEnCurso(){
-        return status == SessionStatus.EN_CURSO;
+    public boolean isInProgress() {
+        return status == SessionStatus.IN_PROGRESS;
     }
 
-    public boolean isCompletada(){
-        return status == SessionStatus.COMPLETADA;
+    public boolean isCompleted() {
+        return status == SessionStatus.COMPLETED;
     }
 
-    public boolean isCancelada(){
-        return status == SessionStatus.CANCELADA;
+    public boolean isCancelled() {
+        return status == SessionStatus.CANCELLED;
     }
 
-    public boolean isPostpuesta(){
-        return status == SessionStatus.POSTPUESTA;
+    public boolean isPostponed() {
+        return status == SessionStatus.POSTPONED;
     }
 
-    public boolean isRegular() { return type == SessionType.REGULAR; }
+    // ==================== Type Query Methods ====================
 
-    public boolean isExtra() { return type == SessionType.EXTRA; }
+    public boolean isRegular() {
+        return type == SessionType.REGULAR;
+    }
 
-    public boolean isScheduling() { return type == SessionType.SCHEDULING; }
+    public boolean isExtra() {
+        return type == SessionType.EXTRA;
+    }
 
-    public boolean isPresencial() { return mode == SessionMode.PRESENCIAL; }
+    public boolean isSchedulingType() {
+        return type == SessionType.SCHEDULING;
+    }
 
-    public boolean isOnline() { return mode == SessionMode.ONLINE; }
+    // ==================== Mode Query Methods ====================
 
-    public boolean isDual() { return mode == SessionMode.DUAL; }
+    public boolean isInPerson() {
+        return mode == SessionMode.IN_PERSON;
+    }
 
-    public long getDurationMinutes(){
+    public boolean isOnline() {
+        return mode == SessionMode.ONLINE;
+    }
+
+    public boolean isDual() {
+        return mode == SessionMode.DUAL;
+    }
+
+    // ==================== Computed Properties ====================
+
+    public long getDurationMinutes() {
         return Duration.between(startTime, endTime).toMinutes();
+    }
+
+    /**
+     * Check if this session belongs to a group.
+     * SCHEDULING sessions don't belong to any group.
+     */
+    public boolean hasGroup() {
+        return groupId != null;
+    }
+
+    /**
+     * Check if this session was generated from a schedule.
+     */
+    public boolean hasSchedule() {
+        return scheduleId != null;
     }
 }
