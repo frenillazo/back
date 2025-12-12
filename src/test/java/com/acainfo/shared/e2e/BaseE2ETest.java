@@ -120,6 +120,15 @@ public abstract class BaseE2ETest {
     }
 
     /**
+     * Perform PUT request without authentication.
+     */
+    protected ResultActions performPut(String url, Object body) throws Exception {
+        return mockMvc.perform(put(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(body)));
+    }
+
+    /**
      * Perform PUT request with Bearer token authentication.
      */
     protected ResultActions performPut(String url, Object body, String token) throws Exception {
@@ -127,6 +136,14 @@ public abstract class BaseE2ETest {
                 .header("Authorization", bearerHeader(token))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(body)));
+    }
+
+    /**
+     * Perform DELETE request without authentication.
+     */
+    protected ResultActions performDelete(String url) throws Exception {
+        return mockMvc.perform(delete(url)
+                .contentType(MediaType.APPLICATION_JSON));
     }
 
     /**

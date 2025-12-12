@@ -185,10 +185,11 @@ class GroupRequestServiceTest {
         @DisplayName("Should remove supporter from pending request")
         void removeSupporter_FromPendingRequest_RemovesSuccessfully() {
             // Given
-            GroupRequest pendingRequest = EnrollmentFactory.groupRequestWithMinSupporters(1L, 100L);
-            pendingRequest = pendingRequest.toBuilder().id(1L).build();
+            GroupRequest pendingRequest = EnrollmentFactory.groupRequestWithMinSupporters(1L, 100L)
+                    .toBuilder().id(1L).build();
+            Long requesterId = pendingRequest.getRequesterId();
             Long supporterToRemove = pendingRequest.getSupporterIds().stream()
-                    .filter(id -> !id.equals(pendingRequest.getRequesterId()))
+                    .filter(id -> !id.equals(requesterId))
                     .findFirst()
                     .orElseThrow();
 
