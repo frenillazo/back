@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
  *
  * <p>Business rules (enforced in application services):</p>
  * <ul>
- *   <li>Students with 2+ subjects can attend online when no seats available</li>
  *   <li>Automatic promotion from waiting list when seats become available (FIFO)</li>
  *   <li>One active enrollment per student per group</li>
  * </ul>
@@ -46,12 +45,6 @@ public class Enrollment {
      * Current status of this enrollment.
      */
     private EnrollmentStatus status;
-
-    /**
-     * Mode of attendance for the student.
-     * IN_PERSON by default, ONLINE for students with 2+ subjects when no seats.
-     */
-    private AttendanceMode attendanceMode;
 
     /**
      * Position in the waiting list. Null if not in waiting list.
@@ -107,22 +100,6 @@ public class Enrollment {
      */
     public boolean isCompleted() {
         return status == EnrollmentStatus.COMPLETED;
-    }
-
-    // ==================== Attendance Mode Query Methods ====================
-
-    /**
-     * Check if student attends in person.
-     */
-    public boolean isInPerson() {
-        return attendanceMode == AttendanceMode.IN_PERSON;
-    }
-
-    /**
-     * Check if student attends online.
-     */
-    public boolean isOnline() {
-        return attendanceMode == AttendanceMode.ONLINE;
     }
 
     // ==================== Computed Properties ====================
