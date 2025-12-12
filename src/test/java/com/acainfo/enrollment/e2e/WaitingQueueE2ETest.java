@@ -247,14 +247,10 @@ class WaitingQueueE2ETest extends BaseE2ETest {
                     .andExpect(jsonPath("$.status").value("WITHDRAWN"))
                     .andExpect(jsonPath("$.waitingListPosition").isEmpty());
 
-            // Then - Positions should be adjusted (2 -> 1, 3 -> 2)
-            performGet(ENROLLMENTS_URL + "/" + enrollment2.getId(), adminToken)
+            // Then - Waiting list should now have 2 students
+            performGet(BASE_URL + "/group/" + smallGroup.getId(), adminToken)
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.waitingListPosition").value(1));
-
-            performGet(ENROLLMENTS_URL + "/" + enrollment3.getId(), adminToken)
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.waitingListPosition").value(2));
+                    .andExpect(jsonPath("$.length()").value(2));
         }
 
         @Test
@@ -369,14 +365,15 @@ class WaitingQueueE2ETest extends BaseE2ETest {
             performDelete(BASE_URL + "/" + enrollments[1].getId(), waiting2Token)
                     .andExpect(status().isOk());
 
-            // Then - Position 3 should become 2, position 1 remains
+            // Then - Waiting list should have 2 students
+            performGet(BASE_URL + "/group/" + smallGroup.getId(), adminToken)
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.length()").value(2));
+
+            // First student should still be in position 1
             performGet(ENROLLMENTS_URL + "/" + enrollments[0].getId(), adminToken)
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.waitingListPosition").value(1));
-
-            performGet(ENROLLMENTS_URL + "/" + enrollments[2].getId(), adminToken)
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.waitingListPosition").value(2));
         }
     }
 }

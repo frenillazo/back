@@ -158,11 +158,13 @@ public class EnrollmentFactory {
 
     /**
      * Create a group request with minimum supporters (8).
+     * Requester is included as first supporter, plus 7 others.
      */
     public static GroupRequest groupRequestWithMinSupporters(Long subjectId, Long requesterId) {
         Set<Long> supporters = new HashSet<>();
-        for (long i = 1; i <= 8; i++) {
-            supporters.add(i);
+        supporters.add(requesterId); // Requester is always first supporter
+        for (long i = 1; i <= 7; i++) {
+            supporters.add(requesterId + i); // Add 7 more unique supporters
         }
         return GroupRequest.builder()
                 .id(null)

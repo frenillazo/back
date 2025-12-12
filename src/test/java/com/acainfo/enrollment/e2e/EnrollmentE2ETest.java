@@ -100,9 +100,9 @@ class EnrollmentE2ETest extends BaseE2ETest {
             performPost(BASE_URL, request, studentToken)
                     .andExpect(status().isCreated());
 
-            // When & Then - Try again
+            // When & Then - Try again - AlreadyEnrolledException is BusinessRuleException -> 400
             performPost(BASE_URL, request, studentToken)
-                    .andExpect(status().isConflict());
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
