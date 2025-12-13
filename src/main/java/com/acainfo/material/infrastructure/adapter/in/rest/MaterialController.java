@@ -128,8 +128,8 @@ public class MaterialController {
 
         return ResponseEntity.ok(new PageResponse<>(
                 content,
-                result.page(),
-                result.size(),
+                result.pageNumber(),
+                result.pageSize(),
                 result.totalElements(),
                 result.totalPages(),
                 result.first(),
