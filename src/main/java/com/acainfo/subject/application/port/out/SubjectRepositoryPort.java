@@ -4,6 +4,7 @@ import com.acainfo.subject.application.dto.SubjectFilters;
 import com.acainfo.subject.domain.model.Subject;
 import org.springframework.data.domain.Page;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -59,4 +60,12 @@ public interface SubjectRepositoryPort {
      * @param id Subject ID
      */
     void delete(Long id);
+
+    /**
+     * Find subjects by a list of IDs.
+     *
+     * @param ids List of subject IDs
+     * @return List of subjects found
+     */
+    List<Subject> findByIds(List<Long> ids);
 }

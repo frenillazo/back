@@ -46,6 +46,11 @@ public class SessionSpecifications {
                 predicates.add(criteriaBuilder.equal(root.get("groupId"), filters.groupId()));
             }
 
+            // Filter by groupIds (IN clause)
+            if (filters.groupIds() != null && !filters.groupIds().isEmpty()) {
+                predicates.add(root.get("groupId").in(filters.groupIds()));
+            }
+
             // Filter by scheduleId
             if (filters.scheduleId() != null) {
                 predicates.add(criteriaBuilder.equal(root.get("scheduleId"), filters.scheduleId()));
@@ -201,5 +206,17 @@ public class SessionSpecifications {
     public static Specification<SessionJpaEntity> past() {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.lessThan(root.get("date"), LocalDate.now());
+    }
+
+    /**
+     * Specification to find sessions by multiple groupIds (IN clause).
+     */
+    public static Specification<SessionJpaEntity> hasGroupIdIn(List<Long> groupIds) {
+        return (root, query, criteriaBuilder) -> {
+            if (groupIds == null || groupIds.isEmpty()) {
+                return criteriaBuilder.conjunction();
+            }
+            return root.get("groupId").in(groupIds);
+        };
     }
 }

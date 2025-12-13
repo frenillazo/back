@@ -51,4 +51,12 @@ public interface GroupRepositoryPort {
      * @return List of all groups
      */
     List<SubjectGroup> findAll();
+
+    /**
+     * Find groups by a list of IDs.
+     *
+     * @param ids List of group IDs
+     * @return List of groups found
+     */
+    List<SubjectGroup> findByIds(List<Long> ids);
 }

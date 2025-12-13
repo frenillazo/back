@@ -5,6 +5,7 @@ import com.acainfo.session.domain.model.SessionStatus;
 import com.acainfo.session.domain.model.SessionType;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * DTO for Session dynamic filtering (Criteria Builder).
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 public record SessionFilters(
         Long subjectId,
         Long groupId,
+        List<Long> groupIds,
         Long scheduleId,
         SessionType type,
         SessionStatus status,
@@ -44,7 +46,7 @@ public record SessionFilters(
      */
     public static SessionFilters byGroup(Long groupId) {
         return new SessionFilters(
-                null, groupId, null, null, null, null,
+                null, groupId, null, null, null, null, null,
                 null, null, null, null, null, null
         );
     }
@@ -54,7 +56,7 @@ public record SessionFilters(
      */
     public static SessionFilters bySubject(Long subjectId) {
         return new SessionFilters(
-                subjectId, null, null, null, null, null,
+                subjectId, null, null, null, null, null, null,
                 null, null, null, null, null, null
         );
     }
@@ -64,7 +66,7 @@ public record SessionFilters(
      */
     public static SessionFilters byDateRange(LocalDate from, LocalDate to) {
         return new SessionFilters(
-                null, null, null, null, null, null,
+                null, null, null, null, null, null, null,
                 from, to, null, null, null, null
         );
     }
@@ -74,8 +76,18 @@ public record SessionFilters(
      */
     public static SessionFilters upcomingForGroup(Long groupId, LocalDate fromDate) {
         return new SessionFilters(
-                null, groupId, null, null, SessionStatus.SCHEDULED, null,
+                null, groupId, null, null, null, SessionStatus.SCHEDULED, null,
                 fromDate, null, null, null, "date", "ASC"
+        );
+    }
+
+    /**
+     * Factory method for filtering upcoming scheduled sessions for multiple groups.
+     */
+    public static SessionFilters upcomingForGroups(List<Long> groupIds, LocalDate fromDate, int limit) {
+        return new SessionFilters(
+                null, null, groupIds, null, null, SessionStatus.SCHEDULED, null,
+                fromDate, null, 0, limit, "date", "ASC"
         );
     }
 }
