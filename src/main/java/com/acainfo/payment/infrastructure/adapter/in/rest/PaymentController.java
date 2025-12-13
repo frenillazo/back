@@ -68,8 +68,8 @@ public class PaymentController {
 
         return ResponseEntity.ok(new PageResponse<>(
                 content,
-                result.page(),
-                result.size(),
+                result.pageNumber(),
+                result.totalPages(),
                 result.totalElements(),
                 result.totalPages(),
                 result.first(),
