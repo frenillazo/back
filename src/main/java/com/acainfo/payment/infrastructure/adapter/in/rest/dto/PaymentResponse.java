@@ -26,7 +26,7 @@ public record PaymentResponse(
         LocalDateTime paidAt,
         String description,
         boolean isOverdue,
-        Integer daysOverdue,
+        Long daysOverdue,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
