@@ -236,12 +236,13 @@ public class PaymentGenerationService implements GeneratePaymentUseCase, Generat
 
     /**
      * Get price per hour for an enrollment.
-     * TODO: This should be retrieved from the Enrollment entity once pricePerHour field is added.
      */
     private BigDecimal getPricePerHour(Enrollment enrollment) {
-        // Placeholder - should be enrollment.getPricePerHour()
-        // Default price for now
-        return new BigDecimal("15.00");
+        if (enrollment.getPricePerHour() == null) {
+            throw new PaymentCalculationException(
+                    "Price per hour not set for enrollment: " + enrollment.getId());
+        }
+        return enrollment.getPricePerHour();
     }
 
     private List<Enrollment> findActiveRegularEnrollments() {

@@ -7,6 +7,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -48,6 +49,9 @@ public class EnrollmentJpaEntity {
 
     @Column(name = "group_id", nullable = false)
     private Long groupId;
+
+    @Column(name = "price_per_hour", nullable = false, precision = 10, scale = 2)
+    private BigDecimal pricePerHour;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)

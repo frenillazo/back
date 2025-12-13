@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -40,6 +41,12 @@ public class Enrollment {
      * Reference to the subject group the student is enrolled in.
      */
     private Long groupId;
+
+    /**
+     * Price per hour for this enrollment (€/hour).
+     * Set at enrollment time, used for payment calculations.
+     */
+    private BigDecimal pricePerHour;
 
     /**
      * Current status of this enrollment.
