@@ -4,6 +4,7 @@ import com.acainfo.group.application.dto.GroupFilters;
 import com.acainfo.group.domain.model.SubjectGroup;
 import org.springframework.data.domain.Page;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -43,4 +44,11 @@ public interface GroupRepositoryPort {
      * @param id Group ID
      */
     void delete(Long id);
+
+    /**
+     * Find all groups.
+     *
+     * @return List of all groups
+     */
+    List<SubjectGroup> findAll();
 }

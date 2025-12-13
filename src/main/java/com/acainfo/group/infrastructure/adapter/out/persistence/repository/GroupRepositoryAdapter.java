@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -60,5 +61,12 @@ public class GroupRepositoryAdapter implements GroupRepositoryPort {
     @Override
     public void delete(Long id) {
         jpaGroupRepository.deleteById(id);
+    }
+
+    @Override
+    public List<SubjectGroup> findAll() {
+        return jpaGroupRepository.findAll().stream()
+                .map(groupPersistenceMapper::toDomain)
+                .toList();
     }
 }
