@@ -98,7 +98,7 @@ public class SessionController {
                 groupId, status, dateFrom, dateTo);
 
         SessionFilters filters = new SessionFilters(
-                subjectId, groupId, scheduleId, type, status, mode,
+                subjectId, groupId, null, scheduleId, type, status, mode,
                 dateFrom, dateTo, page, size, sortBy, sortDirection
         );
 

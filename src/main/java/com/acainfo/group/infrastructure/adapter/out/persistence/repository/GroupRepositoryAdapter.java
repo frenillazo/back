@@ -69,4 +69,14 @@ public class GroupRepositoryAdapter implements GroupRepositoryPort {
                 .map(groupPersistenceMapper::toDomain)
                 .toList();
     }
+
+    @Override
+    public List<SubjectGroup> findByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return jpaGroupRepository.findAllById(ids).stream()
+                .map(groupPersistenceMapper::toDomain)
+                .toList();
+    }
 }

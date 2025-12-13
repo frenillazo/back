@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -71,5 +72,15 @@ public class SubjectRepositoryAdapter implements SubjectRepositoryPort {
     @Override
     public void delete(Long id) {
         jpaSubjectRepository.deleteById(id);
+    }
+
+    @Override
+    public List<Subject> findByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return jpaSubjectRepository.findAllById(ids).stream()
+                .map(subjectPersistenceMapper::toDomain)
+                .toList();
     }
 }

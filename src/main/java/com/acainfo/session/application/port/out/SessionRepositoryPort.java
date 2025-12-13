@@ -98,4 +98,15 @@ public interface SessionRepositoryPort {
      * @return true if there's a conflicting session
      */
     boolean existsConflictingSession(Long groupId, LocalDate date, Long excludeSessionId);
+
+    /**
+     * Find upcoming scheduled sessions for multiple groups.
+     * Used for student dashboard to show next sessions across all enrolled groups.
+     *
+     * @param groupIds List of group IDs
+     * @param fromDate Start date (inclusive)
+     * @param limit Maximum number of sessions to return
+     * @return List of upcoming sessions sorted by date ascending
+     */
+    List<Session> findUpcomingByGroupIds(List<Long> groupIds, LocalDate fromDate, int limit);
 }

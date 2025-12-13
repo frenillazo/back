@@ -110,4 +110,20 @@ public class SessionRepositoryAdapter implements SessionRepositoryPort {
 
         return !sessionsOnDate.isEmpty();
     }
+
+    @Override
+    public List<Session> findUpcomingByGroupIds(List<Long> groupIds, LocalDate fromDate, int limit) {
+        if (groupIds == null || groupIds.isEmpty()) {
+            return List.of();
+        }
+
+        SessionFilters filters = SessionFilters.upcomingForGroups(groupIds, fromDate, limit);
+        Specification<SessionJpaEntity> spec = SessionSpecifications.withFilters(filters);
+
+        PageRequest pageRequest = PageRequest.of(0, limit, Sort.by("date", "startTime").ascending());
+
+        return jpaSessionRepository.findAll(spec, pageRequest)
+                .map(sessionPersistenceMapper::toDomain)
+                .getContent();
+    }
 }
