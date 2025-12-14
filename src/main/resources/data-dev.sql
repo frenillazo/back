@@ -1,0 +1,188 @@
+-- ===========================================
+-- Development Data for Frontend Testing
+-- ===========================================
+-- This file is loaded automatically in dev profile.
+-- Password for all users: "password"
+-- BCrypt hash: $2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG
+
+-- ===========================================
+-- 1. ROLES
+-- ===========================================
+INSERT INTO roles (id, type, description) VALUES
+(1, 'ADMIN', 'System administrator with full access'),
+(2, 'TEACHER', 'Teacher who can manage groups and sessions'),
+(3, 'STUDENT', 'Student who can enroll in groups');
+
+-- ===========================================
+-- 2. USERS (1 admin, 1 teacher, 40 students)
+-- ===========================================
+INSERT INTO users (id, email, password, first_name, last_name, status, created_at, updated_at) VALUES
+-- Admin
+(1, 'admin@acainfo.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Carlos', 'Admin', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+-- Teacher (not admin)
+(2, 'profesor@acainfo.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'María', 'García', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+-- Students (40)
+(3, 'alumno01@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Laura', 'Martínez', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(4, 'alumno02@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Pedro', 'López', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(5, 'alumno03@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Ana', 'Fernández', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(6, 'alumno04@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'David', 'Sánchez', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(7, 'alumno05@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Elena', 'Ruiz', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(8, 'alumno06@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Javier', 'Moreno', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(9, 'alumno07@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Lucía', 'Jiménez', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(10, 'alumno08@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Miguel', 'Álvarez', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(11, 'alumno09@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Carmen', 'Romero', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(12, 'alumno10@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Alberto', 'Torres', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(13, 'alumno11@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Sara', 'Navarro', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(14, 'alumno12@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Pablo', 'Domínguez', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(15, 'alumno13@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Marta', 'Vázquez', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(16, 'alumno14@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Sergio', 'Ramos', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(17, 'alumno15@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Paula', 'Molina', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(18, 'alumno16@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Raúl', 'Ortega', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(19, 'alumno17@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Cristina', 'Delgado', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(20, 'alumno18@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Adrián', 'Castro', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(21, 'alumno19@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Rocío', 'Rubio', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(22, 'alumno20@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Diego', 'Medina', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(23, 'alumno21@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Irene', 'Herrero', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(24, 'alumno22@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Álvaro', 'Guerrero', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(25, 'alumno23@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Natalia', 'Prieto', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(26, 'alumno24@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Iván', 'Blanco', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(27, 'alumno25@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Eva', 'Lorenzo', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(28, 'alumno26@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Marcos', 'Campos', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(29, 'alumno27@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Andrea', 'Vega', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(30, 'alumno28@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Hugo', 'Fuentes', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(31, 'alumno29@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Claudia', 'Carrasco', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(32, 'alumno30@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Óscar', 'Cortés', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(33, 'alumno31@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Silvia', 'Reyes', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(34, 'alumno32@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Daniel', 'León', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(35, 'alumno33@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Nerea', 'Márquez', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(36, 'alumno34@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Rubén', 'Peña', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(37, 'alumno35@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Patricia', 'Caballero', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(38, 'alumno36@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Manuel', 'Aguilar', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(39, 'alumno37@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Beatriz', 'Pastor', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(40, 'alumno38@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Fernando', 'Santos', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(41, 'alumno39@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Marina', 'Iglesias', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(42, 'alumno40@mail.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'Jorge', 'Giménez', 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- ===========================================
+-- 3. USER ROLES
+-- ===========================================
+INSERT INTO user_roles (user_id, role_id) VALUES
+-- Admin has ADMIN role
+(1, 1),
+-- Teacher has TEACHER role
+(2, 2),
+-- All students have STUDENT role
+(3, 3), (4, 3), (5, 3), (6, 3), (7, 3), (8, 3), (9, 3), (10, 3),
+(11, 3), (12, 3), (13, 3), (14, 3), (15, 3), (16, 3), (17, 3), (18, 3),
+(19, 3), (20, 3), (21, 3), (22, 3), (23, 3), (24, 3), (25, 3), (26, 3),
+(27, 3), (28, 3), (29, 3), (30, 3), (31, 3), (32, 3), (33, 3), (34, 3),
+(35, 3), (36, 3), (37, 3), (38, 3), (39, 3), (40, 3), (41, 3), (42, 3);
+
+-- ===========================================
+-- 4. SUBJECTS (2 informatica, 2 industrial)
+-- ===========================================
+INSERT INTO subjects (id, code, name, degree, status, current_group_count, created_at, updated_at) VALUES
+-- Informática: 1 con 1 grupo, 1 con 2 grupos
+(1, 'INF101', 'Programación I', 'INGENIERIA_INFORMATICA', 'ACTIVE', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 'INF201', 'Bases de Datos', 'INGENIERIA_INFORMATICA', 'ACTIVE', 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+-- Industrial: 1 con 1 grupo, 1 con 2 grupos
+(3, 'IND101', 'Termodinámica', 'INGENIERIA_INDUSTRIAL', 'ACTIVE', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(4, 'IND201', 'Resistencia de Materiales', 'INGENIERIA_INDUSTRIAL', 'ACTIVE', 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- ===========================================
+-- 5. SUBJECT GROUPS (6 grupos total)
+-- ===========================================
+-- Distribución: 40 alumnos / 6 grupos ≈ 6-7 alumnos por grupo
+INSERT INTO subject_groups (id, subject_id, teacher_id, type, status, current_enrollment_count, capacity, created_at, updated_at) VALUES
+-- INF101: 1 grupo (7 alumnos)
+(1, 1, 2, 'REGULAR_Q1', 'OPEN', 7, 24, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+-- INF201: 2 grupos (7 + 6 = 13 alumnos)
+(2, 2, 2, 'REGULAR_Q1', 'OPEN', 7, 24, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 2, 2, 'INTENSIVE_Q1', 'OPEN', 6, 50, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+-- IND101: 1 grupo (7 alumnos)
+(4, 3, 2, 'REGULAR_Q1', 'OPEN', 7, 24, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+-- IND201: 2 grupos (7 + 6 = 13 alumnos)
+(5, 4, 2, 'REGULAR_Q1', 'OPEN', 7, 24, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(6, 4, 2, 'INTENSIVE_Q1', 'OPEN', 6, 50, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- ===========================================
+-- 6. SCHEDULES (horarios para cada grupo)
+-- ===========================================
+INSERT INTO schedules (id, group_id, day_of_week, start_time, end_time, classroom, created_at, updated_at) VALUES
+-- Grupo 1 (INF101 Regular): Lunes y Miércoles 16:00-18:00
+(1, 1, 'MONDAY', '16:00:00', '18:00:00', 'AULA_PORTAL1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 1, 'WEDNESDAY', '16:00:00', '18:00:00', 'AULA_PORTAL1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+-- Grupo 2 (INF201 Regular): Martes y Jueves 16:00-18:00
+(3, 2, 'TUESDAY', '16:00:00', '18:00:00', 'AULA_PORTAL1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(4, 2, 'THURSDAY', '16:00:00', '18:00:00', 'AULA_PORTAL1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+-- Grupo 3 (INF201 Intensivo): Viernes 16:00-20:00 (dual)
+(5, 3, 'FRIDAY', '16:00:00', '20:00:00', 'AULA_VIRTUAL', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+-- Grupo 4 (IND101 Regular): Lunes y Miércoles 18:00-20:00
+(6, 4, 'MONDAY', '18:00:00', '20:00:00', 'AULA_PORTAL2', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(7, 4, 'WEDNESDAY', '18:00:00', '20:00:00', 'AULA_PORTAL2', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+-- Grupo 5 (IND201 Regular): Martes y Jueves 18:00-20:00
+(8, 5, 'TUESDAY', '18:00:00', '20:00:00', 'AULA_PORTAL2', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(9, 5, 'THURSDAY', '18:00:00', '20:00:00', 'AULA_PORTAL2', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+-- Grupo 6 (IND201 Intensivo): Sábado 10:00-14:00 (dual)
+(10, 6, 'SATURDAY', '10:00:00', '14:00:00', 'AULA_VIRTUAL', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- ===========================================
+-- 7. ENROLLMENTS (40 alumnos distribuidos)
+-- ===========================================
+-- Grupo 1 (INF101 Regular): alumnos 3-9 (7 alumnos)
+INSERT INTO enrollments (id, student_id, group_id, price_per_hour, status, enrolled_at, created_at, updated_at) VALUES
+(1, 3, 1, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 4, 1, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 5, 1, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(4, 6, 1, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(5, 7, 1, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(6, 8, 1, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(7, 9, 1, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+-- Grupo 2 (INF201 Regular): alumnos 10-16 (7 alumnos)
+(8, 10, 2, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(9, 11, 2, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(10, 12, 2, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(11, 13, 2, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(12, 14, 2, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(13, 15, 2, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(14, 16, 2, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+-- Grupo 3 (INF201 Intensivo): alumnos 17-22 (6 alumnos)
+(15, 17, 3, 12.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(16, 18, 3, 12.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(17, 19, 3, 12.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(18, 20, 3, 12.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(19, 21, 3, 12.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(20, 22, 3, 12.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+-- Grupo 4 (IND101 Regular): alumnos 23-29 (7 alumnos)
+(21, 23, 4, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(22, 24, 4, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(23, 25, 4, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(24, 26, 4, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(25, 27, 4, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(26, 28, 4, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(27, 29, 4, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+-- Grupo 5 (IND201 Regular): alumnos 30-36 (7 alumnos)
+(28, 30, 5, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(29, 31, 5, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(30, 32, 5, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(31, 33, 5, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(32, 34, 5, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(33, 35, 5, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(34, 36, 5, 15.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+-- Grupo 6 (IND201 Intensivo): alumnos 37-42 (6 alumnos)
+(35, 37, 6, 12.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(36, 38, 6, 12.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(37, 39, 6, 12.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(38, 40, 6, 12.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(39, 41, 6, 12.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(40, 42, 6, 12.00, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- ===========================================
+-- 8. RESET SEQUENCES (H2 specific)
+-- ===========================================
+ALTER TABLE roles ALTER COLUMN id RESTART WITH 4;
+ALTER TABLE users ALTER COLUMN id RESTART WITH 43;
+ALTER TABLE subjects ALTER COLUMN id RESTART WITH 5;
+ALTER TABLE subject_groups ALTER COLUMN id RESTART WITH 7;
+ALTER TABLE schedules ALTER COLUMN id RESTART WITH 11;
+ALTER TABLE enrollments ALTER COLUMN id RESTART WITH 41;
