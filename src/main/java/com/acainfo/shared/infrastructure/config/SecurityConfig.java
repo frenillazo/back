@@ -119,7 +119,8 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:3000",  // React default
                 "http://localhost:4200",  // Angular default
-                "http://localhost:8080"   // Same origin
+                "http://localhost:8080",   // Same origin
+                "http://localhost:5173"
         ));
 
         // Allowed HTTP methods
