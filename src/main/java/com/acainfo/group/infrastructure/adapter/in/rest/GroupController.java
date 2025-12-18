@@ -28,6 +28,9 @@ import org.springframework.web.bind.annotation.*;
  * Security:
  * - GET (all, by id): Authenticated users
  * - POST, PUT, DELETE: ADMIN only
+ *
+ * All responses are enriched with related entity data (subject name, teacher name, etc.)
+ * to reduce the number of API calls the frontend needs to make.
  */
 @RestController
 @RequestMapping("/api/groups")
@@ -40,6 +43,7 @@ public class GroupController {
     private final GetGroupUseCase getGroupUseCase;
     private final DeleteGroupUseCase deleteGroupUseCase;
     private final GroupRestMapper groupRestMapper;
+    private final GroupResponseEnricher groupResponseEnricher;
 
     /**
      * Create a new group.
@@ -55,7 +59,7 @@ public class GroupController {
                 request.getSubjectId(), request.getTeacherId(), request.getType());
 
         SubjectGroup createdGroup = createGroupUseCase.create(groupRestMapper.toCommand(request));
-        GroupResponse response = groupRestMapper.toResponse(createdGroup);
+        GroupResponse response = groupResponseEnricher.enrich(createdGroup);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -72,7 +76,7 @@ public class GroupController {
         log.debug("REST: Getting group by ID: {}", id);
 
         SubjectGroup group = getGroupUseCase.getById(id);
-        GroupResponse response = groupRestMapper.toResponse(group);
+        GroupResponse response = groupResponseEnricher.enrich(group);
 
         return ResponseEntity.ok(response);
     }
@@ -117,7 +121,7 @@ public class GroupController {
         );
 
         Page<SubjectGroup> groupsPage = getGroupUseCase.findWithFilters(filters);
-        Page<GroupResponse> responsePage = groupsPage.map(groupRestMapper::toResponse);
+        Page<GroupResponse> responsePage = groupResponseEnricher.enrichPage(groupsPage);
 
         return ResponseEntity.ok(responsePage);
     }
@@ -139,7 +143,7 @@ public class GroupController {
         log.info("REST: Updating group ID: {}", id);
 
         SubjectGroup updatedGroup = updateGroupUseCase.update(id, groupRestMapper.toCommand(request));
-        GroupResponse response = groupRestMapper.toResponse(updatedGroup);
+        GroupResponse response = groupResponseEnricher.enrich(updatedGroup);
 
         return ResponseEntity.ok(response);
     }
@@ -174,7 +178,7 @@ public class GroupController {
         log.info("REST: Cancelling group ID: {}", id);
 
         SubjectGroup cancelledGroup = deleteGroupUseCase.cancel(id);
-        GroupResponse response = groupRestMapper.toResponse(cancelledGroup);
+        GroupResponse response = groupResponseEnricher.enrich(cancelledGroup);
 
         return ResponseEntity.ok(response);
     }
