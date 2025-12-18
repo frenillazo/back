@@ -28,6 +28,9 @@ import java.util.List;
 
 /**
  * REST controller for Material operations.
+ *
+ * All responses are enriched with related entity data (subject name, uploader name, etc.)
+ * to reduce the number of API calls the frontend needs to make.
  */
 @RestController
 @RequestMapping("/api/materials")
@@ -39,6 +42,7 @@ public class MaterialController {
     private final DeleteMaterialUseCase deleteMaterialUseCase;
     private final GetMaterialUseCase getMaterialUseCase;
     private final MaterialRestMapper mapper;
+    private final MaterialResponseEnricher materialResponseEnricher;
 
     /**
      * Upload a material file.
@@ -62,7 +66,7 @@ public class MaterialController {
         );
 
         Material material = uploadMaterialUseCase.upload(command);
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toResponse(material));
+        return ResponseEntity.status(HttpStatus.CREATED).body(materialResponseEnricher.enrich(material));
     }
 
     /**
@@ -72,7 +76,7 @@ public class MaterialController {
     @GetMapping("/{id}")
     public ResponseEntity<MaterialResponse> getById(@PathVariable Long id) {
         Material material = getMaterialUseCase.getById(id);
-        return ResponseEntity.ok(mapper.toResponse(material));
+        return ResponseEntity.ok(materialResponseEnricher.enrich(material));
     }
 
     /**
@@ -124,7 +128,7 @@ public class MaterialController {
         );
 
         PageResponse<Material> result = getMaterialUseCase.findWithFilters(filters);
-        List<MaterialResponse> content = mapper.toResponseList(result.content());
+        List<MaterialResponse> content = materialResponseEnricher.enrichList(result.content());
 
         return ResponseEntity.ok(new PageResponse<>(
                 content,
@@ -143,7 +147,7 @@ public class MaterialController {
     @GetMapping("/subject/{subjectId}")
     public ResponseEntity<List<MaterialResponse>> getBySubjectId(@PathVariable Long subjectId) {
         List<Material> materials = getMaterialUseCase.getBySubjectId(subjectId);
-        return ResponseEntity.ok(mapper.toResponseList(materials));
+        return ResponseEntity.ok(materialResponseEnricher.enrichList(materials));
     }
 
     /**
