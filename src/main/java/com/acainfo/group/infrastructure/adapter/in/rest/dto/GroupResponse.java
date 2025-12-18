@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 /**
  * REST DTO for group response.
  * Response body for GET /api/groups
+ *
+ * Enriched with related entity data to reduce frontend API calls.
  */
 @Getter
 @Setter
@@ -28,6 +30,11 @@ public class GroupResponse {
     private Integer capacity;
     private Integer availableSeats;
     private Integer maxCapacity;
+
+    // Enriched data from related entities
+    private String subjectName;
+    private String subjectCode;
+    private String teacherName;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
