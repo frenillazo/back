@@ -14,6 +14,8 @@ import java.time.LocalTime;
 /**
  * REST DTO for session response.
  * Response body for GET /api/sessions
+ *
+ * Enriched with related entity data to reduce frontend API calls.
  */
 @Getter
 @Setter
@@ -28,6 +30,12 @@ public class SessionResponse {
     private Long groupId;
     private Long scheduleId;
     private Classroom classroom;
+
+    // Enriched data from related entities
+    private String subjectName;
+    private String subjectCode;
+    private String groupType;
+    private String teacherName;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
