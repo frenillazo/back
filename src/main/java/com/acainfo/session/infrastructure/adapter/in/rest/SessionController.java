@@ -32,6 +32,9 @@ import java.util.List;
  * Security:
  * - GET: Authenticated users
  * - POST, PUT, DELETE: ADMIN or TEACHER
+ *
+ * All responses are enriched with related entity data (subject name, group type, teacher name, etc.)
+ * to reduce the number of API calls the frontend needs to make.
  */
 @RestController
 @RequestMapping("/api/sessions")
@@ -44,6 +47,7 @@ public class SessionController {
     private final UpdateSessionUseCase updateSessionUseCase;
     private final DeleteSessionUseCase deleteSessionUseCase;
     private final SessionRestMapper sessionRestMapper;
+    private final SessionResponseEnricher sessionResponseEnricher;
 
     /**
      * Create a new session.
@@ -56,7 +60,7 @@ public class SessionController {
                 request.getType(), request.getGroupId(), request.getDate());
 
         Session createdSession = createSessionUseCase.create(sessionRestMapper.toCommand(request));
-        SessionResponse response = sessionRestMapper.toResponse(createdSession);
+        SessionResponse response = sessionResponseEnricher.enrich(createdSession);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -70,7 +74,7 @@ public class SessionController {
         log.debug("REST: Getting session by ID: {}", id);
 
         Session session = getSessionUseCase.getById(id);
-        SessionResponse response = sessionRestMapper.toResponse(session);
+        SessionResponse response = sessionResponseEnricher.enrich(session);
 
         return ResponseEntity.ok(response);
     }
@@ -103,7 +107,7 @@ public class SessionController {
         );
 
         Page<Session> sessionsPage = getSessionUseCase.findWithFilters(filters);
-        Page<SessionResponse> responsePage = sessionsPage.map(sessionRestMapper::toResponse);
+        Page<SessionResponse> responsePage = sessionResponseEnricher.enrichPage(sessionsPage);
 
         return ResponseEntity.ok(responsePage);
     }
@@ -117,7 +121,7 @@ public class SessionController {
         log.debug("REST: Getting sessions for group: {}", groupId);
 
         List<Session> sessions = getSessionUseCase.findByGroupId(groupId);
-        List<SessionResponse> responses = sessionRestMapper.toResponseList(sessions);
+        List<SessionResponse> responses = sessionResponseEnricher.enrichList(sessions);
 
         return ResponseEntity.ok(responses);
     }
@@ -131,7 +135,7 @@ public class SessionController {
         log.debug("REST: Getting sessions for subject: {}", subjectId);
 
         List<Session> sessions = getSessionUseCase.findBySubjectId(subjectId);
-        List<SessionResponse> responses = sessionRestMapper.toResponseList(sessions);
+        List<SessionResponse> responses = sessionResponseEnricher.enrichList(sessions);
 
         return ResponseEntity.ok(responses);
     }
@@ -145,7 +149,7 @@ public class SessionController {
         log.debug("REST: Getting sessions for schedule: {}", scheduleId);
 
         List<Session> sessions = getSessionUseCase.findByScheduleId(scheduleId);
-        List<SessionResponse> responses = sessionRestMapper.toResponseList(sessions);
+        List<SessionResponse> responses = sessionResponseEnricher.enrichList(sessions);
 
         return ResponseEntity.ok(responses);
     }
@@ -163,7 +167,7 @@ public class SessionController {
         log.info("REST: Updating session ID: {}", id);
 
         Session updatedSession = updateSessionUseCase.update(id, sessionRestMapper.toCommand(request));
-        SessionResponse response = sessionRestMapper.toResponse(updatedSession);
+        SessionResponse response = sessionResponseEnricher.enrich(updatedSession);
 
         return ResponseEntity.ok(response);
     }
