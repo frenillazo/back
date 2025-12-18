@@ -27,8 +27,12 @@ public interface GroupRestMapper {
     UpdateGroupCommand toCommand(UpdateGroupRequest request);
 
     /**
-     * Convert SubjectGroup (Domain) to GroupResponse (REST).
+     * Convert SubjectGroup (Domain) to GroupResponse (REST) without enriched data.
+     * Use toEnrichedResponse for enriched responses.
      */
+    @Mapping(target = "subjectName", ignore = true)
+    @Mapping(target = "subjectCode", ignore = true)
+    @Mapping(target = "teacherName", ignore = true)
     @Mapping(target = "availableSeats", expression = "java(group.getAvailableSeats())")
     @Mapping(target = "maxCapacity", expression = "java(group.getMaxCapacity())")
     @Mapping(target = "isOpen", expression = "java(group.isOpen())")
@@ -36,4 +40,38 @@ public interface GroupRestMapper {
     @Mapping(target = "isIntensive", expression = "java(group.isIntensive())")
     @Mapping(target = "isRegular", expression = "java(group.isRegular())")
     GroupResponse toResponse(SubjectGroup group);
+
+    /**
+     * Convert SubjectGroup (Domain) to GroupResponse (REST) with enriched data.
+     *
+     * @param group       the group domain object
+     * @param subjectName name of the subject
+     * @param subjectCode code of the subject
+     * @param teacherName full name of the teacher
+     * @return enriched group response
+     */
+    @Mapping(target = "subjectName", source = "subjectName")
+    @Mapping(target = "subjectCode", source = "subjectCode")
+    @Mapping(target = "teacherName", source = "teacherName")
+    @Mapping(target = "id", source = "group.id")
+    @Mapping(target = "subjectId", source = "group.subjectId")
+    @Mapping(target = "teacherId", source = "group.teacherId")
+    @Mapping(target = "type", source = "group.type")
+    @Mapping(target = "status", source = "group.status")
+    @Mapping(target = "currentEnrollmentCount", source = "group.currentEnrollmentCount")
+    @Mapping(target = "capacity", source = "group.capacity")
+    @Mapping(target = "createdAt", source = "group.createdAt")
+    @Mapping(target = "updatedAt", source = "group.updatedAt")
+    @Mapping(target = "availableSeats", expression = "java(group.getAvailableSeats())")
+    @Mapping(target = "maxCapacity", expression = "java(group.getMaxCapacity())")
+    @Mapping(target = "isOpen", expression = "java(group.isOpen())")
+    @Mapping(target = "canEnroll", expression = "java(group.canEnroll())")
+    @Mapping(target = "isIntensive", expression = "java(group.isIntensive())")
+    @Mapping(target = "isRegular", expression = "java(group.isRegular())")
+    GroupResponse toEnrichedResponse(
+            SubjectGroup group,
+            String subjectName,
+            String subjectCode,
+            String teacherName
+    );
 }
