@@ -31,6 +31,9 @@ import java.util.List;
  * - POST (enroll): STUDENT or ADMIN
  * - DELETE (withdraw): Owner student or ADMIN
  * - PUT (change-group): Owner student or ADMIN
+ *
+ * All responses are enriched with related entity data (student name, subject name, etc.)
+ * to reduce the number of API calls the frontend needs to make.
  */
 @RestController
 @RequestMapping("/api/enrollments")
@@ -43,6 +46,7 @@ public class EnrollmentController {
     private final ChangeGroupUseCase changeGroupUseCase;
     private final GetEnrollmentUseCase getEnrollmentUseCase;
     private final EnrollmentRestMapper enrollmentRestMapper;
+    private final EnrollmentResponseEnricher enrollmentResponseEnricher;
 
     /**
      * Enroll a student in a group.
@@ -54,7 +58,7 @@ public class EnrollmentController {
         log.info("REST: Enrolling student {} in group {}", request.getStudentId(), request.getGroupId());
 
         Enrollment enrollment = enrollStudentUseCase.enroll(enrollmentRestMapper.toCommand(request));
-        EnrollmentResponse response = enrollmentRestMapper.toResponse(enrollment);
+        EnrollmentResponse response = enrollmentResponseEnricher.enrich(enrollment);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -68,7 +72,7 @@ public class EnrollmentController {
         log.debug("REST: Getting enrollment by ID: {}", id);
 
         Enrollment enrollment = getEnrollmentUseCase.getById(id);
-        EnrollmentResponse response = enrollmentRestMapper.toResponse(enrollment);
+        EnrollmentResponse response = enrollmentResponseEnricher.enrich(enrollment);
 
         return ResponseEntity.ok(response);
     }
@@ -95,7 +99,7 @@ public class EnrollmentController {
         );
 
         Page<Enrollment> enrollmentsPage = getEnrollmentUseCase.findWithFilters(filters);
-        Page<EnrollmentResponse> responsePage = enrollmentsPage.map(enrollmentRestMapper::toResponse);
+        Page<EnrollmentResponse> responsePage = enrollmentResponseEnricher.enrichPage(enrollmentsPage);
 
         return ResponseEntity.ok(responsePage);
     }
@@ -109,7 +113,7 @@ public class EnrollmentController {
         log.debug("REST: Getting active enrollments for student: {}", studentId);
 
         List<Enrollment> enrollments = getEnrollmentUseCase.findActiveByStudentId(studentId);
-        List<EnrollmentResponse> responses = enrollmentRestMapper.toResponseList(enrollments);
+        List<EnrollmentResponse> responses = enrollmentResponseEnricher.enrichList(enrollments);
 
         return ResponseEntity.ok(responses);
     }
@@ -123,7 +127,7 @@ public class EnrollmentController {
         log.debug("REST: Getting active enrollments for group: {}", groupId);
 
         List<Enrollment> enrollments = getEnrollmentUseCase.findActiveByGroupId(groupId);
-        List<EnrollmentResponse> responses = enrollmentRestMapper.toResponseList(enrollments);
+        List<EnrollmentResponse> responses = enrollmentResponseEnricher.enrichList(enrollments);
 
         return ResponseEntity.ok(responses);
     }
@@ -138,7 +142,7 @@ public class EnrollmentController {
         log.info("REST: Withdrawing enrollment: {}", id);
 
         Enrollment enrollment = withdrawEnrollmentUseCase.withdraw(id);
-        EnrollmentResponse response = enrollmentRestMapper.toResponse(enrollment);
+        EnrollmentResponse response = enrollmentResponseEnricher.enrich(enrollment);
 
         return ResponseEntity.ok(response);
     }
@@ -156,7 +160,7 @@ public class EnrollmentController {
         log.info("REST: Changing group for enrollment {} to group {}", id, request.getNewGroupId());
 
         Enrollment enrollment = changeGroupUseCase.changeGroup(enrollmentRestMapper.toCommand(id, request));
-        EnrollmentResponse response = enrollmentRestMapper.toResponse(enrollment);
+        EnrollmentResponse response = enrollmentResponseEnricher.enrich(enrollment);
 
         return ResponseEntity.ok(response);
     }
