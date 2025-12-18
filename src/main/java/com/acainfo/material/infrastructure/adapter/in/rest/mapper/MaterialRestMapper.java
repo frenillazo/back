@@ -14,10 +14,47 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface MaterialRestMapper {
 
+    /**
+     * Convert Material (Domain) to MaterialResponse (REST) without enriched data.
+     * Use toEnrichedResponse for enriched responses.
+     */
+    @Mapping(target = "subjectName", ignore = true)
+    @Mapping(target = "uploadedByName", ignore = true)
     @Mapping(target = "fileSizeFormatted", expression = "java(material.getFileSizeFormatted())")
     @Mapping(target = "isCodeFile", expression = "java(material.isCodeFile())")
     @Mapping(target = "isDocumentFile", expression = "java(material.isDocumentFile())")
     MaterialResponse toResponse(Material material);
+
+    /**
+     * Convert Material (Domain) to MaterialResponse (REST) with enriched data.
+     *
+     * @param material       the material domain object
+     * @param subjectName    name of the subject
+     * @param uploadedByName full name of the user who uploaded
+     * @return enriched material response
+     */
+    @Mapping(target = "subjectName", source = "subjectName")
+    @Mapping(target = "uploadedByName", source = "uploadedByName")
+    @Mapping(target = "id", source = "material.id")
+    @Mapping(target = "subjectId", source = "material.subjectId")
+    @Mapping(target = "uploadedById", source = "material.uploadedById")
+    @Mapping(target = "name", source = "material.name")
+    @Mapping(target = "description", source = "material.description")
+    @Mapping(target = "originalFilename", source = "material.originalFilename")
+    @Mapping(target = "fileExtension", source = "material.fileExtension")
+    @Mapping(target = "mimeType", source = "material.mimeType")
+    @Mapping(target = "fileSize", source = "material.fileSize")
+    @Mapping(target = "uploadedAt", source = "material.uploadedAt")
+    @Mapping(target = "createdAt", source = "material.createdAt")
+    @Mapping(target = "updatedAt", source = "material.updatedAt")
+    @Mapping(target = "fileSizeFormatted", expression = "java(material.getFileSizeFormatted())")
+    @Mapping(target = "isCodeFile", expression = "java(material.isCodeFile())")
+    @Mapping(target = "isDocumentFile", expression = "java(material.isDocumentFile())")
+    MaterialResponse toEnrichedResponse(
+            Material material,
+            String subjectName,
+            String uploadedByName
+    );
 
     List<MaterialResponse> toResponseList(List<Material> materials);
 }
