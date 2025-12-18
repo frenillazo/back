@@ -20,6 +20,9 @@ import java.util.List;
 /**
  * REST controller for Payment operations.
  * Handles payment queries and student-facing operations.
+ *
+ * All responses are enriched with related entity data (student name, subject name, etc.)
+ * to reduce the number of API calls the frontend needs to make.
  */
 @RestController
 @RequestMapping("/api/payments")
@@ -30,6 +33,7 @@ public class PaymentController {
     private final MarkPaymentPaidUseCase markPaymentPaidUseCase;
     private final CheckPaymentStatusUseCase checkPaymentStatusUseCase;
     private final PaymentRestMapper mapper;
+    private final PaymentResponseEnricher paymentResponseEnricher;
 
     /**
      * Get payment by ID.
@@ -37,7 +41,7 @@ public class PaymentController {
     @GetMapping("/{id}")
     public ResponseEntity<PaymentResponse> getById(@PathVariable Long id) {
         Payment payment = getPaymentUseCase.getById(id);
-        return ResponseEntity.ok(mapper.toResponse(payment));
+        return ResponseEntity.ok(paymentResponseEnricher.enrich(payment));
     }
 
     /**
@@ -64,7 +68,7 @@ public class PaymentController {
         );
 
         PageResponse<Payment> result = getPaymentUseCase.findWithFilters(filters);
-        List<PaymentResponse> content = mapper.toResponseList(result.content());
+        List<PaymentResponse> content = paymentResponseEnricher.enrichList(result.content());
 
         return ResponseEntity.ok(new PageResponse<>(
                 content,
@@ -83,7 +87,7 @@ public class PaymentController {
     @GetMapping("/student/{studentId}")
     public ResponseEntity<List<PaymentResponse>> getByStudentId(@PathVariable Long studentId) {
         List<Payment> payments = getPaymentUseCase.getByStudentId(studentId);
-        return ResponseEntity.ok(mapper.toResponseList(payments));
+        return ResponseEntity.ok(paymentResponseEnricher.enrichList(payments));
     }
 
     /**
@@ -92,7 +96,7 @@ public class PaymentController {
     @GetMapping("/enrollment/{enrollmentId}")
     public ResponseEntity<List<PaymentResponse>> getByEnrollmentId(@PathVariable Long enrollmentId) {
         List<Payment> payments = getPaymentUseCase.getByEnrollmentId(enrollmentId);
-        return ResponseEntity.ok(mapper.toResponseList(payments));
+        return ResponseEntity.ok(paymentResponseEnricher.enrichList(payments));
     }
 
     /**
@@ -101,7 +105,7 @@ public class PaymentController {
     @GetMapping("/student/{studentId}/pending")
     public ResponseEntity<List<PaymentResponse>> getPendingByStudentId(@PathVariable Long studentId) {
         List<Payment> payments = getPaymentUseCase.getPendingByStudentId(studentId);
-        return ResponseEntity.ok(mapper.toResponseList(payments));
+        return ResponseEntity.ok(paymentResponseEnricher.enrichList(payments));
     }
 
     /**
@@ -110,7 +114,7 @@ public class PaymentController {
     @GetMapping("/student/{studentId}/overdue")
     public ResponseEntity<List<PaymentResponse>> getOverdueByStudentId(@PathVariable Long studentId) {
         List<Payment> payments = getPaymentUseCase.getOverdueByStudentId(studentId);
-        return ResponseEntity.ok(mapper.toResponseList(payments));
+        return ResponseEntity.ok(paymentResponseEnricher.enrichList(payments));
     }
 
     /**
@@ -136,7 +140,7 @@ public class PaymentController {
         Payment payment = markPaymentPaidUseCase.markAsPaid(
                 mapper.toCommand(id, request != null ? request : new MarkPaymentPaidRequest(null))
         );
-        return ResponseEntity.ok(mapper.toResponse(payment));
+        return ResponseEntity.ok(paymentResponseEnricher.enrich(payment));
     }
 
     /**
