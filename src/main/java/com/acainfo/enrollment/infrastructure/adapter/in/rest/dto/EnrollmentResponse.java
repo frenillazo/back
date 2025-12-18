@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 /**
  * REST DTO for enrollment response.
  * Response body for GET /api/enrollments
+ *
+ * Enriched with related entity data to reduce frontend API calls.
  */
 @Getter
 @Setter
@@ -22,6 +24,13 @@ public class EnrollmentResponse {
     private Long groupId;
     private EnrollmentStatus status;
     private Integer waitingListPosition;
+
+    // Enriched data from related entities
+    private String studentName;
+    private String subjectName;
+    private String subjectCode;
+    private String groupType;
+    private String teacherName;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime enrolledAt;
