@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 
 /**
  * REST response DTO for Payment.
+ *
+ * Enriched with related entity data to reduce frontend API calls.
  */
 public record PaymentResponse(
         Long id,
@@ -28,6 +30,10 @@ public record PaymentResponse(
         boolean isOverdue,
         Long daysOverdue,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        // Enriched data from related entities
+        String studentName,
+        String subjectName,
+        String subjectCode
 ) {
 }
