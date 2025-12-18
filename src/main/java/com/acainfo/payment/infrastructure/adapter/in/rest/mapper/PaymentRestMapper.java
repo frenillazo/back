@@ -35,9 +35,53 @@ public interface PaymentRestMapper {
 
     // ==================== Domain to Response ====================
 
+    /**
+     * Convert Payment (Domain) to PaymentResponse (REST) without enriched data.
+     * Use toEnrichedResponse for enriched responses.
+     */
+    @Mapping(target = "studentName", ignore = true)
+    @Mapping(target = "subjectName", ignore = true)
+    @Mapping(target = "subjectCode", ignore = true)
     @Mapping(target = "isOverdue", expression = "java(payment.isOverdue())")
     @Mapping(target = "daysOverdue", expression = "java(payment.getDaysOverdue())")
     PaymentResponse toResponse(Payment payment);
+
+    /**
+     * Convert Payment (Domain) to PaymentResponse (REST) with enriched data.
+     *
+     * @param payment     the payment domain object
+     * @param studentName full name of the student
+     * @param subjectName name of the subject
+     * @param subjectCode code of the subject
+     * @return enriched payment response
+     */
+    @Mapping(target = "studentName", source = "studentName")
+    @Mapping(target = "subjectName", source = "subjectName")
+    @Mapping(target = "subjectCode", source = "subjectCode")
+    @Mapping(target = "id", source = "payment.id")
+    @Mapping(target = "enrollmentId", source = "payment.enrollmentId")
+    @Mapping(target = "studentId", source = "payment.studentId")
+    @Mapping(target = "type", source = "payment.type")
+    @Mapping(target = "status", source = "payment.status")
+    @Mapping(target = "amount", source = "payment.amount")
+    @Mapping(target = "totalHours", source = "payment.totalHours")
+    @Mapping(target = "pricePerHour", source = "payment.pricePerHour")
+    @Mapping(target = "billingMonth", source = "payment.billingMonth")
+    @Mapping(target = "billingYear", source = "payment.billingYear")
+    @Mapping(target = "generatedAt", source = "payment.generatedAt")
+    @Mapping(target = "dueDate", source = "payment.dueDate")
+    @Mapping(target = "paidAt", source = "payment.paidAt")
+    @Mapping(target = "description", source = "payment.description")
+    @Mapping(target = "createdAt", source = "payment.createdAt")
+    @Mapping(target = "updatedAt", source = "payment.updatedAt")
+    @Mapping(target = "isOverdue", expression = "java(payment.isOverdue())")
+    @Mapping(target = "daysOverdue", expression = "java(payment.getDaysOverdue())")
+    PaymentResponse toEnrichedResponse(
+            Payment payment,
+            String studentName,
+            String subjectName,
+            String subjectCode
+    );
 
     List<PaymentResponse> toResponseList(List<Payment> payments);
 }
