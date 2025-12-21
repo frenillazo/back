@@ -8,6 +8,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -57,6 +58,9 @@ public class SubjectGroupJpaEntity {
 
     @Column(name = "capacity")
     private Integer capacity;  // Nullable: null = use default based on type
+
+    @Column(name = "price_per_hour", precision = 10, scale = 2)
+    private BigDecimal pricePerHour;  // Nullable: null = use default price
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

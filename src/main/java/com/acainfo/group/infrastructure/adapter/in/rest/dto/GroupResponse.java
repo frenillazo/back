@@ -5,6 +5,7 @@ import com.acainfo.group.domain.model.GroupType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -30,6 +31,7 @@ public class GroupResponse {
     private Integer capacity;
     private Integer availableSeats;
     private Integer maxCapacity;
+    private BigDecimal pricePerHour;
 
     // Enriched data from related entities
     private String subjectName;

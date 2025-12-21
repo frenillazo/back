@@ -93,17 +93,17 @@ INSERT INTO subjects (id, code, name, degree, status, current_group_count, creat
 -- 5. SUBJECT GROUPS (6 grupos total)
 -- ===========================================
 -- Distribución: 40 alumnos / 6 grupos ≈ 6-7 alumnos por grupo
-INSERT INTO subject_groups (id, subject_id, teacher_id, type, status, current_enrollment_count, capacity, created_at, updated_at) VALUES
+INSERT INTO subject_groups (id, subject_id, teacher_id, type, status, current_enrollment_count, capacity, price_per_hour, created_at, updated_at) VALUES
 -- INF101: 1 grupo (7 alumnos)
-(1, 1, 2, 'REGULAR_Q1', 'OPEN', 7, 24, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 1, 2, 'REGULAR_Q1', 'OPEN', 7, 24, 15.00, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 -- INF201: 2 grupos (7 + 6 = 13 alumnos)
-(2, 2, 2, 'REGULAR_Q1', 'OPEN', 7, 24, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 2, 2, 'INTENSIVE_Q1', 'OPEN', 6, 50, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 2, 2, 'REGULAR_Q1', 'OPEN', 7, 24, 15.00, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 2, 2, 'INTENSIVE_Q1', 'OPEN', 6, 50, 12.00, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 -- IND101: 1 grupo (7 alumnos)
-(4, 3, 2, 'REGULAR_Q1', 'OPEN', 7, 24, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(4, 3, 2, 'REGULAR_Q1', 'OPEN', 7, 24, 15.00, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 -- IND201: 2 grupos (7 + 6 = 13 alumnos)
-(5, 4, 2, 'REGULAR_Q1', 'OPEN', 7, 24, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(6, 4, 2, 'INTENSIVE_Q1', 'OPEN', 6, 50, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(5, 4, 2, 'REGULAR_Q1', 'OPEN', 7, 24, 15.00, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(6, 4, 2, 'INTENSIVE_Q1', 'OPEN', 6, 50, 12.00, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- ===========================================
 -- 6. SCHEDULES (horarios para cada grupo)

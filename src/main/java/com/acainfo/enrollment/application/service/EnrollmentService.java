@@ -23,6 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -63,30 +64,36 @@ public class EnrollmentService implements
         long activeCount = enrollmentRepositoryPort.countActiveByGroupId(command.groupId());
         boolean hasAvailableSeats = activeCount < group.getMaxCapacity();
 
+        // Get the price per hour from the group (uses default if not set)
+        BigDecimal pricePerHour = group.getEffectivePricePerHour();
+
         Enrollment enrollment;
         if (hasAvailableSeats) {
             // Direct enrollment as ACTIVE
             enrollment = Enrollment.builder()
                     .studentId(command.studentId())
                     .groupId(command.groupId())
+                    .pricePerHour(pricePerHour)
                     .status(EnrollmentStatus.ACTIVE)
                     .enrolledAt(LocalDateTime.now())
                     .build();
 
-            log.info("Student {} enrolled as ACTIVE in group {}", command.studentId(), command.groupId());
+            log.info("Student {} enrolled as ACTIVE in group {} at {}€/hour",
+                    command.studentId(), command.groupId(), pricePerHour);
         } else {
             // Add to waiting list
             int position = enrollmentRepositoryPort.getNextWaitingListPosition(command.groupId());
             enrollment = Enrollment.builder()
                     .studentId(command.studentId())
                     .groupId(command.groupId())
+                    .pricePerHour(pricePerHour)
                     .status(EnrollmentStatus.WAITING_LIST)
                     .waitingListPosition(position)
                     .enrolledAt(LocalDateTime.now())
                     .build();
 
-            log.info("Student {} added to waiting list for group {} at position {}",
-                    command.studentId(), command.groupId(), position);
+            log.info("Student {} added to waiting list for group {} at position {} at {}€/hour",
+                    command.studentId(), command.groupId(), position, pricePerHour);
         }
 
         return enrollmentRepositoryPort.save(enrollment);

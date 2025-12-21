@@ -82,7 +82,8 @@ public class GroupService implements
                 .type(command.type())
                 .status(GroupStatus.OPEN)
                 .currentEnrollmentCount(0)
-                .capacity(command.capacity())  // null = use default
+                .capacity(command.capacity())        // null = use default
+                .pricePerHour(command.pricePerHour()) // null = use default (15€/hour)
                 .build();
 
         SubjectGroup savedGroup = groupRepositoryPort.save(group);

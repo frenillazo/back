@@ -2,6 +2,7 @@ package com.acainfo.group.domain.model;
 
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -21,11 +22,15 @@ public class SubjectGroup {
     public static final int REGULAR_MAX_CAPACITY = 24;
     public static final int INTENSIVE_MAX_CAPACITY = 50;
 
+    // Default price per hour (€/hour)
+    public static final BigDecimal DEFAULT_PRICE_PER_HOUR = new BigDecimal("15.00");
+
     private Long id;
     private Long subjectId;                      // Reference to Subject
     private Long teacherId;                      // Reference to User (teacher)
     private GroupType type;                      // REGULAR_Q1, INTENSIVE_Q1, etc.
     private GroupStatus status;                  // OPEN, CLOSED, CANCELLED
+    private BigDecimal pricePerHour;             // Price per hour for this group (€/hour)
 
     @Builder.Default
     private Integer currentEnrollmentCount = 0;  // Current enrolled students
@@ -134,5 +139,15 @@ public class SubjectGroup {
      */
     public String getDisplayName() {
         return "Subject " + subjectId + " - " + type;
+    }
+
+    /**
+     * Get the effective price per hour for this group.
+     * Returns the configured price or the default if not set.
+     *
+     * @return Price per hour in euros
+     */
+    public BigDecimal getEffectivePricePerHour() {
+        return pricePerHour != null ? pricePerHour : DEFAULT_PRICE_PER_HOUR;
     }
 }

@@ -161,7 +161,8 @@ public class GroupRequestService implements
                 groupRequest.getSubjectId(),
                 null, // teacherId will be assigned later by admin
                 groupRequest.getRequestedGroupType(),
-                null  // default capacity
+                null,  // default capacity
+                null
         );
 
         SubjectGroup createdGroup = createGroupUseCase.create(createGroupCommand);
