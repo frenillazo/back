@@ -59,4 +59,13 @@ public interface GroupRepositoryPort {
      * @return List of groups found
      */
     List<SubjectGroup> findByIds(List<Long> ids);
+
+    /**
+     * Count active groups (OPEN or CLOSED) for a teacher.
+     * Used to validate teacher deletion.
+     *
+     * @param teacherId Teacher ID
+     * @return Count of active groups
+     */
+    long countActiveGroupsByTeacherId(Long teacherId);
 }

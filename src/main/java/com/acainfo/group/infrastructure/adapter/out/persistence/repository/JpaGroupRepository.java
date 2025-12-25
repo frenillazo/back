@@ -1,9 +1,12 @@
 package com.acainfo.group.infrastructure.adapter.out.persistence.repository;
 
+import com.acainfo.group.domain.model.GroupStatus;
 import com.acainfo.group.infrastructure.adapter.out.persistence.entity.SubjectGroupJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * Spring Data JPA repository for SubjectGroupJpaEntity.
@@ -13,4 +16,10 @@ import org.springframework.stereotype.Repository;
 public interface JpaGroupRepository extends
         JpaRepository<SubjectGroupJpaEntity, Long>,
         JpaSpecificationExecutor<SubjectGroupJpaEntity> {
+
+    /**
+     * Count groups by teacher ID and status in the given list.
+     * Used to check if a teacher has active groups before deletion.
+     */
+    long countByTeacherIdAndStatusIn(Long teacherId, List<GroupStatus> statuses);
 }

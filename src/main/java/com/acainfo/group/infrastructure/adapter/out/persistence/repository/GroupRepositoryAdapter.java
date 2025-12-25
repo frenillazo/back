@@ -2,6 +2,7 @@ package com.acainfo.group.infrastructure.adapter.out.persistence.repository;
 
 import com.acainfo.group.application.dto.GroupFilters;
 import com.acainfo.group.application.port.out.GroupRepositoryPort;
+import com.acainfo.group.domain.model.GroupStatus;
 import com.acainfo.group.domain.model.SubjectGroup;
 import com.acainfo.group.infrastructure.adapter.out.persistence.entity.SubjectGroupJpaEntity;
 import com.acainfo.group.infrastructure.adapter.out.persistence.specification.GroupSpecifications;
@@ -78,5 +79,13 @@ public class GroupRepositoryAdapter implements GroupRepositoryPort {
         return jpaGroupRepository.findAllById(ids).stream()
                 .map(groupPersistenceMapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public long countActiveGroupsByTeacherId(Long teacherId) {
+        return jpaGroupRepository.countByTeacherIdAndStatusIn(
+                teacherId,
+                List.of(GroupStatus.OPEN, GroupStatus.CLOSED)
+        );
     }
 }

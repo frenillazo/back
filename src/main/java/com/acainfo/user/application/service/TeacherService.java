@@ -1,5 +1,6 @@
 package com.acainfo.user.application.service;
 
+import com.acainfo.group.application.port.out.GroupRepositoryPort;
 import com.acainfo.user.application.dto.CreateTeacherCommand;
 import com.acainfo.user.application.dto.UpdateTeacherCommand;
 import com.acainfo.user.application.dto.UserFilters;
@@ -7,6 +8,7 @@ import com.acainfo.user.application.port.in.ManageTeachersUseCase;
 import com.acainfo.user.application.port.out.RoleRepositoryPort;
 import com.acainfo.user.application.port.out.UserRepositoryPort;
 import com.acainfo.user.domain.exception.DuplicateEmailException;
+import com.acainfo.user.domain.exception.TeacherHasActiveGroupsException;
 import com.acainfo.user.domain.exception.UserNotFoundException;
 import com.acainfo.user.domain.model.Role;
 import com.acainfo.user.domain.model.RoleType;
@@ -32,6 +34,7 @@ public class TeacherService implements ManageTeachersUseCase {
 
     private final UserRepositoryPort userRepositoryPort;
     private final RoleRepositoryPort roleRepositoryPort;
+    private final GroupRepositoryPort groupRepositoryPort;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -108,6 +111,12 @@ public class TeacherService implements ManageTeachersUseCase {
         // Validate that user is actually a teacher
         if (!teacher.isTeacher()) {
             throw new IllegalArgumentException("User is not a teacher");
+        }
+
+        // Check if teacher has active groups (OPEN or CLOSED)
+        long activeGroupsCount = groupRepositoryPort.countActiveGroupsByTeacherId(teacherId);
+        if (activeGroupsCount > 0) {
+            throw new TeacherHasActiveGroupsException(teacherId, activeGroupsCount);
         }
 
         // Soft delete: change status to BLOCKED
