@@ -68,4 +68,13 @@ public interface GroupRepositoryPort {
      * @return Count of active groups
      */
     long countActiveGroupsByTeacherId(Long teacherId);
+
+    /**
+     * Count active groups (OPEN or CLOSED) for a subject.
+     * Used to validate subject archiving.
+     *
+     * @param subjectId Subject ID
+     * @return Count of active groups
+     */
+    long countActiveGroupsBySubjectId(Long subjectId);
 }

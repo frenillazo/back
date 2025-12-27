@@ -22,4 +22,10 @@ public interface JpaGroupRepository extends
      * Used to check if a teacher has active groups before deletion.
      */
     long countByTeacherIdAndStatusIn(Long teacherId, List<GroupStatus> statuses);
+
+    /**
+     * Count groups by subject ID and status in the given list.
+     * Used to check if a subject has active groups before archiving.
+     */
+    long countBySubjectIdAndStatusIn(Long subjectId, List<GroupStatus> statuses);
 }

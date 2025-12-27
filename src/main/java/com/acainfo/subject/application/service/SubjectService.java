@@ -1,5 +1,6 @@
 package com.acainfo.subject.application.service;
 
+import com.acainfo.group.application.port.out.GroupRepositoryPort;
 import com.acainfo.subject.application.dto.CreateSubjectCommand;
 import com.acainfo.subject.application.dto.SubjectFilters;
 import com.acainfo.subject.application.dto.UpdateSubjectCommand;
@@ -10,6 +11,7 @@ import com.acainfo.subject.application.port.in.UpdateSubjectUseCase;
 import com.acainfo.subject.application.port.out.SubjectRepositoryPort;
 import com.acainfo.subject.domain.exception.DuplicateSubjectCodeException;
 import com.acainfo.subject.domain.exception.InvalidSubjectDataException;
+import com.acainfo.subject.domain.exception.SubjectHasActiveGroupsException;
 import com.acainfo.subject.domain.exception.SubjectNotFoundException;
 import com.acainfo.subject.domain.model.Subject;
 import com.acainfo.subject.domain.model.SubjectStatus;
@@ -33,6 +35,7 @@ public class SubjectService implements
         DeleteSubjectUseCase {
 
     private final SubjectRepositoryPort subjectRepositoryPort;
+    private final GroupRepositoryPort groupRepositoryPort;
 
     // Business rules constants
     private static final String CODE_PATTERN = "^[A-Z]{3}\\d{3}$";
@@ -148,6 +151,13 @@ public class SubjectService implements
         log.info("Archiving subject with ID: {}", id);
 
         Subject subject = getById(id);
+
+        // Check if subject has active groups (OPEN or CLOSED)
+        long activeGroupsCount = groupRepositoryPort.countActiveGroupsBySubjectId(id);
+        if (activeGroupsCount > 0) {
+            throw new SubjectHasActiveGroupsException(id, activeGroupsCount);
+        }
+
         subject.setStatus(SubjectStatus.ARCHIVED);
         Subject archivedSubject = subjectRepositoryPort.save(subject);
 

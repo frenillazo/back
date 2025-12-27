@@ -8,6 +8,7 @@ import com.acainfo.schedule.application.port.in.UpdateScheduleUseCase;
 import com.acainfo.schedule.domain.model.Classroom;
 import com.acainfo.schedule.domain.model.Schedule;
 import com.acainfo.schedule.infrastructure.adapter.in.rest.dto.CreateScheduleRequest;
+import com.acainfo.schedule.infrastructure.adapter.in.rest.dto.ScheduleEnrichedResponse;
 import com.acainfo.schedule.infrastructure.adapter.in.rest.dto.ScheduleResponse;
 import com.acainfo.schedule.infrastructure.adapter.in.rest.dto.UpdateScheduleRequest;
 import com.acainfo.schedule.infrastructure.mapper.ScheduleRestMapper;
@@ -42,6 +43,7 @@ public class ScheduleController {
     private final GetScheduleUseCase getScheduleUseCase;
     private final DeleteScheduleUseCase deleteScheduleUseCase;
     private final ScheduleRestMapper scheduleRestMapper;
+    private final ScheduleResponseEnricher scheduleResponseEnricher;
 
     /**
      * Create a new schedule.
@@ -178,5 +180,48 @@ public class ScheduleController {
         deleteScheduleUseCase.delete(id);
 
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Get enriched schedules with filters (pagination + sorting + filtering).
+     * Includes group, subject, and teacher information.
+     * GET /api/schedules/enriched?groupId=1&classroom=AULA_PORTAL1&dayOfWeek=MONDAY&page=0&size=100
+     *
+     * @param groupId Filter by group ID (optional)
+     * @param classroom Filter by classroom (optional)
+     * @param dayOfWeek Filter by day of week (optional)
+     * @param page Page number (default 0)
+     * @param size Page size (default 100 for global view)
+     * @param sortBy Sort field (default "dayOfWeek")
+     * @param sortDirection Sort direction (default "ASC")
+     * @return Page of ScheduleEnrichedResponse with 200 OK
+     */
+    @GetMapping("/enriched")
+    public ResponseEntity<Page<ScheduleEnrichedResponse>> getEnrichedSchedulesWithFilters(
+            @RequestParam(required = false) Long groupId,
+            @RequestParam(required = false) Classroom classroom,
+            @RequestParam(required = false) DayOfWeek dayOfWeek,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int size,
+            @RequestParam(defaultValue = "dayOfWeek") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDirection
+    ) {
+        log.debug("REST: Getting enriched schedules with filters - groupId: {}, classroom: {}, dayOfWeek: {}",
+                groupId, classroom, dayOfWeek);
+
+        ScheduleFilters filters = new ScheduleFilters(
+                groupId,
+                classroom,
+                dayOfWeek,
+                page,
+                size,
+                sortBy,
+                sortDirection
+        );
+
+        Page<Schedule> schedulesPage = getScheduleUseCase.findWithFilters(filters);
+        Page<ScheduleEnrichedResponse> responsePage = scheduleResponseEnricher.enrichPage(schedulesPage);
+
+        return ResponseEntity.ok(responsePage);
     }
 }
