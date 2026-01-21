@@ -95,7 +95,7 @@ public class AuthService implements
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthenticationResult authenticate(AuthenticationCommand command) {
         log.info("Authenticating user: {}", command.email());
 
