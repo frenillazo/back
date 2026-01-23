@@ -2,13 +2,18 @@ package com.acainfo.user.infrastructure.adapter.in.rest;
 
 import com.acainfo.user.application.dto.UserFilters;
 import com.acainfo.user.application.port.in.GetUserProfileUseCase;
+import com.acainfo.user.application.port.in.ManageUserRolesUseCase;
 import com.acainfo.user.domain.model.RoleType;
 import com.acainfo.user.domain.model.User;
 import com.acainfo.user.domain.model.UserStatus;
+import com.acainfo.user.infrastructure.adapter.in.rest.dto.AssignRoleRequest;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.MessageResponse;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.PageResponse;
+import com.acainfo.user.infrastructure.adapter.in.rest.dto.RevokeRoleRequest;
+import com.acainfo.user.infrastructure.adapter.in.rest.dto.UpdateUserStatusRequest;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.UserResponse;
 import com.acainfo.user.infrastructure.mapper.UserRestMapper;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -39,6 +44,7 @@ import com.acainfo.user.application.port.out.UserRepositoryPort;
 public class AdminController {
 
     private final GetUserProfileUseCase getUserProfileUseCase;
+    private final ManageUserRolesUseCase manageUserRolesUseCase;
     private final UserRepositoryPort userRepositoryPort;
     private final UserRestMapper userRestMapper;
 
@@ -166,6 +172,118 @@ public class AdminController {
         log.info("Get user by email request: {}", email);
 
         User user = getUserProfileUseCase.getUserByEmail(email);
+        UserResponse response = userRestMapper.toUserResponse(user);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/users/{id}/roles/assign")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Assign role to user",
+            description = "Assigns a role (ADMIN, TEACHER) to a user (ADMIN only)"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Role assigned successfully",
+                    content = @Content(schema = @Schema(implementation = UserResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "User already has the role",
+                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Access denied - ADMIN role required",
+                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
+            )
+    })
+    public ResponseEntity<UserResponse> assignRole(
+            @Parameter(description = "User ID") @PathVariable Long id,
+            @Valid @RequestBody AssignRoleRequest request) {
+        log.info("Assign role {} to user {}", request.roleType(), id);
+
+        User user = manageUserRolesUseCase.assignRole(id, request.roleType());
+        UserResponse response = userRestMapper.toUserResponse(user);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/users/{id}/roles/revoke")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Revoke role from user",
+            description = "Revokes a role (ADMIN, TEACHER) from a user (ADMIN only)"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Role revoked successfully",
+                    content = @Content(schema = @Schema(implementation = UserResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "User doesn't have the role or cannot remove last role",
+                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Access denied - ADMIN role required",
+                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
+            )
+    })
+    public ResponseEntity<UserResponse> revokeRole(
+            @Parameter(description = "User ID") @PathVariable Long id,
+            @Valid @RequestBody RevokeRoleRequest request) {
+        log.info("Revoke role {} from user {}", request.roleType(), id);
+
+        User user = manageUserRolesUseCase.revokeRole(id, request.roleType());
+        UserResponse response = userRestMapper.toUserResponse(user);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/users/{id}/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Update user status",
+            description = "Updates user status (ACTIVE, BLOCKED) (ADMIN only)"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Status updated successfully",
+                    content = @Content(schema = @Schema(implementation = UserResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found",
+                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Access denied - ADMIN role required",
+                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
+            )
+    })
+    public ResponseEntity<UserResponse> updateUserStatus(
+            @Parameter(description = "User ID") @PathVariable Long id,
+            @Valid @RequestBody UpdateUserStatusRequest request) {
+        log.info("Update status for user {} to {}", id, request.status());
+
+        User user = manageUserRolesUseCase.updateStatus(id, request.status());
         UserResponse response = userRestMapper.toUserResponse(user);
 
         return ResponseEntity.ok(response);
