@@ -1,5 +1,6 @@
 package com.acainfo.material.infrastructure.adapter.out.persistence.entity;
 
+import com.acainfo.material.domain.model.MaterialCategory;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -19,7 +20,8 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_material_subject_id", columnList = "subject_id"),
                 @Index(name = "idx_material_uploaded_by", columnList = "uploaded_by_id"),
                 @Index(name = "idx_material_file_extension", columnList = "file_extension"),
-                @Index(name = "idx_material_uploaded_at", columnList = "uploaded_at")
+                @Index(name = "idx_material_uploaded_at", columnList = "uploaded_at"),
+                @Index(name = "idx_material_category", columnList = "subject_id, category")
         }
 )
 @EntityListeners(AuditingEntityListener.class)
@@ -45,6 +47,11 @@ public class MaterialJpaEntity {
 
     @Column(name = "description", length = 1000)
     private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category", length = 50, nullable = false)
+    @Builder.Default
+    private MaterialCategory category = MaterialCategory.OTROS;
 
     @Column(name = "original_filename", nullable = false, length = 255)
     private String originalFilename;

@@ -62,7 +62,8 @@ public class MaterialController {
                 file.getOriginalFilename(),
                 file.getContentType(),
                 file.getSize(),
-                file.getInputStream()
+                file.getInputStream(),
+                request.getCategoryOrDefault()
         );
 
         Material material = uploadMaterialUseCase.upload(command);

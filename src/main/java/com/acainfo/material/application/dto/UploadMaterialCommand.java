@@ -1,5 +1,6 @@
 package com.acainfo.material.application.dto;
 
+import com.acainfo.material.domain.model.MaterialCategory;
 import java.io.InputStream;
 
 /**
@@ -13,6 +14,7 @@ import java.io.InputStream;
  * @param mimeType MIME type of the file
  * @param fileSize File size in bytes
  * @param content File content as InputStream
+ * @param category Material category (defaults to OTROS if not provided)
  */
 public record UploadMaterialCommand(
         Long subjectId,
@@ -22,6 +24,7 @@ public record UploadMaterialCommand(
         String originalFilename,
         String mimeType,
         Long fileSize,
-        InputStream content
+        InputStream content,
+        MaterialCategory category
 ) {
 }

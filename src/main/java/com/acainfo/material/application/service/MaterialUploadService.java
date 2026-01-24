@@ -32,7 +32,8 @@ public class MaterialUploadService implements UploadMaterialUseCase, DeleteMater
 
     @Override
     public Material upload(UploadMaterialCommand command) {
-        log.debug("Uploading material '{}' for subject {}", command.name(), command.subjectId());
+        log.debug("Uploading material '{}' for subject {} with category {}",
+                command.name(), command.subjectId(), command.category());
 
         // 1. Validate file type
         String extension = AllowedFileTypes.extractExtension(command.originalFilename());
@@ -44,7 +45,7 @@ public class MaterialUploadService implements UploadMaterialUseCase, DeleteMater
         String storedFilename = UUID.randomUUID() + "." + extension;
 
         // 3. Store file
-        String storagePath = fileStorage.store(command.content(), storedFilename, command.subjectId());
+        String storagePath = fileStorage.store(command.content(), storedFilename, command.subjectId(), command.category());
 
         // 4. Create and save material metadata
         Material material = Material.builder()
@@ -58,11 +59,13 @@ public class MaterialUploadService implements UploadMaterialUseCase, DeleteMater
                 .mimeType(command.mimeType())
                 .fileSize(command.fileSize())
                 .storagePath(storagePath)
+                .category(command.category())
                 .uploadedAt(LocalDateTime.now())
                 .build();
 
         Material saved = materialRepository.save(material);
-        log.info("Material uploaded: id={}, name='{}', subject={}", saved.getId(), saved.getName(), saved.getSubjectId());
+        log.info("Material uploaded: id={}, name='{}', subject={}, category={}",
+                saved.getId(), saved.getName(), saved.getSubjectId(), saved.getCategory());
 
         return saved;
     }

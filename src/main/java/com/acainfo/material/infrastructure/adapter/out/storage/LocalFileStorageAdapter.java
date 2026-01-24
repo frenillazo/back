@@ -2,6 +2,9 @@ package com.acainfo.material.infrastructure.adapter.out.storage;
 
 import com.acainfo.material.application.port.out.FileStoragePort;
 import com.acainfo.material.domain.exception.FileStorageException;
+import com.acainfo.material.domain.model.MaterialCategory;
+import com.acainfo.subject.application.port.out.SubjectRepositoryPort;
+import com.acainfo.subject.domain.model.Subject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -21,19 +24,24 @@ import java.nio.file.StandardCopyOption;
  * <pre>
  * {base-path}/
  *   └── subjects/
- *       └── {subjectId}/
- *           └── {storedFilename}
+ *       └── {subjectCode-subjectName}/
+ *           └── {categoryFolder}/
+ *               └── {storedFilename}
  * </pre>
+ * <p>Example: subjects/ing101-programacion-i/teoria/uuid.pdf</p>
  */
 @Slf4j
 @Component
 public class LocalFileStorageAdapter implements FileStoragePort {
 
     private final Path basePath;
+    private final SubjectRepositoryPort subjectRepository;
 
     public LocalFileStorageAdapter(
-            @Value("${app.storage.local.base-path:./storage/materials}") String basePath) {
+            @Value("${app.storage.local.base-path:./storage/materials}") String basePath,
+            SubjectRepositoryPort subjectRepository) {
         this.basePath = Paths.get(basePath).toAbsolutePath().normalize();
+        this.subjectRepository = subjectRepository;
         initializeStorage();
     }
 
@@ -47,10 +55,19 @@ public class LocalFileStorageAdapter implements FileStoragePort {
     }
 
     @Override
-    public String store(InputStream content, String storedFilename, Long subjectId) {
+    public String store(InputStream content, String storedFilename, Long subjectId, MaterialCategory category) {
         try {
-            // Create subject directory if not exists
-            Path subjectDir = basePath.resolve("subjects").resolve(String.valueOf(subjectId));
+            // Get subject information
+            Subject subject = subjectRepository.findById(subjectId)
+                    .orElseThrow(() -> new FileStorageException("Subject not found with id: " + subjectId));
+
+            // Build folder structure: subjects/{subjectCode-subjectName}/{categoryFolder}/
+            String subjectFolderName = sanitizeFolderName(subject.getCode() + "-" + subject.getName());
+            String categoryFolderName = category.getFolderName();
+
+            Path subjectDir = basePath.resolve("subjects")
+                    .resolve(subjectFolderName)
+                    .resolve(categoryFolderName);
             Files.createDirectories(subjectDir);
 
             // Store file
@@ -58,7 +75,7 @@ public class LocalFileStorageAdapter implements FileStoragePort {
             Files.copy(content, targetPath, StandardCopyOption.REPLACE_EXISTING);
 
             // Return relative path
-            String storagePath = "subjects/" + subjectId + "/" + storedFilename;
+            String storagePath = "subjects/" + subjectFolderName + "/" + categoryFolderName + "/" + storedFilename;
             log.debug("File stored at: {}", storagePath);
 
             return storagePath;
@@ -102,5 +119,20 @@ public class LocalFileStorageAdapter implements FileStoragePort {
     public boolean exists(String storagePath) {
         Path filePath = basePath.resolve(storagePath);
         return Files.exists(filePath);
+    }
+
+    /**
+     * Sanitizes folder names for safe filesystem usage.
+     * Removes special characters, replaces spaces with hyphens, and converts to lowercase.
+     *
+     * @param name Original folder name
+     * @return Sanitized folder name
+     */
+    private String sanitizeFolderName(String name) {
+        return name
+                .replaceAll("[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\\s-]", "")
+                .replaceAll("\\s+", "-")
+                .replaceAll("-+", "-")
+                .toLowerCase();
     }
 }

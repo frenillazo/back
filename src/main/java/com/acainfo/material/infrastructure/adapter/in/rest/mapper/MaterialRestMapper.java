@@ -23,6 +23,7 @@ public interface MaterialRestMapper {
     @Mapping(target = "fileSizeFormatted", expression = "java(material.getFileSizeFormatted())")
     @Mapping(target = "isCodeFile", expression = "java(material.isCodeFile())")
     @Mapping(target = "isDocumentFile", expression = "java(material.isDocumentFile())")
+    @Mapping(target = "categoryDisplayName", expression = "java(material.getCategoryDisplayName())")
     MaterialResponse toResponse(Material material);
 
     /**
@@ -44,12 +45,14 @@ public interface MaterialRestMapper {
     @Mapping(target = "fileExtension", source = "material.fileExtension")
     @Mapping(target = "mimeType", source = "material.mimeType")
     @Mapping(target = "fileSize", source = "material.fileSize")
+    @Mapping(target = "category", source = "material.category")
     @Mapping(target = "uploadedAt", source = "material.uploadedAt")
     @Mapping(target = "createdAt", source = "material.createdAt")
     @Mapping(target = "updatedAt", source = "material.updatedAt")
     @Mapping(target = "fileSizeFormatted", expression = "java(material.getFileSizeFormatted())")
     @Mapping(target = "isCodeFile", expression = "java(material.isCodeFile())")
     @Mapping(target = "isDocumentFile", expression = "java(material.isDocumentFile())")
+    @Mapping(target = "categoryDisplayName", expression = "java(material.getCategoryDisplayName())")
     MaterialResponse toEnrichedResponse(
             Material material,
             String subjectName,

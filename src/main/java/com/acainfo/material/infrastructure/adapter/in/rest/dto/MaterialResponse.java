@@ -1,5 +1,6 @@
 package com.acainfo.material.infrastructure.adapter.in.rest.dto;
 
+import com.acainfo.material.domain.model.MaterialCategory;
 import java.time.LocalDateTime;
 
 /**
@@ -20,6 +21,8 @@ public record MaterialResponse(
         String fileSizeFormatted,
         boolean isCodeFile,
         boolean isDocumentFile,
+        MaterialCategory category,
+        String categoryDisplayName,
         LocalDateTime uploadedAt,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,

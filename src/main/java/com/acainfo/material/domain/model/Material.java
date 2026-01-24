@@ -49,6 +49,12 @@ public class Material {
     private String description;
 
     /**
+     * Category for organizing materials (e.g., TEORIA, EJERCICIOS).
+     */
+    @Builder.Default
+    private MaterialCategory category = MaterialCategory.OTROS;
+
+    /**
      * Original filename as uploaded.
      */
     private String originalFilename;
@@ -115,5 +121,26 @@ public class Material {
                         fileExtension.equals("docx") ||
                         fileExtension.equals("txt") ||
                         fileExtension.equals("md"));
+    }
+
+    /**
+     * Get category display name.
+     */
+    public String getCategoryDisplayName() {
+        return category != null ? category.getDisplayName() : MaterialCategory.OTROS.getDisplayName();
+    }
+
+    /**
+     * Get category folder name for storage.
+     */
+    public String getCategoryFolderName() {
+        return category != null ? category.getFolderName() : MaterialCategory.OTROS.getFolderName();
+    }
+
+    /**
+     * Check if this material is in the default category.
+     */
+    public boolean isInDefaultCategory() {
+        return category == null || category == MaterialCategory.OTROS;
     }
 }

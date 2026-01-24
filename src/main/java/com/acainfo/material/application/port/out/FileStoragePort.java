@@ -1,5 +1,7 @@
 package com.acainfo.material.application.port.out;
 
+import com.acainfo.material.domain.model.MaterialCategory;
+
 import java.io.InputStream;
 
 /**
@@ -20,10 +22,11 @@ public interface FileStoragePort {
      * @param content File content as InputStream
      * @param storedFilename UUID-based filename to store
      * @param subjectId Subject ID for organizing files
+     * @param category Material category for organizing files
      * @return Storage path relative to base directory
      * @throws com.acainfo.material.domain.exception.FileStorageException if storage fails
      */
-    String store(InputStream content, String storedFilename, Long subjectId);
+    String store(InputStream content, String storedFilename, Long subjectId, MaterialCategory category);
 
     /**
      * Retrieve file content.
