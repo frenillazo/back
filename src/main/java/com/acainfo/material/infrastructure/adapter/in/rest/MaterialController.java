@@ -11,6 +11,7 @@ import com.acainfo.material.domain.model.Material;
 import com.acainfo.material.infrastructure.adapter.in.rest.dto.MaterialResponse;
 import com.acainfo.material.infrastructure.adapter.in.rest.dto.UploadMaterialRequest;
 import com.acainfo.material.infrastructure.adapter.in.rest.mapper.MaterialRestMapper;
+import com.acainfo.security.userdetails.CustomUserDetails;
 import com.acainfo.shared.application.dto.PageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -49,11 +52,13 @@ public class MaterialController {
      * Requires ADMIN or TEACHER role.
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<MaterialResponse> upload(
             @Valid @RequestPart("metadata") UploadMaterialRequest request,
             @RequestPart("file") MultipartFile file,
-            @RequestHeader("X-User-Id") Long userId // TODO: Replace with security context
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) throws IOException {
+        Long userId = userDetails.getUserId();
         UploadMaterialCommand command = new UploadMaterialCommand(
                 request.subjectId(),
                 userId,
@@ -85,10 +90,12 @@ public class MaterialController {
      * Requires proper access (admin/teacher or student with enrollment + payments ok).
      */
     @GetMapping("/{id}/download")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Resource> download(
             @PathVariable Long id,
-            @RequestHeader("X-User-Id") Long userId // TODO: Replace with security context
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        Long userId = userDetails.getUserId();
         MaterialDownload download = downloadMaterialUseCase.download(id, userId);
 
         return ResponseEntity.ok()
@@ -104,6 +111,7 @@ public class MaterialController {
      * Requires ADMIN or TEACHER role.
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         deleteMaterialUseCase.delete(id);
         return ResponseEntity.noContent().build();
@@ -155,10 +163,12 @@ public class MaterialController {
      * Check if current user can download a material.
      */
     @GetMapping("/{id}/can-download")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<CanDownloadResponse> canDownload(
             @PathVariable Long id,
-            @RequestHeader("X-User-Id") Long userId // TODO: Replace with security context
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        Long userId = userDetails.getUserId();
         boolean canDownload = getMaterialUseCase.canDownload(id, userId);
         return ResponseEntity.ok(new CanDownloadResponse(canDownload));
     }

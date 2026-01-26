@@ -135,8 +135,10 @@ public class ReservationController {
     /**
      * Get reservations for a student.
      * GET /api/reservations/student/{studentId}
+     * Students can only see their own reservations; admins can see any.
      */
     @GetMapping("/student/{studentId}")
+    @PreAuthorize("hasRole('ADMIN') or #studentId == authentication.principal.userId")
     public ResponseEntity<List<ReservationResponse>> getByStudentId(@PathVariable Long studentId) {
         log.debug("REST: Getting reservations for student: {}", studentId);
 

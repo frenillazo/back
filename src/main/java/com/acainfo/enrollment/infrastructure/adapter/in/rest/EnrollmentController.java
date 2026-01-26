@@ -107,8 +107,10 @@ public class EnrollmentController {
     /**
      * Get active enrollments for a student.
      * GET /api/enrollments/student/{studentId}
+     * Students can only see their own enrollments; admins can see any.
      */
     @GetMapping("/student/{studentId}")
+    @PreAuthorize("hasRole('ADMIN') or #studentId == authentication.principal.userId")
     public ResponseEntity<List<EnrollmentResponse>> getActiveEnrollmentsByStudent(@PathVariable Long studentId) {
         log.debug("REST: Getting active enrollments for student: {}", studentId);
 

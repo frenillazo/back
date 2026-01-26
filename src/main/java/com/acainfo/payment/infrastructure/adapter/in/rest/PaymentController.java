@@ -13,6 +13,7 @@ import com.acainfo.payment.infrastructure.adapter.in.rest.mapper.PaymentRestMapp
 import com.acainfo.shared.application.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -83,8 +84,10 @@ public class PaymentController {
 
     /**
      * Get payments for a student.
+     * Students can only see their own payments; admins can see any.
      */
     @GetMapping("/student/{studentId}")
+    @PreAuthorize("hasRole('ADMIN') or #studentId == authentication.principal.userId")
     public ResponseEntity<List<PaymentResponse>> getByStudentId(@PathVariable Long studentId) {
         List<Payment> payments = getPaymentUseCase.getByStudentId(studentId);
         return ResponseEntity.ok(paymentResponseEnricher.enrichList(payments));
@@ -101,8 +104,10 @@ public class PaymentController {
 
     /**
      * Get pending payments for a student.
+     * Students can only see their own payments; admins can see any.
      */
     @GetMapping("/student/{studentId}/pending")
+    @PreAuthorize("hasRole('ADMIN') or #studentId == authentication.principal.userId")
     public ResponseEntity<List<PaymentResponse>> getPendingByStudentId(@PathVariable Long studentId) {
         List<Payment> payments = getPaymentUseCase.getPendingByStudentId(studentId);
         return ResponseEntity.ok(paymentResponseEnricher.enrichList(payments));
@@ -110,8 +115,10 @@ public class PaymentController {
 
     /**
      * Get overdue payments for a student.
+     * Students can only see their own payments; admins can see any.
      */
     @GetMapping("/student/{studentId}/overdue")
+    @PreAuthorize("hasRole('ADMIN') or #studentId == authentication.principal.userId")
     public ResponseEntity<List<PaymentResponse>> getOverdueByStudentId(@PathVariable Long studentId) {
         List<Payment> payments = getPaymentUseCase.getOverdueByStudentId(studentId);
         return ResponseEntity.ok(paymentResponseEnricher.enrichList(payments));
@@ -119,8 +126,10 @@ public class PaymentController {
 
     /**
      * Check if student can access resources (no overdue payments).
+     * Students can only check their own access; admins can check any.
      */
     @GetMapping("/student/{studentId}/access")
+    @PreAuthorize("hasRole('ADMIN') or #studentId == authentication.principal.userId")
     public ResponseEntity<AccessStatusResponse> checkAccessStatus(@PathVariable Long studentId) {
         boolean canAccess = checkPaymentStatusUseCase.canAccessResources(studentId);
         boolean hasOverdue = checkPaymentStatusUseCase.hasOverduePayments(studentId);

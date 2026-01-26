@@ -2,6 +2,7 @@ package com.acainfo.shared.infrastructure.config;
 
 import com.acainfo.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,6 +20,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,6 +41,14 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    /**
+     * Whether to enable Swagger UI publicly.
+     * Set to false in production to restrict API documentation access.
+     * Default: true (for development)
+     */
+    @Value("${app.swagger.enabled:true}")
+    private boolean swaggerEnabled;
 
     /**
      * Password encoder using BCrypt hashing algorithm.
@@ -84,20 +94,27 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 // Authorization rules
-                .authorizeHttpRequests(auth -> auth
-                        // Public endpoints (authentication)
-                        .requestMatchers(
+                .authorizeHttpRequests(auth -> {
+                        // Build list of public endpoints
+                        List<String> publicEndpoints = new ArrayList<>(List.of(
                                 "/api/auth/**",
                                 "/api/public/**",
-                                "/actuator/health",
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html"
-                        ).permitAll()
+                                "/actuator/health"
+                        ));
+
+                        // Only expose Swagger publicly if enabled (typically in dev)
+                        if (swaggerEnabled) {
+                            publicEndpoints.add("/v3/api-docs/**");
+                            publicEndpoints.add("/swagger-ui/**");
+                            publicEndpoints.add("/swagger-ui.html");
+                        }
+
+                        // Public endpoints (authentication)
+                        auth.requestMatchers(publicEndpoints.toArray(new String[0])).permitAll();
 
                         // All other endpoints require authentication
-                        .anyRequest().authenticated()
-                )
+                        auth.anyRequest().authenticated();
+                })
 
                 // Add JWT authentication filter before UsernamePasswordAuthenticationFilter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
