@@ -45,6 +45,7 @@ public class GroupRequestController {
     private final ProcessGroupRequestUseCase processGroupRequestUseCase;
     private final GetGroupRequestUseCase getGroupRequestUseCase;
     private final GroupRequestRestMapper groupRequestRestMapper;
+    private final GroupRequestResponseEnricher groupRequestResponseEnricher;
 
     /**
      * Create a new group request.
@@ -59,7 +60,7 @@ public class GroupRequestController {
                 request.getSubjectId(), request.getRequesterId());
 
         GroupRequest groupRequest = createGroupRequestUseCase.create(groupRequestRestMapper.toCommand(request));
-        GroupRequestResponse response = groupRequestRestMapper.toResponse(groupRequest);
+        GroupRequestResponse response = groupRequestResponseEnricher.enrich(groupRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -73,7 +74,7 @@ public class GroupRequestController {
         log.debug("REST: Getting group request by ID: {}", id);
 
         GroupRequest groupRequest = getGroupRequestUseCase.getById(id);
-        GroupRequestResponse response = groupRequestRestMapper.toResponse(groupRequest);
+        GroupRequestResponse response = groupRequestResponseEnricher.enrich(groupRequest);
 
         return ResponseEntity.ok(response);
     }
@@ -102,7 +103,7 @@ public class GroupRequestController {
         );
 
         Page<GroupRequest> requestsPage = getGroupRequestUseCase.findWithFilters(filters);
-        Page<GroupRequestResponse> responsePage = requestsPage.map(groupRequestRestMapper::toResponse);
+        Page<GroupRequestResponse> responsePage = groupRequestResponseEnricher.enrichPage(requestsPage);
 
         return ResponseEntity.ok(responsePage);
     }
@@ -133,7 +134,7 @@ public class GroupRequestController {
         log.info("REST: Adding supporter {} to group request {}", request.getStudentId(), id);
 
         GroupRequest groupRequest = supportGroupRequestUseCase.addSupporter(id, request.getStudentId());
-        GroupRequestResponse response = groupRequestRestMapper.toResponse(groupRequest);
+        GroupRequestResponse response = groupRequestResponseEnricher.enrich(groupRequest);
 
         return ResponseEntity.ok(response);
     }
@@ -151,7 +152,7 @@ public class GroupRequestController {
         log.info("REST: Removing supporter {} from group request {}", studentId, id);
 
         GroupRequest groupRequest = supportGroupRequestUseCase.removeSupporter(id, studentId);
-        GroupRequestResponse response = groupRequestRestMapper.toResponse(groupRequest);
+        GroupRequestResponse response = groupRequestResponseEnricher.enrich(groupRequest);
 
         return ResponseEntity.ok(response);
     }
@@ -171,7 +172,7 @@ public class GroupRequestController {
         GroupRequest groupRequest = processGroupRequestUseCase.approve(
                 groupRequestRestMapper.toCommand(id, request)
         );
-        GroupRequestResponse response = groupRequestRestMapper.toResponse(groupRequest);
+        GroupRequestResponse response = groupRequestResponseEnricher.enrich(groupRequest);
 
         return ResponseEntity.ok(response);
     }
@@ -191,7 +192,7 @@ public class GroupRequestController {
         GroupRequest groupRequest = processGroupRequestUseCase.reject(
                 groupRequestRestMapper.toCommand(id, request)
         );
-        GroupRequestResponse response = groupRequestRestMapper.toResponse(groupRequest);
+        GroupRequestResponse response = groupRequestResponseEnricher.enrich(groupRequest);
 
         return ResponseEntity.ok(response);
     }

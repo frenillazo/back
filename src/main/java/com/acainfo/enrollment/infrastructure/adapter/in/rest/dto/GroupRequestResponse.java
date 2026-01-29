@@ -21,7 +21,10 @@ public class GroupRequestResponse {
 
     private Long id;
     private Long subjectId;
+    private String subjectName;
+    private String subjectDegree;
     private Long requesterId;
+    private String requesterName;
     private GroupType requestedGroupType;
     private GroupRequestStatus status;
     private Set<Long> supporterIds;
