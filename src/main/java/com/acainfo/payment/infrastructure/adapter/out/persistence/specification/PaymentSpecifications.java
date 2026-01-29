@@ -29,6 +29,19 @@ public final class PaymentSpecifications {
     }
 
     /**
+     * Filter by list of student IDs (for email search).
+     */
+    public static Specification<PaymentJpaEntity> hasStudentIdIn(List<Long> studentIds) {
+        return (root, query, cb) -> {
+            if (studentIds == null || studentIds.isEmpty()) {
+                // Return a predicate that matches nothing
+                return cb.disjunction();
+            }
+            return root.get("studentId").in(studentIds);
+        };
+    }
+
+    /**
      * Filter by enrollment ID.
      */
     public static Specification<PaymentJpaEntity> hasEnrollmentId(Long enrollmentId) {

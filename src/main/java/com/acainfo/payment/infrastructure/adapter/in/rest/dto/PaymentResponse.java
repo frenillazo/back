@@ -33,6 +33,7 @@ public record PaymentResponse(
         LocalDateTime updatedAt,
         // Enriched data from related entities
         String studentName,
+        String studentEmail,
         String subjectName,
         String subjectCode
 ) {

@@ -63,6 +63,19 @@ public class EnrollmentSpecifications {
     }
 
     /**
+     * Filter by list of student IDs (for email search).
+     */
+    public static Specification<EnrollmentJpaEntity> hasStudentIdIn(List<Long> studentIds) {
+        return (root, query, criteriaBuilder) -> {
+            if (studentIds == null || studentIds.isEmpty()) {
+                // Return a predicate that matches nothing
+                return criteriaBuilder.disjunction();
+            }
+            return root.get("studentId").in(studentIds);
+        };
+    }
+
+    /**
      * Specification to find enrollments by groupId.
      */
     public static Specification<EnrollmentJpaEntity> hasGroupId(Long groupId) {

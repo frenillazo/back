@@ -8,6 +8,8 @@ import com.acainfo.user.domain.exception.InvalidCredentialsException;
 import com.acainfo.user.domain.exception.UserNotFoundException;
 import com.acainfo.user.domain.model.User;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -88,5 +90,15 @@ public class UserService implements
         userRepositoryPort.save(user);
 
         log.info("Password changed successfully for user: {}", user.getEmail());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Long> findIdsByEmailContaining(String emailSearch) {
+        if (emailSearch == null || emailSearch.isBlank()) {
+            return List.of();
+        }
+        log.debug("Finding user IDs by email containing: {}", emailSearch);
+        return userRepositoryPort.findIdsByEmailContaining(emailSearch);
     }
 }

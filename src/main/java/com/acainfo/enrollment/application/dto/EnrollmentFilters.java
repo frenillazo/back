@@ -8,6 +8,7 @@ import com.acainfo.enrollment.domain.model.EnrollmentStatus;
  */
 public record EnrollmentFilters(
         Long studentId,
+        String studentEmail,
         Long groupId,
         EnrollmentStatus status,
         Integer page,

@@ -7,14 +7,17 @@ import com.acainfo.enrollment.domain.model.EnrollmentStatus;
 import com.acainfo.enrollment.infrastructure.adapter.out.persistence.entity.EnrollmentJpaEntity;
 import com.acainfo.enrollment.infrastructure.adapter.out.persistence.specification.EnrollmentSpecifications;
 import com.acainfo.enrollment.infrastructure.mapper.EnrollmentPersistenceMapper;
+import com.acainfo.user.application.port.in.GetUserProfileUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +31,7 @@ public class EnrollmentRepositoryAdapter implements EnrollmentRepositoryPort {
 
     private final JpaEnrollmentRepository jpaEnrollmentRepository;
     private final EnrollmentPersistenceMapper enrollmentPersistenceMapper;
+    private final GetUserProfileUseCase getUserProfileUseCase;
 
     @Override
     public Enrollment save(Enrollment enrollment) {
@@ -44,13 +48,28 @@ public class EnrollmentRepositoryAdapter implements EnrollmentRepositoryPort {
 
     @Override
     public Page<Enrollment> findWithFilters(EnrollmentFilters filters) {
-        Specification<EnrollmentJpaEntity> spec = EnrollmentSpecifications.withFilters(filters);
-
         Sort sort = filters.sortDirection().equalsIgnoreCase("ASC")
                 ? Sort.by(filters.sortBy()).ascending()
                 : Sort.by(filters.sortBy()).descending();
 
         PageRequest pageRequest = PageRequest.of(filters.page(), filters.size(), sort);
+
+        // If filtering by studentEmail, first find matching student IDs
+        List<Long> studentIdsFromEmail = null;
+        if (filters.studentEmail() != null && !filters.studentEmail().isBlank()) {
+            studentIdsFromEmail = getUserProfileUseCase.findIdsByEmailContaining(filters.studentEmail());
+            if (studentIdsFromEmail.isEmpty()) {
+                // No students match the email filter, return empty page
+                return new PageImpl<>(Collections.emptyList(), pageRequest, 0);
+            }
+        }
+
+        Specification<EnrollmentJpaEntity> spec = EnrollmentSpecifications.withFilters(filters);
+
+        // Add studentIds filter if searching by email
+        if (studentIdsFromEmail != null) {
+            spec = spec.and(EnrollmentSpecifications.hasStudentIdIn(studentIdsFromEmail));
+        }
 
         return jpaEnrollmentRepository.findAll(spec, pageRequest)
                 .map(enrollmentPersistenceMapper::toDomain);

@@ -79,11 +79,12 @@ public class EnrollmentController {
 
     /**
      * Get enrollments with filters (pagination + sorting + filtering).
-     * GET /api/enrollments?studentId=1&groupId=2&status=ACTIVE&...
+     * GET /api/enrollments?studentId=1&studentEmail=...&groupId=2&status=ACTIVE&...
      */
     @GetMapping
     public ResponseEntity<Page<EnrollmentResponse>> getEnrollmentsWithFilters(
             @RequestParam(required = false) Long studentId,
+            @RequestParam(required = false) String studentEmail,
             @RequestParam(required = false) Long groupId,
             @RequestParam(required = false) EnrollmentStatus status,
             @RequestParam(defaultValue = "0") int page,
@@ -91,11 +92,11 @@ public class EnrollmentController {
             @RequestParam(defaultValue = "enrolledAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDirection
     ) {
-        log.debug("REST: Getting enrollments with filters - studentId={}, groupId={}, status={}",
-                studentId, groupId, status);
+        log.debug("REST: Getting enrollments with filters - studentId={}, studentEmail={}, groupId={}, status={}",
+                studentId, studentEmail, groupId, status);
 
         EnrollmentFilters filters = new EnrollmentFilters(
-                studentId, groupId, status, page, size, sortBy, sortDirection
+                studentId, studentEmail, groupId, status, page, size, sortBy, sortDirection
         );
 
         Page<Enrollment> enrollmentsPage = getEnrollmentUseCase.findWithFilters(filters);

@@ -9,6 +9,7 @@ import com.acainfo.payment.domain.model.PaymentType;
  */
 public record PaymentFilters(
         Long studentId,
+        String studentEmail,
         Long enrollmentId,
         PaymentStatus status,
         PaymentType type,

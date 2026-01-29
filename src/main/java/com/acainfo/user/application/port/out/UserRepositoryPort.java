@@ -4,6 +4,7 @@ import com.acainfo.user.application.dto.UserFilters;
 import com.acainfo.user.domain.model.User;
 import org.springframework.data.domain.Page;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -66,4 +67,12 @@ public interface UserRepositoryPort {
      * @param id User ID
      */
     void deleteById(Long id);
+
+    /**
+     * Find user IDs whose email contains the given search term (case insensitive).
+     *
+     * @param emailSearch partial email to search for
+     * @return list of user IDs matching the search
+     */
+    List<Long> findIdsByEmailContaining(String emailSearch);
 }

@@ -55,6 +55,7 @@ public class PaymentResponseEnricher {
         return paymentRestMapper.toEnrichedResponse(
                 payment,
                 student.getFullName(),
+                student.getEmail(),
                 subject.getName(),
                 subject.getCode()
         );
@@ -122,6 +123,7 @@ public class PaymentResponseEnricher {
                     return paymentRestMapper.toEnrichedResponse(
                             payment,
                             student.getFullName(),
+                            student.getEmail(),
                             subject.getName(),
                             subject.getCode()
                     );

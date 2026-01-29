@@ -40,6 +40,7 @@ public interface PaymentRestMapper {
      * Use toEnrichedResponse for enriched responses.
      */
     @Mapping(target = "studentName", ignore = true)
+    @Mapping(target = "studentEmail", ignore = true)
     @Mapping(target = "subjectName", ignore = true)
     @Mapping(target = "subjectCode", ignore = true)
     @Mapping(target = "isOverdue", expression = "java(payment.isOverdue())")
@@ -49,13 +50,15 @@ public interface PaymentRestMapper {
     /**
      * Convert Payment (Domain) to PaymentResponse (REST) with enriched data.
      *
-     * @param payment     the payment domain object
-     * @param studentName full name of the student
-     * @param subjectName name of the subject
-     * @param subjectCode code of the subject
+     * @param payment      the payment domain object
+     * @param studentName  full name of the student
+     * @param studentEmail email of the student
+     * @param subjectName  name of the subject
+     * @param subjectCode  code of the subject
      * @return enriched payment response
      */
     @Mapping(target = "studentName", source = "studentName")
+    @Mapping(target = "studentEmail", source = "studentEmail")
     @Mapping(target = "subjectName", source = "subjectName")
     @Mapping(target = "subjectCode", source = "subjectCode")
     @Mapping(target = "id", source = "payment.id")
@@ -79,6 +82,7 @@ public interface PaymentRestMapper {
     PaymentResponse toEnrichedResponse(
             Payment payment,
             String studentName,
+            String studentEmail,
             String subjectName,
             String subjectCode
     );

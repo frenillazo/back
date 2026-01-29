@@ -3,8 +3,11 @@ package com.acainfo.user.infrastructure.adapter.out.persistence.repository;
 import com.acainfo.user.infrastructure.adapter.out.persistence.entity.UserJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -25,4 +28,10 @@ public interface JpaUserRepository extends
      * Check if email exists (case insensitive).
      */
     boolean existsByEmailIgnoreCase(String email);
+
+    /**
+     * Find user IDs whose email contains the given search term (case insensitive).
+     */
+    @Query("SELECT u.id FROM UserJpaEntity u WHERE LOWER(u.email) LIKE LOWER(CONCAT('%', :emailSearch, '%'))")
+    List<Long> findIdsByEmailContainingIgnoreCase(@Param("emailSearch") String emailSearch);
 }

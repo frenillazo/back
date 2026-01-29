@@ -51,6 +51,7 @@ public class PaymentController {
     @GetMapping
     public ResponseEntity<PageResponse<PaymentResponse>> listWithFilters(
             @RequestParam(required = false) Long studentId,
+            @RequestParam(required = false) String studentEmail,
             @RequestParam(required = false) Long enrollmentId,
             @RequestParam(required = false) PaymentStatus status,
             @RequestParam(required = false) PaymentType type,
@@ -63,7 +64,7 @@ public class PaymentController {
             @RequestParam(defaultValue = "DESC") String sortDirection
     ) {
         PaymentFilters filters = new PaymentFilters(
-                studentId, enrollmentId, status, type,
+                studentId, studentEmail, enrollmentId, status, type,
                 billingMonth, billingYear, isOverdue,
                 page, size, sortBy, sortDirection
         );
