@@ -3,8 +3,11 @@ package com.acainfo.material.infrastructure.adapter.out.persistence.repository;
 import com.acainfo.material.infrastructure.adapter.out.persistence.entity.MaterialJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -33,4 +36,10 @@ public interface JpaMaterialRepository extends JpaRepository<MaterialJpaEntity, 
      * Count materials for a subject.
      */
     long countBySubjectId(Long subjectId);
+
+    /**
+     * Find recent materials for given subjects uploaded after a certain date.
+     */
+    @Query("SELECT m FROM MaterialJpaEntity m WHERE m.subjectId IN :subjectIds AND m.uploadedAt >= :since ORDER BY m.uploadedAt DESC")
+    List<MaterialJpaEntity> findRecentBySubjectIds(@Param("subjectIds") List<Long> subjectIds, @Param("since") LocalDateTime since);
 }

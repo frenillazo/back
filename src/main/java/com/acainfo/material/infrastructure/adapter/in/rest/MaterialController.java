@@ -174,6 +174,21 @@ public class MaterialController {
     }
 
     /**
+     * Get recent materials for the current student.
+     * Returns materials uploaded in the last N days for subjects the student is enrolled in.
+     */
+    @GetMapping("/recent")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<MaterialResponse>> getRecentForStudent(
+            @RequestParam(defaultValue = "3") Integer days,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        Long userId = userDetails.getUserId();
+        List<Material> materials = getMaterialUseCase.getRecentForStudent(userId, days);
+        return ResponseEntity.ok(materialResponseEnricher.enrichList(materials));
+    }
+
+    /**
      * Response DTO for can-download check.
      */
     public record CanDownloadResponse(boolean canDownload) {

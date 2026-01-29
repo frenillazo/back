@@ -51,6 +51,7 @@ public class EnrollmentResponseEnricher {
         return enrollmentRestMapper.toEnrichedResponse(
                 enrollment,
                 student.getFullName(),
+                subject.getId(),
                 subject.getName(),
                 subject.getCode(),
                 group.getType().name(),
@@ -115,6 +116,7 @@ public class EnrollmentResponseEnricher {
                     return enrollmentRestMapper.toEnrichedResponse(
                             enrollment,
                             student.getFullName(),
+                            subject.getId(),
                             subject.getName(),
                             subject.getCode(),
                             group.getType().name(),

@@ -48,4 +48,13 @@ public interface GetMaterialUseCase {
      * @return true if user has download access
      */
     boolean canDownload(Long materialId, Long userId);
+
+    /**
+     * Get recent materials for subjects the student is enrolled in.
+     *
+     * @param studentId Student ID
+     * @param days Number of days to look back
+     * @return List of materials uploaded within the specified days
+     */
+    List<Material> getRecentForStudent(Long studentId, int days);
 }

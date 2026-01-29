@@ -6,7 +6,9 @@ import com.acainfo.material.application.port.out.MaterialRepositoryPort;
 import com.acainfo.material.domain.exception.MaterialNotFoundException;
 import com.acainfo.material.domain.model.Material;
 import com.acainfo.enrollment.application.port.out.EnrollmentRepositoryPort;
+import com.acainfo.enrollment.domain.model.Enrollment;
 import com.acainfo.enrollment.domain.model.EnrollmentStatus;
+import com.acainfo.group.application.port.in.GetGroupUseCase;
 import com.acainfo.payment.application.port.in.CheckPaymentStatusUseCase;
 import com.acainfo.shared.application.dto.PageResponse;
 import com.acainfo.user.application.port.out.UserRepositoryPort;
@@ -34,6 +36,7 @@ public class MaterialQueryService implements GetMaterialUseCase {
     private final MaterialRepositoryPort materialRepository;
     private final UserRepositoryPort userRepository;
     private final EnrollmentRepositoryPort enrollmentRepository;
+    private final GetGroupUseCase getGroupUseCase;
     private final CheckPaymentStatusUseCase checkPaymentStatus;
 
     @Override
@@ -99,5 +102,27 @@ public class MaterialQueryService implements GetMaterialUseCase {
         }
 
         return false;
+    }
+
+    @Override
+    public List<Material> getRecentForStudent(Long studentId, int days) {
+        log.debug("Getting recent materials for student {} within {} days", studentId, days);
+
+        // Get active enrollments for the student
+        List<Enrollment> activeEnrollments = enrollmentRepository
+                .findByStudentIdAndStatus(studentId, EnrollmentStatus.ACTIVE);
+
+        if (activeEnrollments.isEmpty()) {
+            return List.of();
+        }
+
+        // Get subject IDs from groups
+        List<Long> subjectIds = activeEnrollments.stream()
+                .map(enrollment -> getGroupUseCase.getById(enrollment.getGroupId()).getSubjectId())
+                .distinct()
+                .toList();
+
+        // Get recent materials for those subjects
+        return materialRepository.findRecentBySubjectIds(subjectIds, days);
     }
 }

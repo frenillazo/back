@@ -27,6 +27,7 @@ public class EnrollmentResponse {
 
     // Enriched data from related entities
     private String studentName;
+    private Long subjectId;
     private String subjectName;
     private String subjectCode;
     private String groupType;

@@ -14,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -78,6 +79,17 @@ public class MaterialRepositoryAdapter implements MaterialRepositoryPort {
     @Override
     public void delete(Long id) {
         jpaRepository.deleteById(id);
+    }
+
+    @Override
+    public List<Material> findRecentBySubjectIds(List<Long> subjectIds, int days) {
+        if (subjectIds == null || subjectIds.isEmpty()) {
+            return List.of();
+        }
+        LocalDateTime since = LocalDateTime.now().minusDays(days);
+        return mapper.toDomainList(
+                jpaRepository.findRecentBySubjectIds(subjectIds, since)
+        );
     }
 
     private Pageable createPageable(MaterialFilters filters) {

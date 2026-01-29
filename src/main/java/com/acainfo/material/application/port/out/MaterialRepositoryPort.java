@@ -68,4 +68,13 @@ public interface MaterialRepositoryPort {
      * @param id Material ID
      */
     void delete(Long id);
+
+    /**
+     * Find recent materials for given subjects uploaded within specified days.
+     *
+     * @param subjectIds List of subject IDs to filter by
+     * @param days Number of days to look back
+     * @return List of materials ordered by uploadedAt desc
+     */
+    List<Material> findRecentBySubjectIds(List<Long> subjectIds, int days);
 }
