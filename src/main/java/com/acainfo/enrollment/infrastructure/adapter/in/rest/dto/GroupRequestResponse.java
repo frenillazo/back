@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -28,6 +29,7 @@ public class GroupRequestResponse {
     private GroupType requestedGroupType;
     private GroupRequestStatus status;
     private Set<Long> supporterIds;
+    private Map<Long, String> supporterNames;
     private String justification;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
@@ -36,6 +38,7 @@ public class GroupRequestResponse {
     private Long createdGroupId;
     private String adminResponse;
     private Long processedByAdminId;
+    private String processedByAdminName;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime processedAt;

@@ -47,6 +47,22 @@ public class GroupRequestResponseEnricher {
         response.setSubjectDegree(subject.getDegree().getDisplayName());
         response.setRequesterName(requester.getFullName());
 
+        // Enrich supporter names
+        if (groupRequest.getSupporterIds() != null && !groupRequest.getSupporterIds().isEmpty()) {
+            Map<Long, String> supporterNames = groupRequest.getSupporterIds().stream()
+                    .collect(Collectors.toMap(
+                            Function.identity(),
+                            id -> getUserProfileUseCase.getUserById(id).getFullName()
+                    ));
+            response.setSupporterNames(supporterNames);
+        }
+
+        // Enrich admin name if processed
+        if (groupRequest.getProcessedByAdminId() != null) {
+            User admin = getUserProfileUseCase.getUserById(groupRequest.getProcessedByAdminId());
+            response.setProcessedByAdminName(admin.getFullName());
+        }
+
         return response;
     }
 
@@ -71,13 +87,28 @@ public class GroupRequestResponseEnricher {
                 .map(GroupRequest::getRequesterId)
                 .collect(Collectors.toSet());
 
+        // Collect supporter IDs
+        Set<Long> allSupporterIds = groupRequests.stream()
+                .filter(gr -> gr.getSupporterIds() != null)
+                .flatMap(gr -> gr.getSupporterIds().stream())
+                .collect(Collectors.toSet());
+
+        // Collect admin IDs
+        Set<Long> adminIds = groupRequests.stream()
+                .map(GroupRequest::getProcessedByAdminId)
+                .filter(id -> id != null)
+                .collect(Collectors.toSet());
+
         // Fetch subjects
         Map<Long, Subject> subjectsById = subjectIds.stream()
                 .map(getSubjectUseCase::getById)
                 .collect(Collectors.toMap(Subject::getId, Function.identity()));
 
-        // Fetch requesters
-        Map<Long, User> usersById = requesterIds.stream()
+        // Fetch all users (requesters + supporters + admins)
+        Set<Long> allUserIds = new java.util.HashSet<>(requesterIds);
+        allUserIds.addAll(allSupporterIds);
+        allUserIds.addAll(adminIds);
+        Map<Long, User> usersById = allUserIds.stream()
                 .map(getUserProfileUseCase::getUserById)
                 .collect(Collectors.toMap(User::getId, Function.identity()));
 
@@ -91,6 +122,22 @@ public class GroupRequestResponseEnricher {
                     response.setSubjectName(subject.getName());
                     response.setSubjectDegree(subject.getDegree().getDisplayName());
                     response.setRequesterName(requester.getFullName());
+
+                    // Enrich supporter names
+                    if (groupRequest.getSupporterIds() != null && !groupRequest.getSupporterIds().isEmpty()) {
+                        Map<Long, String> supporterNames = groupRequest.getSupporterIds().stream()
+                                .collect(Collectors.toMap(
+                                        Function.identity(),
+                                        id -> usersById.get(id).getFullName()
+                                ));
+                        response.setSupporterNames(supporterNames);
+                    }
+
+                    // Enrich admin name if processed
+                    if (groupRequest.getProcessedByAdminId() != null) {
+                        User admin = usersById.get(groupRequest.getProcessedByAdminId());
+                        response.setProcessedByAdminName(admin.getFullName());
+                    }
 
                     return response;
                 })
