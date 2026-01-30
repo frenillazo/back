@@ -70,6 +70,7 @@ public class SubjectService implements
                 .code(normalizedCode)
                 .name(command.name().trim())
                 .degree(command.degree())
+                .year(command.year())
                 .status(SubjectStatus.ACTIVE)
                 .currentGroupCount(0)
                 .build();
@@ -90,6 +91,11 @@ public class SubjectService implements
         // Update name if provided
         if (command.name() != null && !command.name().isBlank()) {
             subject.setName(command.name().trim());
+        }
+
+        // Update year if provided
+        if (command.year() != null) {
+            subject.setYear(command.year());
         }
 
         // Update status if provided

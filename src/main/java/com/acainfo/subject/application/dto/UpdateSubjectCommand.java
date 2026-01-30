@@ -8,6 +8,7 @@ import com.acainfo.subject.domain.model.SubjectStatus;
  */
 public record UpdateSubjectCommand(
         String name,
+        Integer year,
         SubjectStatus status
 ) {
 }

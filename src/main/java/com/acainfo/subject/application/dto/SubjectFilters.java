@@ -11,6 +11,7 @@ public record SubjectFilters(
         String code,
         String searchTerm,  // Search in code, name
         Degree degree,
+        Integer year,       // Academic year (1-4)
         SubjectStatus status,
         Integer page,
         Integer size,

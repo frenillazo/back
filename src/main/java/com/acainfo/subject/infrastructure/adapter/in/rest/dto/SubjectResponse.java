@@ -17,6 +17,7 @@ public record SubjectResponse(
         String name,
         String displayName,
         Degree degree,
+        Integer year,
         SubjectStatus status,
         Integer currentGroupCount,
         boolean active,

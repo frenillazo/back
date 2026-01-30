@@ -107,6 +107,9 @@ public class SubjectController {
             @Parameter(description = "Filter by degree")
             @RequestParam(required = false) Degree degree,
 
+            @Parameter(description = "Filter by academic year (1-4)")
+            @RequestParam(required = false) Integer year,
+
             @Parameter(description = "Filter by status (ACTIVE, INACTIVE, ARCHIVED)")
             @RequestParam(required = false) SubjectStatus status,
 
@@ -128,6 +131,7 @@ public class SubjectController {
                 code,
                 searchTerm,
                 degree,
+                year,
                 status,
                 page,
                 size,

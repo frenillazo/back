@@ -56,6 +56,9 @@ public class SubjectJpaEntity {
     @Column(name = "degree", nullable = false, length = 50)
     private Degree degree;
 
+    @Column(name = "year")
+    private Integer year;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     @Builder.Default

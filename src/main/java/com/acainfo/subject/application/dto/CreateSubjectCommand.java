@@ -8,6 +8,7 @@ import com.acainfo.subject.domain.model.Degree;
 public record CreateSubjectCommand(
         String code,
         String name,
-        Degree degree
+        Degree degree,
+        Integer year
 ) {
 }

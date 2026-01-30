@@ -28,6 +28,7 @@ public class Subject {
     private String code;           // e.g., "ING101"
     private String name;           // e.g., "Programación I"
     private Degree degree;
+    private Integer year;          // Academic year (1-4), nullable for legacy data
     private SubjectStatus status;
 
     @Builder.Default

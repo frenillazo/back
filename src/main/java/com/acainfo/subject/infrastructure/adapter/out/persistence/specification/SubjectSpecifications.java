@@ -57,6 +57,11 @@ public class SubjectSpecifications {
                 predicates.add(criteriaBuilder.equal(root.get("degree"), filters.degree()));
             }
 
+            // Filter by year
+            if (filters.year() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("year"), filters.year()));
+            }
+
             // Filter by status
             if (filters.status() != null) {
                 predicates.add(criteriaBuilder.equal(root.get("status"), filters.status()));
