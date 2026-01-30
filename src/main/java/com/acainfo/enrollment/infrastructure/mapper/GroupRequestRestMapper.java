@@ -39,7 +39,13 @@ public interface GroupRequestRestMapper {
 
     /**
      * Convert GroupRequest (Domain) to GroupRequestResponse (REST).
+     * Note: Fields marked as ignored are enriched by GroupRequestResponseEnricher.
      */
+    @Mapping(target = "subjectName", ignore = true)
+    @Mapping(target = "subjectDegree", ignore = true)
+    @Mapping(target = "requesterName", ignore = true)
+    @Mapping(target = "supporterNames", ignore = true)
+    @Mapping(target = "processedByAdminName", ignore = true)
     @Mapping(target = "supporterCount", expression = "java(groupRequest.getSupporterCount())")
     @Mapping(target = "hasMinimumSupporters", expression = "java(groupRequest.hasMinimumSupporters())")
     @Mapping(target = "supportersNeeded", expression = "java(groupRequest.getSupportersNeeded())")
