@@ -3,8 +3,11 @@ package com.acainfo.shared.infrastructure.rest;
 import com.acainfo.shared.domain.exception.BusinessRuleException;
 import com.acainfo.shared.domain.exception.NotFoundException;
 import com.acainfo.shared.infrastructure.rest.dto.ErrorResponse;
+import com.acainfo.security.verification.InvalidVerificationTokenException;
 import com.acainfo.user.domain.exception.DuplicateEmailException;
+import com.acainfo.user.domain.exception.EmailNotVerifiedException;
 import com.acainfo.user.domain.exception.InvalidCredentialsException;
+import com.acainfo.user.domain.exception.InvalidEmailDomainException;
 import com.acainfo.user.domain.exception.UserNotFoundException;
 import com.acainfo.security.refresh.RefreshTokenService.InvalidRefreshTokenException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -62,6 +65,48 @@ public class GlobalExceptionHandler {
             DuplicateEmailException ex,
             HttpServletRequest request) {
         log.error("Duplicate email: {}", ex.getMessage());
+        ErrorResponse error = ErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(InvalidEmailDomainException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidEmailDomainException(
+            InvalidEmailDomainException ex,
+            HttpServletRequest request) {
+        log.error("Invalid email domain: {}", ex.getMessage());
+        ErrorResponse error = ErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(EmailNotVerifiedException.class)
+    public ResponseEntity<ErrorResponse> handleEmailNotVerifiedException(
+            EmailNotVerifiedException ex,
+            HttpServletRequest request) {
+        log.error("Email not verified: {}", ex.getMessage());
+        ErrorResponse error = ErrorResponse.of(
+                HttpStatus.FORBIDDEN.value(),
+                "Forbidden",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+
+    @ExceptionHandler(InvalidVerificationTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidVerificationTokenException(
+            InvalidVerificationTokenException ex,
+            HttpServletRequest request) {
+        log.error("Invalid verification token: {}", ex.getMessage());
         ErrorResponse error = ErrorResponse.of(
                 HttpStatus.BAD_REQUEST.value(),
                 "Bad Request",

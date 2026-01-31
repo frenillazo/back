@@ -7,6 +7,8 @@ import com.acainfo.user.application.port.in.AuthenticateUserUseCase;
 import com.acainfo.user.application.port.in.LogoutUseCase;
 import com.acainfo.user.application.port.in.RefreshTokenUseCase;
 import com.acainfo.user.application.port.in.RegisterUserUseCase;
+import com.acainfo.user.application.port.in.ResendVerificationUseCase;
+import com.acainfo.user.application.port.in.VerifyEmailUseCase;
 import com.acainfo.user.domain.model.User;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.*;
 import com.acainfo.user.infrastructure.mapper.UserRestMapper;
@@ -40,6 +42,8 @@ public class AuthController {
     private final AuthenticateUserUseCase authenticateUserUseCase;
     private final RefreshTokenUseCase refreshTokenUseCase;
     private final LogoutUseCase logoutUseCase;
+    private final VerifyEmailUseCase verifyEmailUseCase;
+    private final ResendVerificationUseCase resendVerificationUseCase;
     private final UserRestMapper userRestMapper;
 
     @PostMapping("/register")
@@ -181,5 +185,57 @@ public class AuthController {
 
         log.warn("Logout all devices not fully implemented - requires user ID extraction");
         return ResponseEntity.ok(MessageResponse.of("Logout from all devices successful"));
+    }
+
+    @GetMapping("/verify-email")
+    @Operation(
+            summary = "Verify email address",
+            description = "Verifies user email using the token sent via email. Activates the user account."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Email verified successfully",
+                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid or expired verification token",
+                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
+            )
+    })
+    public ResponseEntity<MessageResponse> verifyEmail(@RequestParam String token) {
+        log.info("Email verification request");
+
+        verifyEmailUseCase.verifyEmail(token);
+
+        log.info("Email verified successfully");
+        return ResponseEntity.ok(MessageResponse.of("Email verificado correctamente. Ya puedes iniciar sesion."));
+    }
+
+    @PostMapping("/resend-verification")
+    @Operation(
+            summary = "Resend verification email",
+            description = "Sends a new verification email to the user. Previous tokens are invalidated."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Verification email sent",
+                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "User not found or already verified",
+                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
+            )
+    })
+    public ResponseEntity<MessageResponse> resendVerification(@Valid @RequestBody ResendVerificationRequest request) {
+        log.info("Resend verification request for email: {}", request.email());
+
+        resendVerificationUseCase.resendVerification(request.email());
+
+        log.info("Verification email resent to: {}", request.email());
+        return ResponseEntity.ok(MessageResponse.of("Email de verificacion enviado. Revisa tu bandeja de entrada."));
     }
 }
