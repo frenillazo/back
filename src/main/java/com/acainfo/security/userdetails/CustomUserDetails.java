@@ -44,7 +44,9 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return !user.isBlocked();
+        // Siempre true - la validación de estado se hace en AuthService.authenticate()
+        // Esto permite que usuarios BLOCKED autentiquen y vean el banner de cuenta restringida
+        return true;
     }
 
     @Override
@@ -54,7 +56,10 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return user.isActive();
+        // Siempre true - la validación de estado se hace en AuthService.authenticate()
+        // Esto permite que usuarios INACTIVE autentiquen y vean el banner de cuenta restringida
+        // Solo usuarios PENDING_ACTIVATION son rechazados (403) en la capa de servicio
+        return true;
     }
 
     /**
