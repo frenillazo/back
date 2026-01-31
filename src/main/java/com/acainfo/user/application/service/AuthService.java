@@ -131,20 +131,14 @@ public class AuthService implements
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
             User user = userDetails.getUser();
 
-            // Check if user is blocked
-            if (user.isBlocked()) {
-                throw new UserBlockedException(user.getEmail());
-            }
-
             // Check if email is verified (PENDING_ACTIVATION means not verified)
             if (user.getStatus() == UserStatus.PENDING_ACTIVATION) {
                 throw new EmailNotVerifiedException(user.getEmail());
             }
 
-            // Check if user is active
-            if (!user.isActive()) {
-                throw new UserNotActiveException(user.getEmail());
-            }
+            // Note: INACTIVE and BLOCKED users CAN log in.
+            // They will see a restricted account banner in the frontend.
+            // This allows them to see their status and contact info.
 
             // Generate tokens
             String accessToken = jwtTokenProvider.generateAccessToken(userDetails);

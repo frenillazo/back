@@ -15,4 +15,21 @@ public interface EmailSenderPort {
      * @param verificationLink complete URL with verification token
      */
     void sendVerificationEmail(String to, String userName, String verificationLink);
+
+    /**
+     * Send a notification email when a user's account is deactivated.
+     *
+     * @param to       recipient email address
+     * @param userName user's first name for personalization
+     * @param reason   reason for deactivation (e.g., "pagos pendientes", "sin inscripciones")
+     */
+    void sendAccountDeactivatedEmail(String to, String userName, String reason);
+
+    /**
+     * Send a notification email when a user's account is reactivated.
+     *
+     * @param to       recipient email address
+     * @param userName user's first name for personalization
+     */
+    void sendAccountReactivatedEmail(String to, String userName);
 }

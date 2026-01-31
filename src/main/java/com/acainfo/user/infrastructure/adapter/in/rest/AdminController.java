@@ -1,12 +1,16 @@
 package com.acainfo.user.infrastructure.adapter.in.rest;
 
 import com.acainfo.user.application.dto.UserFilters;
+import com.acainfo.user.application.port.in.DeactivateUsersUseCase;
 import com.acainfo.user.application.port.in.GetUserProfileUseCase;
 import com.acainfo.user.application.port.in.ManageUserRolesUseCase;
+import com.acainfo.user.application.service.UserStatusManagementService;
 import com.acainfo.user.domain.model.RoleType;
 import com.acainfo.user.domain.model.User;
 import com.acainfo.user.domain.model.UserStatus;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.AssignRoleRequest;
+import com.acainfo.user.infrastructure.adapter.in.rest.dto.BatchDeactivateRequest;
+import com.acainfo.user.infrastructure.adapter.in.rest.dto.DeactivationResult;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.MessageResponse;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.PageResponse;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.RevokeRoleRequest;
@@ -45,6 +49,8 @@ public class AdminController {
 
     private final GetUserProfileUseCase getUserProfileUseCase;
     private final ManageUserRolesUseCase manageUserRolesUseCase;
+    private final DeactivateUsersUseCase deactivateUsersUseCase;
+    private final UserStatusManagementService userStatusManagementService;
     private final UserRepositoryPort userRepositoryPort;
     private final UserRestMapper userRestMapper;
 
@@ -287,5 +293,58 @@ public class AdminController {
         UserResponse response = userRestMapper.toUserResponse(user);
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/users/deactivate-batch")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Batch deactivate users",
+            description = "Deactivates multiple users that don't have active enrollments (ADMIN only)"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Batch deactivation completed",
+                    content = @Content(schema = @Schema(implementation = DeactivationResult.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Access denied - ADMIN role required",
+                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
+            )
+    })
+    public ResponseEntity<DeactivationResult> deactivateUsersBatch(
+            @Valid @RequestBody BatchDeactivateRequest request) {
+        log.info("Batch deactivate request for {} users", request.userIds().size());
+
+        DeactivationResult result = deactivateUsersUseCase.deactivateUsersWithoutEnrollments(request.userIds());
+
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/trigger-status-check")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Trigger status check job",
+            description = "Manually triggers the overdue payments check job (ADMIN only)"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Job triggered successfully",
+                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Access denied - ADMIN role required",
+                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
+            )
+    })
+    public ResponseEntity<MessageResponse> triggerStatusCheck() {
+        log.info("Manual trigger of status check job");
+
+        userStatusManagementService.processOverduePayments();
+
+        return ResponseEntity.ok(MessageResponse.of("Job ejecutado correctamente"));
     }
 }

@@ -100,4 +100,154 @@ public class SmtpEmailAdapter implements EmailSenderPort {
             </html>
             """.formatted(userName, verificationLink, verificationLink);
     }
+
+    @Override
+    @Async
+    public void sendAccountDeactivatedEmail(String to, String userName, String reason) {
+        String subject = "Tu cuenta de AcaInfo ha sido desactivada";
+        String htmlContent = buildDeactivationEmailHtml(userName, reason);
+
+        if (emailProperties.isMock()) {
+            log.info("=== MOCK EMAIL (DEACTIVATION) ===");
+            log.info("To: {}", to);
+            log.info("Subject: {}", subject);
+            log.info("Reason: {}", reason);
+            log.info("=================================");
+            return;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(emailProperties.getFrom());
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            log.info("Deactivation email sent to: {}", to);
+
+        } catch (MessagingException e) {
+            log.error("Failed to send deactivation email to {}: {}", to, e.getMessage());
+            // Don't throw - deactivation should proceed even if email fails
+        }
+    }
+
+    @Override
+    @Async
+    public void sendAccountReactivatedEmail(String to, String userName) {
+        String subject = "Tu cuenta de AcaInfo ha sido reactivada";
+        String htmlContent = buildReactivationEmailHtml(userName);
+
+        if (emailProperties.isMock()) {
+            log.info("=== MOCK EMAIL (REACTIVATION) ===");
+            log.info("To: {}", to);
+            log.info("Subject: {}", subject);
+            log.info("=================================");
+            return;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(emailProperties.getFrom());
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            log.info("Reactivation email sent to: {}", to);
+
+        } catch (MessagingException e) {
+            log.error("Failed to send reactivation email to {}: {}", to, e.getMessage());
+        }
+    }
+
+    private String buildDeactivationEmailHtml(String userName, String reason) {
+        return """
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Cuenta desactivada</title>
+            </head>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="background: linear-gradient(135deg, #f59e0b 0%%, #d97706 100%%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                    <h1 style="color: white; margin: 0;">AcaInfo</h1>
+                    <p style="color: rgba(255,255,255,0.9); margin-top: 10px;">Aviso importante sobre tu cuenta</p>
+                </div>
+
+                <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+                    <h2 style="color: #333;">Hola %s,</h2>
+
+                    <p>Te informamos que tu cuenta en AcaInfo ha sido <strong>desactivada temporalmente</strong>.</p>
+
+                    <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0;">
+                        <p style="margin: 0;"><strong>Motivo:</strong> %s</p>
+                    </div>
+
+                    <p>Mientras tu cuenta este desactivada, no podras acceder a los materiales ni funcionalidades de la plataforma.</p>
+
+                    <h3 style="color: #333;">Como reactivar tu cuenta</h3>
+                    <p>Para reactivar tu cuenta, por favor contacta con el centro:</p>
+
+                    <ul>
+                        <li>Telefono: +34 953 123 456</li>
+                        <li>Email: info@acainfo.com</li>
+                    </ul>
+
+                    <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+
+                    <p style="color: #999; font-size: 12px; text-align: center;">
+                        Este es un mensaje automatico. Si tienes dudas, contacta con nosotros.
+                    </p>
+                </div>
+            </body>
+            </html>
+            """.formatted(userName, reason);
+    }
+
+    private String buildReactivationEmailHtml(String userName) {
+        return """
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Cuenta reactivada</title>
+            </head>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="background: linear-gradient(135deg, #10b981 0%%, #059669 100%%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                    <h1 style="color: white; margin: 0;">AcaInfo</h1>
+                    <p style="color: rgba(255,255,255,0.9); margin-top: 10px;">Buenas noticias</p>
+                </div>
+
+                <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+                    <h2 style="color: #333;">Hola %s,</h2>
+
+                    <p>Nos complace informarte que tu cuenta en AcaInfo ha sido <strong>reactivada</strong>.</p>
+
+                    <div style="background: #d1fae5; border-left: 4px solid #10b981; padding: 15px; margin: 20px 0;">
+                        <p style="margin: 0;">Ya puedes acceder nuevamente a todos los materiales y funcionalidades de la plataforma.</p>
+                    </div>
+
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="https://acadeinfo.com/login" style="background: linear-gradient(135deg, #10b981 0%%, #059669 100%%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+                            Acceder a mi cuenta
+                        </a>
+                    </div>
+
+                    <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+
+                    <p style="color: #999; font-size: 12px; text-align: center;">
+                        Gracias por confiar en AcaInfo.
+                    </p>
+                </div>
+            </body>
+            </html>
+            """.formatted(userName);
+    }
 }

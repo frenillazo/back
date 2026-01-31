@@ -2,6 +2,7 @@ package com.acainfo;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Main application class for the AcaInfo training center management system.
@@ -12,6 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * - infrastructure: Adapters for persistence, REST, external services
  */
 @SpringBootApplication
+@EnableScheduling
 public class AcaInfoApplication {
 
     public static void main(String[] args) {
