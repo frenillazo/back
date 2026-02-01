@@ -55,6 +55,7 @@ public interface GroupRestMapper {
     @Mapping(target = "subjectCode", source = "subjectCode")
     @Mapping(target = "teacherName", source = "teacherName")
     @Mapping(target = "id", source = "group.id")
+    @Mapping(target = "name", source = "group.name")
     @Mapping(target = "subjectId", source = "group.subjectId")
     @Mapping(target = "teacherId", source = "group.teacherId")
     @Mapping(target = "type", source = "group.type")

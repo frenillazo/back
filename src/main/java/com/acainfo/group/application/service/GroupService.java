@@ -24,6 +24,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+
 /**
  * Service implementing group use cases.
  * Contains business logic and validations for group operations.
@@ -75,8 +77,12 @@ public class GroupService implements
             }
         }
 
+        // Generate group name automatically
+        String groupName = generateGroupName(subject);
+
         // Create group
         SubjectGroup group = SubjectGroup.builder()
+                .name(groupName)
                 .subjectId(command.subjectId())
                 .teacherId(command.teacherId())
                 .type(command.type())
@@ -192,5 +198,42 @@ public class GroupService implements
         log.info("Group cancelled successfully: ID {}", id);
 
         return cancelledGroup;
+    }
+
+    // ==================== Private Helper Methods ====================
+
+    /**
+     * Generate group name automatically.
+     * Format: "[subjectName] grupo N YY-YY"
+     * Example: "Álgebra grupo 1 25-26"
+     *
+     * @param subject Subject entity
+     * @return Generated group name
+     */
+    private String generateGroupName(Subject subject) {
+        long existingCount = groupRepositoryPort.countAllBySubjectId(subject.getId());
+        String academicYear = calculateAcademicYear();
+        return String.format("%s grupo %d %s",
+                subject.getName(),
+                existingCount + 1,
+                academicYear
+        );
+    }
+
+    /**
+     * Calculate academic year in format "YY-YY".
+     * Academic year runs from September to August.
+     * Example: Feb 2026 -> "25-26", Oct 2025 -> "25-26"
+     *
+     * @return Academic year string
+     */
+    private String calculateAcademicYear() {
+        LocalDate now = LocalDate.now();
+        int year = now.getYear();
+        int month = now.getMonthValue();
+        // Sep-Dec = current year starts, Jan-Aug = previous year started
+        int startYear = month >= 9 ? year : year - 1;
+        int endYear = startYear + 1;
+        return String.format("%02d-%02d", startYear % 100, endYear % 100);
     }
 }

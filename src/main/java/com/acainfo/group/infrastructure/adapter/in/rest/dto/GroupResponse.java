@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 public class GroupResponse {
 
     private Long id;
+    private String name;
     private Long subjectId;
     private Long teacherId;
     private GroupType type;

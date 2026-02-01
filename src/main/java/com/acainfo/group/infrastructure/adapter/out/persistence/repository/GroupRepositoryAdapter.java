@@ -96,4 +96,9 @@ public class GroupRepositoryAdapter implements GroupRepositoryPort {
                 List.of(GroupStatus.OPEN, GroupStatus.CLOSED)
         );
     }
+
+    @Override
+    public long countAllBySubjectId(Long subjectId) {
+        return jpaGroupRepository.countBySubjectId(subjectId);
+    }
 }

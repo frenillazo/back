@@ -26,6 +26,7 @@ public class SubjectGroup {
     public static final BigDecimal DEFAULT_PRICE_PER_HOUR = new BigDecimal("15.00");
 
     private Long id;
+    private String name;                         // Auto-generated: "[code] grupo N YY-YY"
     private Long subjectId;                      // Reference to Subject
     private Long teacherId;                      // Reference to User (teacher)
     private GroupType type;                      // REGULAR_Q1, INTENSIVE_Q1, etc.

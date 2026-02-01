@@ -37,6 +37,9 @@ public class SubjectGroupJpaEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "name", nullable = false, length = 50)
+    private String name;
+
     @Column(name = "subject_id", nullable = false)
     private Long subjectId;
 

@@ -28,4 +28,10 @@ public interface JpaGroupRepository extends
      * Used to check if a subject has active groups before archiving.
      */
     long countBySubjectIdAndStatusIn(Long subjectId, List<GroupStatus> statuses);
+
+    /**
+     * Count all groups by subject ID (regardless of status).
+     * Used for generating sequential group names.
+     */
+    long countBySubjectId(Long subjectId);
 }

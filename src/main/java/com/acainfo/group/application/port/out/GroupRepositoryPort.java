@@ -77,4 +77,13 @@ public interface GroupRepositoryPort {
      * @return Count of active groups
      */
     long countActiveGroupsBySubjectId(Long subjectId);
+
+    /**
+     * Count all groups for a subject (regardless of status).
+     * Used for generating sequential group names.
+     *
+     * @param subjectId Subject ID
+     * @return Total count of groups
+     */
+    long countAllBySubjectId(Long subjectId);
 }
