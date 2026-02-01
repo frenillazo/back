@@ -63,6 +63,7 @@ public class TeacherService implements ManageTeachersUseCase {
                 .password(passwordEncoder.encode(command.password()))
                 .firstName(command.firstName().trim())
                 .lastName(command.lastName().trim())
+                .phoneNumber(command.phoneNumber() != null ? command.phoneNumber().trim() : "")
                 .status(UserStatus.ACTIVE)
                 .roles(Set.of(teacherRole))
                 .build();

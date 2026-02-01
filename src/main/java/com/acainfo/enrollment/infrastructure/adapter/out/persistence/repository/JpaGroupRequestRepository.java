@@ -5,7 +5,10 @@ import com.acainfo.enrollment.infrastructure.adapter.out.persistence.entity.Grou
 import com.acainfo.group.domain.model.GroupType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,4 +48,17 @@ public interface JpaGroupRequestRepository extends
      */
     List<GroupRequestJpaEntity> findByStatusAndExpiresAtBefore(
             GroupRequestStatus status, LocalDateTime dateTime);
+
+    /**
+     * Count interested students grouped by subject (only PENDING requests).
+     */
+    @Query("SELECT gr.subjectId, COUNT(gr) FROM GroupRequestJpaEntity gr " +
+           "WHERE gr.status = 'PENDING' GROUP BY gr.subjectId")
+    List<Object[]> countInterestedBySubject();
+
+    /**
+     * Find pending request by subject and requester.
+     */
+    Optional<GroupRequestJpaEntity> findBySubjectIdAndRequesterIdAndStatus(
+            Long subjectId, Long requesterId, GroupRequestStatus status);
 }

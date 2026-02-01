@@ -60,6 +60,9 @@ public class UserService implements
         if (command.lastName() != null && !command.lastName().isBlank()) {
             user.setLastName(command.lastName().trim());
         }
+        if (command.phoneNumber() != null) {
+            user.setPhoneNumber(command.phoneNumber().trim());
+        }
 
         User updatedUser = userRepositoryPort.save(user);
         log.info("Profile updated successfully for user: {}", updatedUser.getEmail());

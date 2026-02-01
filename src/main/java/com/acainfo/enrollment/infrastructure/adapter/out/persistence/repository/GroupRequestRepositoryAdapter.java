@@ -98,4 +98,16 @@ public class GroupRequestRepositoryAdapter implements GroupRequestRepositoryPort
     public void delete(Long id) {
         jpaGroupRequestRepository.deleteById(id);
     }
+
+    @Override
+    public List<Object[]> countInterestedBySubject() {
+        return jpaGroupRequestRepository.countInterestedBySubject();
+    }
+
+    @Override
+    public Optional<GroupRequest> findPendingBySubjectIdAndRequesterId(Long subjectId, Long requesterId) {
+        return jpaGroupRequestRepository.findBySubjectIdAndRequesterIdAndStatus(
+                subjectId, requesterId, GroupRequestStatus.PENDING)
+                .map(groupRequestPersistenceMapper::toDomain);
+    }
 }

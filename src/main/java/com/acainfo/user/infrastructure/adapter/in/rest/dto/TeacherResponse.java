@@ -16,6 +16,7 @@ public record TeacherResponse(
         String firstName,
         String lastName,
         String fullName,
+        String phoneNumber,
         UserStatus status,
         LocalDateTime createdAt,
         LocalDateTime updatedAt

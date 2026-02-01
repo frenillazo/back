@@ -88,4 +88,22 @@ public interface GroupRequestRepositoryPort {
      * @param id Group request ID
      */
     void delete(Long id);
+
+    /**
+     * Count interested students (pending requests) grouped by subject.
+     * Returns a list of [subjectId, count] pairs.
+     *
+     * @return List of Object arrays where [0] = subjectId (Long), [1] = count (Long)
+     */
+    List<Object[]> countInterestedBySubject();
+
+    /**
+     * Find pending request by subject and requester.
+     * Used to check if student already expressed interest.
+     *
+     * @param subjectId Subject ID
+     * @param requesterId Requester ID
+     * @return Optional containing the request if found
+     */
+    Optional<GroupRequest> findPendingBySubjectIdAndRequesterId(Long subjectId, Long requesterId);
 }

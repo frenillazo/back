@@ -1,6 +1,7 @@
 package com.acainfo.user.infrastructure.adapter.in.rest;
 
 import com.acainfo.user.application.dto.UserFilters;
+import com.acainfo.user.application.port.in.ActivateUsersUseCase;
 import com.acainfo.user.application.port.in.DeactivateUsersUseCase;
 import com.acainfo.user.application.port.in.GetUserProfileUseCase;
 import com.acainfo.user.application.port.in.ManageUserRolesUseCase;
@@ -8,7 +9,9 @@ import com.acainfo.user.application.service.UserStatusManagementService;
 import com.acainfo.user.domain.model.RoleType;
 import com.acainfo.user.domain.model.User;
 import com.acainfo.user.domain.model.UserStatus;
+import com.acainfo.user.infrastructure.adapter.in.rest.dto.ActivationResult;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.AssignRoleRequest;
+import com.acainfo.user.infrastructure.adapter.in.rest.dto.BatchActivateRequest;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.BatchDeactivateRequest;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.DeactivationResult;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.MessageResponse;
@@ -50,6 +53,7 @@ public class AdminController {
     private final GetUserProfileUseCase getUserProfileUseCase;
     private final ManageUserRolesUseCase manageUserRolesUseCase;
     private final DeactivateUsersUseCase deactivateUsersUseCase;
+    private final ActivateUsersUseCase activateUsersUseCase;
     private final UserStatusManagementService userStatusManagementService;
     private final UserRepositoryPort userRepositoryPort;
     private final UserRestMapper userRestMapper;
@@ -318,6 +322,33 @@ public class AdminController {
         log.info("Batch deactivate request for {} users", request.userIds().size());
 
         DeactivationResult result = deactivateUsersUseCase.deactivateUsersWithoutEnrollments(request.userIds());
+
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/users/activate-batch")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Batch activate users",
+            description = "Activates multiple INACTIVE users (ADMIN only)"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Batch activation completed",
+                    content = @Content(schema = @Schema(implementation = ActivationResult.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Access denied - ADMIN role required",
+                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
+            )
+    })
+    public ResponseEntity<ActivationResult> activateUsersBatch(
+            @Valid @RequestBody BatchActivateRequest request) {
+        log.info("Batch activate request for {} users", request.userIds().size());
+
+        ActivationResult result = activateUsersUseCase.activateUsers(request.userIds());
 
         return ResponseEntity.ok(result);
     }

@@ -5,6 +5,7 @@ package com.acainfo.user.application.dto;
  */
 public record UpdateUserCommand(
         String firstName,
-        String lastName
+        String lastName,
+        String phoneNumber
 ) {
 }

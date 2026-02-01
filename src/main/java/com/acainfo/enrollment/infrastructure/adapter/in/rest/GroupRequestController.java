@@ -7,11 +7,15 @@ import com.acainfo.enrollment.application.port.in.ProcessGroupRequestUseCase;
 import com.acainfo.enrollment.application.port.in.SupportGroupRequestUseCase;
 import com.acainfo.enrollment.domain.model.GroupRequest;
 import com.acainfo.enrollment.domain.model.GroupRequestStatus;
+import com.acainfo.enrollment.application.port.out.GroupRequestRepositoryPort;
 import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.AddSupporterRequest;
 import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.CreateGroupRequestRequest;
 import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.GroupRequestResponse;
 import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.ProcessGroupRequestRequest;
+import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.SubjectInterestSummary;
 import com.acainfo.enrollment.infrastructure.mapper.GroupRequestRestMapper;
+import com.acainfo.subject.application.port.out.SubjectRepositoryPort;
+import com.acainfo.subject.domain.model.Subject;
 import com.acainfo.group.domain.model.GroupType;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +26,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * REST Controller for Group Request operations.
@@ -46,6 +54,8 @@ public class GroupRequestController {
     private final GetGroupRequestUseCase getGroupRequestUseCase;
     private final GroupRequestRestMapper groupRequestRestMapper;
     private final GroupRequestResponseEnricher groupRequestResponseEnricher;
+    private final GroupRequestRepositoryPort groupRequestRepositoryPort;
+    private final SubjectRepositoryPort subjectRepositoryPort;
 
     /**
      * Create a new group request.
@@ -195,5 +205,89 @@ public class GroupRequestController {
         GroupRequestResponse response = groupRequestResponseEnricher.enrich(groupRequest);
 
         return ResponseEntity.ok(response);
+    }
+
+    // ==================== "Me Interesa" Endpoints ====================
+
+    /**
+     * Get interest summary by subject (ADMIN only).
+     * Returns count of interested students per subject.
+     * GET /api/group-requests/interest-summary
+     */
+    @GetMapping("/interest-summary")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<SubjectInterestSummary>> getInterestSummary() {
+        log.debug("REST: Getting interest summary by subject");
+
+        List<Object[]> counts = groupRequestRepositoryPort.countInterestedBySubject();
+
+        // Build a map of subjectId -> count
+        Map<Long, Long> countMap = counts.stream()
+                .collect(Collectors.toMap(
+                        arr -> (Long) arr[0],
+                        arr -> (Long) arr[1]
+                ));
+
+        // Get subject details and build summaries
+        List<SubjectInterestSummary> summaries = countMap.entrySet().stream()
+                .map(entry -> {
+                    Long subjectId = entry.getKey();
+                    Integer count = entry.getValue().intValue();
+
+                    Optional<Subject> subjectOpt = subjectRepositoryPort.findById(subjectId);
+
+                    return SubjectInterestSummary.builder()
+                            .subjectId(subjectId)
+                            .subjectName(subjectOpt.map(Subject::getName).orElse("Desconocida"))
+                            .subjectCode(subjectOpt.map(Subject::getCode).orElse(""))
+                            .degreeName(subjectOpt.map(s -> s.getDegree() != null ? s.getDegree().getDisplayName() : "").orElse(""))
+                            .interestedCount(count)
+                            .build();
+                })
+                .sorted((a, b) -> b.getInterestedCount().compareTo(a.getInterestedCount()))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(summaries);
+    }
+
+    /**
+     * Check if student is interested in a subject.
+     * GET /api/group-requests/interest/{subjectId}/student/{studentId}
+     */
+    @GetMapping("/interest/{subjectId}/student/{studentId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT')")
+    public ResponseEntity<Boolean> checkInterest(
+            @PathVariable Long subjectId,
+            @PathVariable Long studentId
+    ) {
+        log.debug("REST: Checking interest for subject {} by student {}", subjectId, studentId);
+
+        boolean isInterested = groupRequestRepositoryPort
+                .findPendingBySubjectIdAndRequesterId(subjectId, studentId)
+                .isPresent();
+
+        return ResponseEntity.ok(isInterested);
+    }
+
+    /**
+     * Remove interest from a subject.
+     * DELETE /api/group-requests/interest/{subjectId}/student/{studentId}
+     */
+    @DeleteMapping("/interest/{subjectId}/student/{studentId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT')")
+    public ResponseEntity<Void> removeInterest(
+            @PathVariable Long subjectId,
+            @PathVariable Long studentId
+    ) {
+        log.info("REST: Removing interest for subject {} by student {}", subjectId, studentId);
+
+        Optional<GroupRequest> requestOpt = groupRequestRepositoryPort
+                .findPendingBySubjectIdAndRequesterId(subjectId, studentId);
+
+        if (requestOpt.isPresent()) {
+            groupRequestRepositoryPort.delete(requestOpt.get().getId());
+        }
+
+        return ResponseEntity.noContent().build();
     }
 }

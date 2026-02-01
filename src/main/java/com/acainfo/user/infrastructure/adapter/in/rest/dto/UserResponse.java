@@ -17,6 +17,7 @@ public record UserResponse(
         String firstName,
         String lastName,
         String fullName,
+        String phoneNumber,
         UserStatus status,
         Set<String> roles,
         LocalDateTime createdAt,
