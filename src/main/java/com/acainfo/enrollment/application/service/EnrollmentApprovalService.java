@@ -56,6 +56,9 @@ public class EnrollmentApprovalService implements ApproveEnrollmentUseCase, Reje
         if (hasAvailableSeats) {
             // Direct enrollment as ACTIVE
             enrollment.setStatus(EnrollmentStatus.ACTIVE);
+            // Update group enrollment count
+            group.setCurrentEnrollmentCount(group.getCurrentEnrollmentCount() + 1);
+            groupRepositoryPort.save(group);
             log.info("Enrollment {} approved as ACTIVE (seats available)", enrollmentId);
         } else {
             // Add to waiting list
