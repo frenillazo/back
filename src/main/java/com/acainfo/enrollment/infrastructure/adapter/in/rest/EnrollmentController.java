@@ -1,16 +1,20 @@
 package com.acainfo.enrollment.infrastructure.adapter.in.rest;
 
 import com.acainfo.enrollment.application.dto.EnrollmentFilters;
+import com.acainfo.enrollment.application.port.in.ApproveEnrollmentUseCase;
 import com.acainfo.enrollment.application.port.in.ChangeGroupUseCase;
 import com.acainfo.enrollment.application.port.in.EnrollStudentUseCase;
 import com.acainfo.enrollment.application.port.in.GetEnrollmentUseCase;
+import com.acainfo.enrollment.application.port.in.RejectEnrollmentUseCase;
 import com.acainfo.enrollment.application.port.in.WithdrawEnrollmentUseCase;
 import com.acainfo.enrollment.domain.model.Enrollment;
 import com.acainfo.enrollment.domain.model.EnrollmentStatus;
 import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.ChangeGroupRequest;
 import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.EnrollStudentRequest;
 import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.EnrollmentResponse;
+import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.RejectEnrollmentRequest;
 import com.acainfo.enrollment.infrastructure.mapper.EnrollmentRestMapper;
+import com.acainfo.security.userdetails.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,6 +50,8 @@ public class EnrollmentController {
     private final WithdrawEnrollmentUseCase withdrawEnrollmentUseCase;
     private final ChangeGroupUseCase changeGroupUseCase;
     private final GetEnrollmentUseCase getEnrollmentUseCase;
+    private final ApproveEnrollmentUseCase approveEnrollmentUseCase;
+    private final RejectEnrollmentUseCase rejectEnrollmentUseCase;
     private final EnrollmentRestMapper enrollmentRestMapper;
     private final EnrollmentResponseEnricher enrollmentResponseEnricher;
 
@@ -163,6 +170,46 @@ public class EnrollmentController {
         log.info("REST: Changing group for enrollment {} to group {}", id, request.getNewGroupId());
 
         Enrollment enrollment = changeGroupUseCase.changeGroup(enrollmentRestMapper.toCommand(id, request));
+        EnrollmentResponse response = enrollmentResponseEnricher.enrich(enrollment);
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Approve an enrollment request.
+     * PUT /api/enrollments/{id}/approve
+     * Only the group's teacher or an admin can approve.
+     */
+    @PutMapping("/{id}/approve")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<EnrollmentResponse> approve(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        log.info("REST: Approving enrollment {} by user {}", id, userDetails.getUserId());
+
+        Enrollment enrollment = approveEnrollmentUseCase.approve(id, userDetails.getUserId());
+        EnrollmentResponse response = enrollmentResponseEnricher.enrich(enrollment);
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Reject an enrollment request.
+     * PUT /api/enrollments/{id}/reject
+     * Only the group's teacher or an admin can reject.
+     */
+    @PutMapping("/{id}/reject")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<EnrollmentResponse> reject(
+            @PathVariable Long id,
+            @RequestBody(required = false) RejectEnrollmentRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        String reason = request != null ? request.getReason() : null;
+        log.info("REST: Rejecting enrollment {} by user {} with reason: {}", id, userDetails.getUserId(), reason);
+
+        Enrollment enrollment = rejectEnrollmentUseCase.reject(id, userDetails.getUserId(), reason);
         EnrollmentResponse response = enrollmentResponseEnricher.enrich(enrollment);
 
         return ResponseEntity.ok(response);

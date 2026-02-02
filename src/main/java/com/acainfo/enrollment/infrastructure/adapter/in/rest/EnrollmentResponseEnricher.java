@@ -48,6 +48,13 @@ public class EnrollmentResponseEnricher {
         User student = getUserProfileUseCase.getUserById(enrollment.getStudentId());
         User teacher = getUserProfileUseCase.getUserById(group.getTeacherId());
 
+        // Get approver name if exists
+        String approvedByUserName = null;
+        if (enrollment.getApprovedByUserId() != null) {
+            User approver = getUserProfileUseCase.getUserById(enrollment.getApprovedByUserId());
+            approvedByUserName = approver.getFullName();
+        }
+
         return enrollmentRestMapper.toEnrichedResponse(
                 enrollment,
                 student.getFullName(),
@@ -56,7 +63,8 @@ public class EnrollmentResponseEnricher {
                 subject.getName(),
                 subject.getCode(),
                 group.getType().name(),
-                teacher.getFullName()
+                teacher.getFullName(),
+                approvedByUserName
         );
     }
 
@@ -99,9 +107,16 @@ public class EnrollmentResponseEnricher {
                 .map(getSubjectUseCase::getById)
                 .collect(Collectors.toMap(Subject::getId, Function.identity()));
 
-        // Fetch all users (students + teachers)
+        // Collect approver IDs
+        Set<Long> approverIds = enrollments.stream()
+                .map(Enrollment::getApprovedByUserId)
+                .filter(id -> id != null)
+                .collect(Collectors.toSet());
+
+        // Fetch all users (students + teachers + approvers)
         Set<Long> allUserIds = new java.util.HashSet<>(studentIds);
         allUserIds.addAll(teacherIds);
+        allUserIds.addAll(approverIds);
         Map<Long, User> usersById = allUserIds.stream()
                 .map(getUserProfileUseCase::getUserById)
                 .collect(Collectors.toMap(User::getId, Function.identity()));
@@ -113,6 +128,9 @@ public class EnrollmentResponseEnricher {
                     Subject subject = subjectsById.get(group.getSubjectId());
                     User student = usersById.get(enrollment.getStudentId());
                     User teacher = usersById.get(group.getTeacherId());
+                    String approvedByUserName = enrollment.getApprovedByUserId() != null
+                            ? usersById.get(enrollment.getApprovedByUserId()).getFullName()
+                            : null;
 
                     return enrollmentRestMapper.toEnrichedResponse(
                             enrollment,
@@ -122,7 +140,8 @@ public class EnrollmentResponseEnricher {
                             subject.getName(),
                             subject.getCode(),
                             group.getType().name(),
-                            teacher.getFullName()
+                            teacher.getFullName(),
+                            approvedByUserName
                     );
                 })
                 .toList();

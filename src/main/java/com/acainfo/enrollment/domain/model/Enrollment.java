@@ -76,6 +76,29 @@ public class Enrollment {
      */
     private LocalDateTime withdrawnAt;
 
+    /**
+     * Date when the enrollment was approved by teacher.
+     * Null if not yet approved.
+     */
+    private LocalDateTime approvedAt;
+
+    /**
+     * Date when the enrollment was rejected by teacher.
+     * Null if not rejected.
+     */
+    private LocalDateTime rejectedAt;
+
+    /**
+     * ID of the user who approved/rejected the enrollment.
+     * Can be the group's teacher or an admin.
+     */
+    private Long approvedByUserId;
+
+    /**
+     * Reason for rejection, if applicable.
+     */
+    private String rejectionReason;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -109,6 +132,27 @@ public class Enrollment {
         return status == EnrollmentStatus.COMPLETED;
     }
 
+    /**
+     * Check if enrollment is pending approval.
+     */
+    public boolean isPendingApproval() {
+        return status == EnrollmentStatus.PENDING_APPROVAL;
+    }
+
+    /**
+     * Check if enrollment was rejected.
+     */
+    public boolean isRejected() {
+        return status == EnrollmentStatus.REJECTED;
+    }
+
+    /**
+     * Check if enrollment expired.
+     */
+    public boolean isExpired() {
+        return status == EnrollmentStatus.EXPIRED;
+    }
+
     // ==================== Computed Properties ====================
 
     /**
@@ -122,6 +166,20 @@ public class Enrollment {
      * Check if enrollment can be withdrawn (active or on waiting list).
      */
     public boolean canBeWithdrawn() {
-        return isActive() || isOnWaitingList();
+        return isActive() || isOnWaitingList() || isPendingApproval();
+    }
+
+    /**
+     * Check if enrollment can be approved (only pending approval).
+     */
+    public boolean canBeApproved() {
+        return isPendingApproval();
+    }
+
+    /**
+     * Check if enrollment can be rejected (only pending approval).
+     */
+    public boolean canBeRejected() {
+        return isPendingApproval();
     }
 }

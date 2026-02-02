@@ -7,6 +7,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * REST DTO for group response.
@@ -50,4 +51,7 @@ public class GroupResponse {
     private Boolean canEnroll;
     private Boolean isIntensive;
     private Boolean isRegular;
+
+    // Schedule summary for display
+    private List<ScheduleSummary> schedules;
 }

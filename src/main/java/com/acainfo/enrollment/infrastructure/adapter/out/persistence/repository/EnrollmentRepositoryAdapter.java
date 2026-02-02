@@ -17,6 +17,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -115,6 +116,34 @@ public class EnrollmentRepositoryAdapter implements EnrollmentRepositoryPort {
                 studentId,
                 groupId,
                 List.of(EnrollmentStatus.ACTIVE, EnrollmentStatus.WAITING_LIST)
+        );
+    }
+
+    @Override
+    public boolean existsActiveOrWaitingOrPendingEnrollment(Long studentId, Long groupId) {
+        return jpaEnrollmentRepository.existsByStudentIdAndGroupIdAndStatusIn(
+                studentId,
+                groupId,
+                List.of(EnrollmentStatus.ACTIVE, EnrollmentStatus.WAITING_LIST, EnrollmentStatus.PENDING_APPROVAL)
+        );
+    }
+
+    @Override
+    public List<Enrollment> findPendingApprovalByGroupIds(List<Long> groupIds) {
+        if (groupIds == null || groupIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return enrollmentPersistenceMapper.toDomainList(
+                jpaEnrollmentRepository.findByGroupIdInAndStatus(groupIds, EnrollmentStatus.PENDING_APPROVAL)
+        );
+    }
+
+    @Override
+    public List<Enrollment> findExpiredPendingEnrollments(int hoursOld) {
+        LocalDateTime cutoffTime = LocalDateTime.now().minusHours(hoursOld);
+        return enrollmentPersistenceMapper.toDomainList(
+                jpaEnrollmentRepository.findByStatusAndEnrolledAtBefore(
+                        EnrollmentStatus.PENDING_APPROVAL, cutoffTime)
         );
     }
 

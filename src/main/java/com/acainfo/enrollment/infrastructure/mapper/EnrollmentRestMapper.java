@@ -49,12 +49,18 @@ public interface EnrollmentRestMapper {
     @Mapping(target = "subjectCode", ignore = true)
     @Mapping(target = "groupType", ignore = true)
     @Mapping(target = "teacherName", ignore = true)
+    @Mapping(target = "approvedByUserName", ignore = true)
     @Mapping(target = "isActive", expression = "java(enrollment.isActive())")
     @Mapping(target = "isOnWaitingList", expression = "java(enrollment.isOnWaitingList())")
     @Mapping(target = "isWithdrawn", expression = "java(enrollment.isWithdrawn())")
     @Mapping(target = "isCompleted", expression = "java(enrollment.isCompleted())")
+    @Mapping(target = "isPendingApproval", expression = "java(enrollment.isPendingApproval())")
+    @Mapping(target = "isRejected", expression = "java(enrollment.isRejected())")
+    @Mapping(target = "isExpired", expression = "java(enrollment.isExpired())")
     @Mapping(target = "wasPromotedFromWaitingList", expression = "java(enrollment.wasPromotedFromWaitingList())")
     @Mapping(target = "canBeWithdrawn", expression = "java(enrollment.canBeWithdrawn())")
+    @Mapping(target = "canBeApproved", expression = "java(enrollment.canBeApproved())")
+    @Mapping(target = "canBeRejected", expression = "java(enrollment.canBeRejected())")
     EnrollmentResponse toResponse(Enrollment enrollment);
 
     /**
@@ -77,6 +83,7 @@ public interface EnrollmentRestMapper {
     @Mapping(target = "subjectCode", source = "subjectCode")
     @Mapping(target = "groupType", source = "groupType")
     @Mapping(target = "teacherName", source = "teacherName")
+    @Mapping(target = "approvedByUserName", source = "approvedByUserName")
     @Mapping(target = "id", source = "enrollment.id")
     @Mapping(target = "studentId", source = "enrollment.studentId")
     @Mapping(target = "groupId", source = "enrollment.groupId")
@@ -85,14 +92,23 @@ public interface EnrollmentRestMapper {
     @Mapping(target = "enrolledAt", source = "enrollment.enrolledAt")
     @Mapping(target = "promotedAt", source = "enrollment.promotedAt")
     @Mapping(target = "withdrawnAt", source = "enrollment.withdrawnAt")
+    @Mapping(target = "approvedAt", source = "enrollment.approvedAt")
+    @Mapping(target = "rejectedAt", source = "enrollment.rejectedAt")
+    @Mapping(target = "approvedByUserId", source = "enrollment.approvedByUserId")
+    @Mapping(target = "rejectionReason", source = "enrollment.rejectionReason")
     @Mapping(target = "createdAt", source = "enrollment.createdAt")
     @Mapping(target = "updatedAt", source = "enrollment.updatedAt")
     @Mapping(target = "isActive", expression = "java(enrollment.isActive())")
     @Mapping(target = "isOnWaitingList", expression = "java(enrollment.isOnWaitingList())")
     @Mapping(target = "isWithdrawn", expression = "java(enrollment.isWithdrawn())")
     @Mapping(target = "isCompleted", expression = "java(enrollment.isCompleted())")
+    @Mapping(target = "isPendingApproval", expression = "java(enrollment.isPendingApproval())")
+    @Mapping(target = "isRejected", expression = "java(enrollment.isRejected())")
+    @Mapping(target = "isExpired", expression = "java(enrollment.isExpired())")
     @Mapping(target = "wasPromotedFromWaitingList", expression = "java(enrollment.wasPromotedFromWaitingList())")
     @Mapping(target = "canBeWithdrawn", expression = "java(enrollment.canBeWithdrawn())")
+    @Mapping(target = "canBeApproved", expression = "java(enrollment.canBeApproved())")
+    @Mapping(target = "canBeRejected", expression = "java(enrollment.canBeRejected())")
     EnrollmentResponse toEnrichedResponse(
             Enrollment enrollment,
             String studentName,
@@ -101,7 +117,8 @@ public interface EnrollmentRestMapper {
             String subjectName,
             String subjectCode,
             String groupType,
-            String teacherName
+            String teacherName,
+            String approvedByUserName
     );
 
     /**

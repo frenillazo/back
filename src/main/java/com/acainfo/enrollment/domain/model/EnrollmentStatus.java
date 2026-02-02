@@ -5,6 +5,14 @@ package com.acainfo.enrollment.domain.model;
  *
  * <p>State transitions:</p>
  * <pre>
+ * PENDING_APPROVAL ──┬──► ACTIVE (teacher approves, seats available)
+ *                    │
+ *                    ├──► WAITING_LIST (teacher approves, no seats)
+ *                    │
+ *                    ├──► REJECTED (teacher rejects)
+ *                    │
+ *                    └──► EXPIRED (2 days timeout without response)
+ *
  * ACTIVE ──┬──► WITHDRAWN (student leaves voluntarily)
  *          │
  *          └──► COMPLETED (course finished successfully)
@@ -15,6 +23,12 @@ package com.acainfo.enrollment.domain.model;
  * </pre>
  */
 public enum EnrollmentStatus {
+
+    /**
+     * Enrollment is pending teacher approval.
+     * Initial state when student requests to enroll.
+     */
+    PENDING_APPROVAL,
 
     /**
      * Student is actively enrolled in the group.
@@ -34,5 +48,15 @@ public enum EnrollmentStatus {
     /**
      * Student has successfully completed the course.
      */
-    COMPLETED
+    COMPLETED,
+
+    /**
+     * Enrollment request was rejected by the teacher.
+     */
+    REJECTED,
+
+    /**
+     * Enrollment request expired (teacher didn't respond within 2 days).
+     */
+    EXPIRED
 }

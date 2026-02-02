@@ -3,6 +3,7 @@ package com.acainfo.user.infrastructure.adapter.out.persistence.repository;
 import com.acainfo.user.application.dto.UserFilters;
 import com.acainfo.user.application.port.out.UserRepositoryPort;
 import com.acainfo.user.domain.model.User;
+import com.acainfo.user.domain.model.UserStatus;
 import com.acainfo.user.infrastructure.adapter.out.persistence.entity.UserJpaEntity;
 import com.acainfo.user.infrastructure.adapter.out.persistence.specification.UserSpecifications;
 import com.acainfo.user.infrastructure.mapper.UserPersistenceMapper;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -83,5 +85,13 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
     @Override
     public List<Long> findIdsByEmailContaining(String emailSearch) {
         return jpaUserRepository.findIdsByEmailContainingIgnoreCase(emailSearch);
+    }
+
+    @Override
+    public List<User> findByStatusAndCreatedAtBefore(UserStatus status, LocalDateTime createdBefore) {
+        return jpaUserRepository.findByStatusAndCreatedAtBefore(status, createdBefore)
+                .stream()
+                .map(userPersistenceMapper::toDomain)
+                .toList();
     }
 }

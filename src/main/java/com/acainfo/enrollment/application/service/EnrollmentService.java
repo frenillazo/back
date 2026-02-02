@@ -49,52 +49,31 @@ public class EnrollmentService implements
     @Override
     @Transactional
     public Enrollment enroll(EnrollStudentCommand command) {
-        log.info("Enrolling student {} in group {}", command.studentId(), command.groupId());
+        log.info("Enrolling student {} in group {} (pending approval)", command.studentId(), command.groupId());
 
         // Validate group exists
         SubjectGroup group = groupRepositoryPort.findById(command.groupId())
                 .orElseThrow(() -> new GroupNotFoundException(command.groupId()));
 
-        // Check if already enrolled
-        if (enrollmentRepositoryPort.existsActiveOrWaitingEnrollment(command.studentId(), command.groupId())) {
+        // Check if already enrolled (active, waiting, or pending)
+        if (enrollmentRepositoryPort.existsActiveOrWaitingOrPendingEnrollment(command.studentId(), command.groupId())) {
             throw new AlreadyEnrolledException(command.studentId(), command.groupId());
         }
-
-        // Check group capacity
-        long activeCount = enrollmentRepositoryPort.countActiveByGroupId(command.groupId());
-        boolean hasAvailableSeats = activeCount < group.getMaxCapacity();
 
         // Get the price per hour from the group (uses default if not set)
         BigDecimal pricePerHour = group.getEffectivePricePerHour();
 
-        Enrollment enrollment;
-        if (hasAvailableSeats) {
-            // Direct enrollment as ACTIVE
-            enrollment = Enrollment.builder()
-                    .studentId(command.studentId())
-                    .groupId(command.groupId())
-                    .pricePerHour(pricePerHour)
-                    .status(EnrollmentStatus.ACTIVE)
-                    .enrolledAt(LocalDateTime.now())
-                    .build();
+        // Create enrollment as PENDING_APPROVAL - teacher must approve
+        Enrollment enrollment = Enrollment.builder()
+                .studentId(command.studentId())
+                .groupId(command.groupId())
+                .pricePerHour(pricePerHour)
+                .status(EnrollmentStatus.PENDING_APPROVAL)
+                .enrolledAt(LocalDateTime.now())
+                .build();
 
-            log.info("Student {} enrolled as ACTIVE in group {} at {}€/hour",
-                    command.studentId(), command.groupId(), pricePerHour);
-        } else {
-            // Add to waiting list
-            int position = enrollmentRepositoryPort.getNextWaitingListPosition(command.groupId());
-            enrollment = Enrollment.builder()
-                    .studentId(command.studentId())
-                    .groupId(command.groupId())
-                    .pricePerHour(pricePerHour)
-                    .status(EnrollmentStatus.WAITING_LIST)
-                    .waitingListPosition(position)
-                    .enrolledAt(LocalDateTime.now())
-                    .build();
-
-            log.info("Student {} added to waiting list for group {} at position {} at {}€/hour",
-                    command.studentId(), command.groupId(), position, pricePerHour);
-        }
+        log.info("Student {} enrollment request created for group {} at {}€/hour (pending teacher approval)",
+                command.studentId(), command.groupId(), pricePerHour);
 
         return enrollmentRepositoryPort.save(enrollment);
     }

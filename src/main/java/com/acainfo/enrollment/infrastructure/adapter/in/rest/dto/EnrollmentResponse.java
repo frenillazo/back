@@ -44,6 +44,16 @@ public class EnrollmentResponse {
     private LocalDateTime withdrawnAt;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime approvedAt;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime rejectedAt;
+
+    private Long approvedByUserId;
+    private String approvedByUserName;
+    private String rejectionReason;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
@@ -54,6 +64,11 @@ public class EnrollmentResponse {
     private Boolean isOnWaitingList;
     private Boolean isWithdrawn;
     private Boolean isCompleted;
+    private Boolean isPendingApproval;
+    private Boolean isRejected;
+    private Boolean isExpired;
     private Boolean wasPromotedFromWaitingList;
     private Boolean canBeWithdrawn;
+    private Boolean canBeApproved;
+    private Boolean canBeRejected;
 }

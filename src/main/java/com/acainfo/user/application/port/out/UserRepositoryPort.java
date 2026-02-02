@@ -2,8 +2,10 @@ package com.acainfo.user.application.port.out;
 
 import com.acainfo.user.application.dto.UserFilters;
 import com.acainfo.user.domain.model.User;
+import com.acainfo.user.domain.model.UserStatus;
 import org.springframework.data.domain.Page;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,4 +77,14 @@ public interface UserRepositoryPort {
      * @return list of user IDs matching the search
      */
     List<Long> findIdsByEmailContaining(String emailSearch);
+
+    /**
+     * Find users with a specific status created before a given date.
+     * Used for cleanup tasks like removing unverified users.
+     *
+     * @param status User status to filter
+     * @param createdBefore Users created before this date
+     * @return List of users matching the criteria
+     */
+    List<User> findByStatusAndCreatedAtBefore(UserStatus status, LocalDateTime createdBefore);
 }

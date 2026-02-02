@@ -92,6 +92,32 @@ public interface EnrollmentRepositoryPort {
     boolean existsActiveOrWaitingEnrollment(Long studentId, Long groupId);
 
     /**
+     * Check if student is already enrolled (active, waiting, or pending approval) in a group.
+     *
+     * @param studentId Student ID
+     * @param groupId Group ID
+     * @return true if student has any active enrollment request
+     */
+    boolean existsActiveOrWaitingOrPendingEnrollment(Long studentId, Long groupId);
+
+    /**
+     * Find all pending approval enrollments for groups taught by a specific teacher.
+     *
+     * @param teacherId Teacher user ID
+     * @param groupIds List of group IDs taught by the teacher
+     * @return List of enrollments pending approval
+     */
+    List<Enrollment> findPendingApprovalByGroupIds(List<Long> groupIds);
+
+    /**
+     * Find all expired pending enrollments (older than specified hours).
+     *
+     * @param hoursOld Number of hours since enrollment request
+     * @return List of expired enrollments
+     */
+    List<Enrollment> findExpiredPendingEnrollments(int hoursOld);
+
+    /**
      * Count active enrollments for a group.
      *
      * @param groupId Group ID

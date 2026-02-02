@@ -2,7 +2,9 @@ package com.acainfo.group.infrastructure.adapter.in.rest;
 
 import com.acainfo.group.domain.model.SubjectGroup;
 import com.acainfo.group.infrastructure.adapter.in.rest.dto.GroupResponse;
+import com.acainfo.group.infrastructure.adapter.in.rest.dto.ScheduleSummary;
 import com.acainfo.group.infrastructure.mapper.GroupRestMapper;
+import com.acainfo.schedule.application.port.in.GetScheduleUseCase;
 import com.acainfo.subject.application.port.in.GetSubjectUseCase;
 import com.acainfo.subject.domain.model.Subject;
 import com.acainfo.user.application.port.in.GetUserProfileUseCase;
@@ -31,6 +33,7 @@ public class GroupResponseEnricher {
     private final GroupRestMapper groupRestMapper;
     private final GetSubjectUseCase getSubjectUseCase;
     private final GetUserProfileUseCase getUserProfileUseCase;
+    private final GetScheduleUseCase getScheduleUseCase;
 
     /**
      * Enrich a single group with related entity data.
@@ -41,13 +44,33 @@ public class GroupResponseEnricher {
     public GroupResponse enrich(SubjectGroup group) {
         Subject subject = getSubjectUseCase.getById(group.getSubjectId());
         User teacher = getUserProfileUseCase.getUserById(group.getTeacherId());
+        List<ScheduleSummary> schedules = getScheduleSummaries(group.getId());
 
-        return groupRestMapper.toEnrichedResponse(
+        GroupResponse response = groupRestMapper.toEnrichedResponse(
                 group,
                 subject.getName(),
                 subject.getCode(),
                 teacher.getFullName()
         );
+        response.setSchedules(schedules);
+        return response;
+    }
+
+    /**
+     * Get schedule summaries for a group.
+     *
+     * @param groupId the group ID
+     * @return list of schedule summaries sorted by day of week
+     */
+    private List<ScheduleSummary> getScheduleSummaries(Long groupId) {
+        return getScheduleUseCase.findByGroupId(groupId).stream()
+                .map(schedule -> ScheduleSummary.builder()
+                        .dayOfWeek(schedule.getDayOfWeek())
+                        .startTime(schedule.getStartTime())
+                        .endTime(schedule.getEndTime())
+                        .build())
+                .sorted((a, b) -> a.getDayOfWeek().compareTo(b.getDayOfWeek()))
+                .toList();
     }
 
     /**
@@ -71,6 +94,10 @@ public class GroupResponseEnricher {
                 .map(SubjectGroup::getTeacherId)
                 .collect(Collectors.toSet());
 
+        Set<Long> groupIds = groups.stream()
+                .map(SubjectGroup::getId)
+                .collect(Collectors.toSet());
+
         // Fetch subjects
         Map<Long, Subject> subjectsById = subjectIds.stream()
                 .map(getSubjectUseCase::getById)
@@ -81,18 +108,27 @@ public class GroupResponseEnricher {
                 .map(getUserProfileUseCase::getUserById)
                 .collect(Collectors.toMap(User::getId, Function.identity()));
 
+        // Fetch schedules for all groups
+        Map<Long, List<ScheduleSummary>> schedulesByGroupId = groupIds.stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        this::getScheduleSummaries
+                ));
+
         // Build enriched responses
         return groups.stream()
                 .map(group -> {
                     Subject subject = subjectsById.get(group.getSubjectId());
                     User teacher = teachersById.get(group.getTeacherId());
 
-                    return groupRestMapper.toEnrichedResponse(
+                    GroupResponse response = groupRestMapper.toEnrichedResponse(
                             group,
                             subject.getName(),
                             subject.getCode(),
                             teacher.getFullName()
                     );
+                    response.setSchedules(schedulesByGroupId.getOrDefault(group.getId(), List.of()));
+                    return response;
                 })
                 .toList();
     }

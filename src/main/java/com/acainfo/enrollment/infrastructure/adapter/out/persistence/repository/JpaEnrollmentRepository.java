@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -78,4 +79,14 @@ public interface JpaEnrollmentRepository extends
            "WHERE e.groupId = :groupId AND e.status = 'WAITING_LIST' " +
            "AND e.waitingListPosition > :position")
     void decrementWaitingListPositionsAfter(@Param("groupId") Long groupId, @Param("position") int position);
+
+    /**
+     * Find pending approval enrollments for multiple groups.
+     */
+    List<EnrollmentJpaEntity> findByGroupIdInAndStatus(List<Long> groupIds, EnrollmentStatus status);
+
+    /**
+     * Find pending enrollments older than a given time (for expiration).
+     */
+    List<EnrollmentJpaEntity> findByStatusAndEnrolledAtBefore(EnrollmentStatus status, LocalDateTime cutoffTime);
 }
