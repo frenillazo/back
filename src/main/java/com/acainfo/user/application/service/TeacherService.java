@@ -138,6 +138,7 @@ public class TeacherService implements ManageTeachersUseCase {
                 filters.searchTerm(),
                 filters.status(),
                 RoleType.TEACHER, // Force TEACHER role
+                null, // degree not applicable to teachers
                 filters.page(),
                 filters.size(),
                 filters.sortBy(),

@@ -1,5 +1,6 @@
 package com.acainfo.user.infrastructure.adapter.in.rest;
 
+import com.acainfo.subject.domain.model.Degree;
 import com.acainfo.user.application.dto.UserFilters;
 import com.acainfo.user.application.port.in.ActivateUsersUseCase;
 import com.acainfo.user.application.port.in.DeactivateUsersUseCase;
@@ -89,6 +90,9 @@ public class AdminController {
             @Parameter(description = "Filter by role (ADMIN, TEACHER, STUDENT)")
             @RequestParam(required = false) RoleType roleType,
 
+            @Parameter(description = "Filter by degree (INGENIERIA_INFORMATICA, INGENIERIA_INDUSTRIAL)")
+            @RequestParam(required = false) Degree degree,
+
             @Parameter(description = "Page number (0-indexed)")
             @RequestParam(defaultValue = "0") Integer page,
 
@@ -108,6 +112,7 @@ public class AdminController {
                 searchTerm,
                 status,
                 roleType,
+                degree,
                 page,
                 size,
                 sortBy,

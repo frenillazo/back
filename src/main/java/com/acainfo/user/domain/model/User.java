@@ -1,5 +1,6 @@
 package com.acainfo.user.domain.model;
 
+import com.acainfo.subject.domain.model.Degree;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -32,6 +33,7 @@ public class User {
     private String lastName;
     private String phoneNumber;
     private UserStatus status;
+    private Degree degree; // Only applies to STUDENT role, null for others
 
     @Builder.Default
     private Set<Role> roles = new HashSet<>();

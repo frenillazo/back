@@ -69,6 +69,11 @@ public class UserSpecifications {
                 predicates.add(criteriaBuilder.equal(rolesJoin.get("type"), filters.roleType()));
             }
 
+            // Filter by degree
+            if (filters.degree() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("degree"), filters.degree()));
+            }
+
             // Combine all predicates with AND
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };

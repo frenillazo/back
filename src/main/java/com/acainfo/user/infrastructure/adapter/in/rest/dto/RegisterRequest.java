@@ -1,7 +1,9 @@
 package com.acainfo.user.infrastructure.adapter.in.rest.dto;
 
+import com.acainfo.subject.domain.model.Degree;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -28,6 +30,9 @@ public record RegisterRequest(
 
         @NotBlank(message = "Phone number is required")
         @Size(max = 20, message = "Phone number must not exceed 20 characters")
-        String phoneNumber
+        String phoneNumber,
+
+        @NotNull(message = "Degree is required")
+        Degree degree
 ) {
 }

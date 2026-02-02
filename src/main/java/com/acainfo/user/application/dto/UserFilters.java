@@ -1,5 +1,6 @@
 package com.acainfo.user.application.dto;
 
+import com.acainfo.subject.domain.model.Degree;
 import com.acainfo.user.domain.model.RoleType;
 import com.acainfo.user.domain.model.UserStatus;
 
@@ -12,6 +13,7 @@ public record UserFilters(
         String searchTerm,  // Search in email, firstName, lastName
         UserStatus status,
         RoleType roleType,
+        Degree degree,
         Integer page,
         Integer size,
         String sortBy,

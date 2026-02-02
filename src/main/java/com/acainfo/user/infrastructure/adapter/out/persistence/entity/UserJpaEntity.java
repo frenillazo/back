@@ -1,5 +1,6 @@
 package com.acainfo.user.infrastructure.adapter.out.persistence.entity;
 
+import com.acainfo.subject.domain.model.Degree;
 import com.acainfo.user.domain.model.UserStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -63,6 +64,10 @@ public class UserJpaEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private UserStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "degree", nullable = true, length = 30)
+    private Degree degree;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

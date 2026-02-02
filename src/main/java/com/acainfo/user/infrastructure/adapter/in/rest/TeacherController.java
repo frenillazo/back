@@ -121,6 +121,7 @@ public class TeacherController {
                 searchTerm,
                 status,
                 null, // roleType forced to TEACHER by service
+                null, // degree not applicable to teachers
                 page,
                 size,
                 sortBy,

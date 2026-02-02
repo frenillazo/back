@@ -102,6 +102,7 @@ public class AuthService implements
                 .firstName(command.firstName().trim())
                 .lastName(command.lastName().trim())
                 .phoneNumber(command.phoneNumber().trim())
+                .degree(command.degree())
                 .status(UserStatus.PENDING_ACTIVATION)
                 .roles(Set.of(studentRole))
                 .build();

@@ -1,5 +1,6 @@
 package com.acainfo.user.infrastructure.adapter.in.rest.dto;
 
+import com.acainfo.subject.domain.model.Degree;
 import com.acainfo.user.domain.model.UserStatus;
 import lombok.Builder;
 
@@ -19,6 +20,7 @@ public record UserResponse(
         String fullName,
         String phoneNumber,
         UserStatus status,
+        Degree degree,
         Set<String> roles,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
