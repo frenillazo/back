@@ -1,6 +1,8 @@
 package com.acainfo.payment.infrastructure.adapter.in.rest;
 
+import com.acainfo.payment.application.dto.GroupPaymentPreviewResponse;
 import com.acainfo.payment.application.port.in.CancelPaymentUseCase;
+import com.acainfo.payment.application.port.in.GenerateGroupPaymentsUseCase;
 import com.acainfo.payment.application.port.in.GenerateMonthlyPaymentsUseCase;
 import com.acainfo.payment.application.port.in.GeneratePaymentUseCase;
 import com.acainfo.payment.application.port.in.GetPaymentUseCase;
@@ -26,6 +28,7 @@ public class PaymentAdminController {
 
     private final GeneratePaymentUseCase generatePaymentUseCase;
     private final GenerateMonthlyPaymentsUseCase generateMonthlyPaymentsUseCase;
+    private final GenerateGroupPaymentsUseCase generateGroupPaymentsUseCase;
     private final CancelPaymentUseCase cancelPaymentUseCase;
     private final GetPaymentUseCase getPaymentUseCase;
     private final PaymentRestMapper mapper;
@@ -76,5 +79,35 @@ public class PaymentAdminController {
     public ResponseEntity<List<PaymentResponse>> getAllOverdue() {
         List<Payment> payments = getPaymentUseCase.getAllOverdue();
         return ResponseEntity.ok(mapper.toResponseList(payments));
+    }
+
+    /**
+     * Preview payments that would be generated for a group.
+     * Shows calculated amounts for each enrollment without creating payments.
+     */
+    @GetMapping("/group/{groupId}/preview")
+    public ResponseEntity<GroupPaymentPreviewResponse> previewGroupPayments(
+            @PathVariable Long groupId,
+            @RequestParam Integer billingMonth,
+            @RequestParam Integer billingYear
+    ) {
+        GroupPaymentPreviewResponse preview = generateGroupPaymentsUseCase.preview(
+                groupId, billingMonth, billingYear
+        );
+        return ResponseEntity.ok(preview);
+    }
+
+    /**
+     * Generate payments for all active enrollments of a group.
+     * Optionally accepts a custom amount to override calculated amounts.
+     */
+    @PostMapping("/generate-by-group")
+    public ResponseEntity<List<PaymentResponse>> generateGroupPayments(
+            @Valid @RequestBody GenerateGroupPaymentsRequest request
+    ) {
+        List<Payment> payments = generateGroupPaymentsUseCase.generate(
+                mapper.toCommand(request)
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toResponseList(payments));
     }
 }

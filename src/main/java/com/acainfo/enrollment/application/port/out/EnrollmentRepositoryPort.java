@@ -65,6 +65,15 @@ public interface EnrollmentRepositoryPort {
     List<Enrollment> findByStudentIdAndStatus(Long studentId, EnrollmentStatus status);
 
     /**
+     * Find enrollments by student and multiple statuses.
+     *
+     * @param studentId Student ID
+     * @param statuses List of enrollment statuses
+     * @return List of enrollments
+     */
+    List<Enrollment> findByStudentIdAndStatusIn(Long studentId, List<EnrollmentStatus> statuses);
+
+    /**
      * Find enrollments by group and status.
      *
      * @param groupId Group ID

@@ -34,6 +34,7 @@ public class SessionResponse {
     // Enriched data from related entities
     private String subjectName;
     private String subjectCode;
+    private String groupName;
     private String groupType;
     private String teacherName;
 

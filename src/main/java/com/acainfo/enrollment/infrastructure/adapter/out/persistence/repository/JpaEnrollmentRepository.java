@@ -38,6 +38,11 @@ public interface JpaEnrollmentRepository extends
     List<EnrollmentJpaEntity> findByStudentIdAndStatus(Long studentId, EnrollmentStatus status);
 
     /**
+     * Find enrollments by student and multiple statuses.
+     */
+    List<EnrollmentJpaEntity> findByStudentIdAndStatusIn(Long studentId, List<EnrollmentStatus> statuses);
+
+    /**
      * Find enrollments by group and status.
      */
     List<EnrollmentJpaEntity> findByGroupIdAndStatus(Long groupId, EnrollmentStatus status);

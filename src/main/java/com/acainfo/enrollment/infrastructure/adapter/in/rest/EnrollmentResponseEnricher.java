@@ -5,6 +5,8 @@ import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.EnrollmentRespo
 import com.acainfo.enrollment.infrastructure.mapper.EnrollmentRestMapper;
 import com.acainfo.group.application.port.in.GetGroupUseCase;
 import com.acainfo.group.domain.model.SubjectGroup;
+import com.acainfo.schedule.application.port.in.GetScheduleUseCase;
+import com.acainfo.schedule.domain.model.Schedule;
 import com.acainfo.subject.application.port.in.GetSubjectUseCase;
 import com.acainfo.subject.domain.model.Subject;
 import com.acainfo.user.application.port.in.GetUserProfileUseCase;
@@ -14,7 +16,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
+import java.time.DayOfWeek;
+import java.time.format.TextStyle;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -34,6 +39,17 @@ public class EnrollmentResponseEnricher {
     private final GetGroupUseCase getGroupUseCase;
     private final GetSubjectUseCase getSubjectUseCase;
     private final GetUserProfileUseCase getUserProfileUseCase;
+    private final GetScheduleUseCase getScheduleUseCase;
+
+    private static final Map<DayOfWeek, String> DAY_LABELS = Map.of(
+            DayOfWeek.MONDAY, "L",
+            DayOfWeek.TUESDAY, "M",
+            DayOfWeek.WEDNESDAY, "X",
+            DayOfWeek.THURSDAY, "J",
+            DayOfWeek.FRIDAY, "V",
+            DayOfWeek.SATURDAY, "S",
+            DayOfWeek.SUNDAY, "D"
+    );
 
     /**
      * Enrich a single enrollment with related entity data.
@@ -47,6 +63,10 @@ public class EnrollmentResponseEnricher {
         Subject subject = getSubjectUseCase.getById(group.getSubjectId());
         User student = getUserProfileUseCase.getUserById(enrollment.getStudentId());
         User teacher = getUserProfileUseCase.getUserById(group.getTeacherId());
+
+        // Get schedules for this group
+        List<Schedule> schedules = getScheduleUseCase.findByGroupId(group.getId());
+        String scheduleSummary = buildScheduleSummary(schedules);
 
         // Get approver name if exists
         String approvedByUserName = null;
@@ -63,7 +83,11 @@ public class EnrollmentResponseEnricher {
                 subject.getName(),
                 subject.getCode(),
                 group.getType().name(),
+                group.getName(),
                 teacher.getFullName(),
+                scheduleSummary,
+                group.getMaxCapacity(),
+                group.getCurrentEnrollmentCount(),
                 approvedByUserName
         );
     }
@@ -121,6 +145,13 @@ public class EnrollmentResponseEnricher {
                 .map(getUserProfileUseCase::getUserById)
                 .collect(Collectors.toMap(User::getId, Function.identity()));
 
+        // Fetch schedules for all groups
+        Map<Long, List<Schedule>> schedulesByGroupId = groupIds.stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        getScheduleUseCase::findByGroupId
+                ));
+
         // Build enriched responses
         return enrollments.stream()
                 .map(enrollment -> {
@@ -131,6 +162,8 @@ public class EnrollmentResponseEnricher {
                     String approvedByUserName = enrollment.getApprovedByUserId() != null
                             ? usersById.get(enrollment.getApprovedByUserId()).getFullName()
                             : null;
+                    List<Schedule> schedules = schedulesByGroupId.getOrDefault(group.getId(), List.of());
+                    String scheduleSummary = buildScheduleSummary(schedules);
 
                     return enrollmentRestMapper.toEnrichedResponse(
                             enrollment,
@@ -140,11 +173,30 @@ public class EnrollmentResponseEnricher {
                             subject.getName(),
                             subject.getCode(),
                             group.getType().name(),
+                            group.getName(),
                             teacher.getFullName(),
+                            scheduleSummary,
+                            group.getMaxCapacity(),
+                            group.getCurrentEnrollmentCount(),
                             approvedByUserName
                     );
                 })
                 .toList();
+    }
+
+    /**
+     * Build a human-readable schedule summary string.
+     * Format: "L 10:30-12:30, V 08:30-10:30"
+     */
+    private String buildScheduleSummary(List<Schedule> schedules) {
+        if (schedules == null || schedules.isEmpty()) {
+            return "Horario por determinar";
+        }
+        return schedules.stream()
+                .map(s -> DAY_LABELS.get(s.getDayOfWeek()) + " " +
+                        s.getStartTime().toString().substring(0, 5) + "-" +
+                        s.getEndTime().toString().substring(0, 5))
+                .collect(Collectors.joining(", "));
     }
 
     /**

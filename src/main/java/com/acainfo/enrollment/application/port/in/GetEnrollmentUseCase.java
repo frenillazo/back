@@ -38,6 +38,15 @@ public interface GetEnrollmentUseCase {
     List<Enrollment> findActiveByStudentId(Long studentId);
 
     /**
+     * Get all active and pending enrollments for a student.
+     * Includes ACTIVE, WAITING_LIST, and PENDING_APPROVAL statuses.
+     *
+     * @param studentId Student ID
+     * @return List of active and pending enrollments
+     */
+    List<Enrollment> findActiveAndPendingByStudentId(Long studentId);
+
+    /**
      * Get all active enrollments for a group.
      *
      * @param groupId Group ID

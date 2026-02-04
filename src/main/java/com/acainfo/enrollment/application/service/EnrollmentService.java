@@ -185,6 +185,16 @@ public class EnrollmentService implements
 
     @Override
     @Transactional(readOnly = true)
+    public List<Enrollment> findActiveAndPendingByStudentId(Long studentId) {
+        log.debug("Finding active and pending enrollments for student: {}", studentId);
+        return enrollmentRepositoryPort.findByStudentIdAndStatusIn(
+                studentId,
+                List.of(EnrollmentStatus.ACTIVE, EnrollmentStatus.WAITING_LIST, EnrollmentStatus.PENDING_APPROVAL)
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Enrollment> findActiveByGroupId(Long groupId) {
         log.debug("Finding active enrollments for group: {}", groupId);
         return enrollmentRepositoryPort.findByGroupIdAndStatus(groupId, EnrollmentStatus.ACTIVE);

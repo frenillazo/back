@@ -73,12 +73,25 @@ public class EnrollmentController {
     /**
      * Get enrollment by ID.
      * GET /api/enrollments/{id}
+     * Students can only see their own enrollments; admins/teachers can see any.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<EnrollmentResponse> getEnrollmentById(@PathVariable Long id) {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<EnrollmentResponse> getEnrollmentById(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
         log.debug("REST: Getting enrollment by ID: {}", id);
 
         Enrollment enrollment = getEnrollmentUseCase.getById(id);
+
+        // Students can only view their own enrollments
+        if (userDetails.getUser().isStudent() && !enrollment.getStudentId().equals(userDetails.getUserId())) {
+            log.warn("Student {} attempted to access enrollment {} belonging to student {}",
+                    userDetails.getUserId(), id, enrollment.getStudentId());
+            throw new org.springframework.security.access.AccessDeniedException("No tienes permiso para ver esta inscripción");
+        }
+
         EnrollmentResponse response = enrollmentResponseEnricher.enrich(enrollment);
 
         return ResponseEntity.ok(response);
@@ -87,8 +100,10 @@ public class EnrollmentController {
     /**
      * Get enrollments with filters (pagination + sorting + filtering).
      * GET /api/enrollments?studentId=1&studentEmail=...&groupId=2&status=ACTIVE&...
+     * Students can only see their own enrollments; admins/teachers can see any.
      */
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Page<EnrollmentResponse>> getEnrollmentsWithFilters(
             @RequestParam(required = false) Long studentId,
             @RequestParam(required = false) String studentEmail,
@@ -97,13 +112,21 @@ public class EnrollmentController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "enrolledAt") String sortBy,
-            @RequestParam(defaultValue = "DESC") String sortDirection
+            @RequestParam(defaultValue = "DESC") String sortDirection,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        // Students can only query their own enrollments
+        Long effectiveStudentId = studentId;
+        if (userDetails.getUser().isStudent()) {
+            effectiveStudentId = userDetails.getUserId();
+            log.debug("Student {} querying own enrollments only", effectiveStudentId);
+        }
+
         log.debug("REST: Getting enrollments with filters - studentId={}, studentEmail={}, groupId={}, status={}",
-                studentId, studentEmail, groupId, status);
+                effectiveStudentId, studentEmail, groupId, status);
 
         EnrollmentFilters filters = new EnrollmentFilters(
-                studentId, studentEmail, groupId, status, page, size, sortBy, sortDirection
+                effectiveStudentId, studentEmail, groupId, status, page, size, sortBy, sortDirection
         );
 
         Page<Enrollment> enrollmentsPage = getEnrollmentUseCase.findWithFilters(filters);
@@ -113,16 +136,17 @@ public class EnrollmentController {
     }
 
     /**
-     * Get active enrollments for a student.
+     * Get active and pending enrollments for a student.
+     * Includes ACTIVE, WAITING_LIST, and PENDING_APPROVAL statuses.
      * GET /api/enrollments/student/{studentId}
      * Students can only see their own enrollments; admins can see any.
      */
     @GetMapping("/student/{studentId}")
     @PreAuthorize("hasRole('ADMIN') or #studentId == authentication.principal.userId")
-    public ResponseEntity<List<EnrollmentResponse>> getActiveEnrollmentsByStudent(@PathVariable Long studentId) {
-        log.debug("REST: Getting active enrollments for student: {}", studentId);
+    public ResponseEntity<List<EnrollmentResponse>> getActiveAndPendingEnrollmentsByStudent(@PathVariable Long studentId) {
+        log.debug("REST: Getting active and pending enrollments for student: {}", studentId);
 
-        List<Enrollment> enrollments = getEnrollmentUseCase.findActiveByStudentId(studentId);
+        List<Enrollment> enrollments = getEnrollmentUseCase.findActiveAndPendingByStudentId(studentId);
         List<EnrollmentResponse> responses = enrollmentResponseEnricher.enrichList(enrollments);
 
         return ResponseEntity.ok(responses);
@@ -131,8 +155,10 @@ public class EnrollmentController {
     /**
      * Get active enrollments for a group.
      * GET /api/enrollments/group/{groupId}
+     * Only admins and teachers can see all enrollments in a group.
      */
     @GetMapping("/group/{groupId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<List<EnrollmentResponse>> getActiveEnrollmentsByGroup(@PathVariable Long groupId) {
         log.debug("REST: Getting active enrollments for group: {}", groupId);
 
@@ -145,14 +171,28 @@ public class EnrollmentController {
     /**
      * Withdraw from enrollment.
      * DELETE /api/enrollments/{id}
+     * Students can only withdraw their own enrollments; admins can withdraw any.
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT')")
-    public ResponseEntity<EnrollmentResponse> withdraw(@PathVariable Long id) {
+    public ResponseEntity<EnrollmentResponse> withdraw(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
         log.info("REST: Withdrawing enrollment: {}", id);
 
-        Enrollment enrollment = withdrawEnrollmentUseCase.withdraw(id);
-        EnrollmentResponse response = enrollmentResponseEnricher.enrich(enrollment);
+        // Get enrollment first to verify ownership
+        Enrollment enrollment = getEnrollmentUseCase.getById(id);
+
+        // Students can only withdraw their own enrollments
+        if (userDetails.getUser().isStudent() && !enrollment.getStudentId().equals(userDetails.getUserId())) {
+            log.warn("Student {} attempted to withdraw enrollment {} belonging to student {}",
+                    userDetails.getUserId(), id, enrollment.getStudentId());
+            throw new org.springframework.security.access.AccessDeniedException("No tienes permiso para retirar esta inscripción");
+        }
+
+        Enrollment withdrawnEnrollment = withdrawEnrollmentUseCase.withdraw(id);
+        EnrollmentResponse response = enrollmentResponseEnricher.enrich(withdrawnEnrollment);
 
         return ResponseEntity.ok(response);
     }
@@ -160,14 +200,26 @@ public class EnrollmentController {
     /**
      * Change group for an enrollment.
      * PUT /api/enrollments/{id}/change-group
+     * Students can only change their own enrollments; admins can change any.
      */
     @PutMapping("/{id}/change-group")
     @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT')")
     public ResponseEntity<EnrollmentResponse> changeGroup(
             @PathVariable Long id,
-            @Valid @RequestBody ChangeGroupRequest request
+            @Valid @RequestBody ChangeGroupRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         log.info("REST: Changing group for enrollment {} to group {}", id, request.getNewGroupId());
+
+        // Get enrollment first to verify ownership
+        Enrollment existingEnrollment = getEnrollmentUseCase.getById(id);
+
+        // Students can only change their own enrollments
+        if (userDetails.getUser().isStudent() && !existingEnrollment.getStudentId().equals(userDetails.getUserId())) {
+            log.warn("Student {} attempted to change group for enrollment {} belonging to student {}",
+                    userDetails.getUserId(), id, existingEnrollment.getStudentId());
+            throw new org.springframework.security.access.AccessDeniedException("No tienes permiso para cambiar el grupo de esta inscripción");
+        }
 
         Enrollment enrollment = changeGroupUseCase.changeGroup(enrollmentRestMapper.toCommand(id, request));
         EnrollmentResponse response = enrollmentResponseEnricher.enrich(enrollment);

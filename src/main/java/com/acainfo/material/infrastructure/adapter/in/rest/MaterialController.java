@@ -77,9 +77,10 @@ public class MaterialController {
 
     /**
      * Get material metadata by ID.
-     * All users can see metadata.
+     * Requires authentication.
      */
     @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<MaterialResponse> getById(@PathVariable Long id) {
         Material material = getMaterialUseCase.getById(id);
         return ResponseEntity.ok(materialResponseEnricher.enrich(material));
@@ -119,8 +120,10 @@ public class MaterialController {
 
     /**
      * List materials with filters.
+     * Requires authentication.
      */
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<PageResponse<MaterialResponse>> listWithFilters(
             @RequestParam(required = false) Long subjectId,
             @RequestParam(required = false) Long uploadedById,
@@ -152,8 +155,10 @@ public class MaterialController {
 
     /**
      * Get materials for a subject.
+     * Requires authentication.
      */
     @GetMapping("/subject/{subjectId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<MaterialResponse>> getBySubjectId(@PathVariable Long subjectId) {
         List<Material> materials = getMaterialUseCase.getBySubjectId(subjectId);
         return ResponseEntity.ok(materialResponseEnricher.enrichList(materials));

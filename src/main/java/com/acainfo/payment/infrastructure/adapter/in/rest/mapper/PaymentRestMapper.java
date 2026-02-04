@@ -1,6 +1,7 @@
 package com.acainfo.payment.infrastructure.adapter.in.rest.mapper;
 
 import com.acainfo.payment.application.dto.CancelPaymentCommand;
+import com.acainfo.payment.application.dto.GenerateGroupPaymentsCommand;
 import com.acainfo.payment.application.dto.GenerateMonthlyPaymentsCommand;
 import com.acainfo.payment.application.dto.GeneratePaymentCommand;
 import com.acainfo.payment.application.dto.MarkPaymentPaidCommand;
@@ -23,6 +24,8 @@ public interface PaymentRestMapper {
     GeneratePaymentCommand toCommand(GeneratePaymentRequest request);
 
     GenerateMonthlyPaymentsCommand toCommand(GenerateMonthlyPaymentsRequest request);
+
+    GenerateGroupPaymentsCommand toCommand(GenerateGroupPaymentsRequest request);
 
     @Mapping(target = "paymentId", source = "paymentId")
     @Mapping(target = "paidAt", expression = "java(java.time.LocalDateTime.now())")

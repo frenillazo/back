@@ -48,7 +48,11 @@ public interface EnrollmentRestMapper {
     @Mapping(target = "subjectName", ignore = true)
     @Mapping(target = "subjectCode", ignore = true)
     @Mapping(target = "groupType", ignore = true)
+    @Mapping(target = "groupName", ignore = true)
     @Mapping(target = "teacherName", ignore = true)
+    @Mapping(target = "scheduleSummary", ignore = true)
+    @Mapping(target = "groupCapacity", ignore = true)
+    @Mapping(target = "currentEnrollmentCount", ignore = true)
     @Mapping(target = "approvedByUserName", ignore = true)
     @Mapping(target = "isActive", expression = "java(enrollment.isActive())")
     @Mapping(target = "isOnWaitingList", expression = "java(enrollment.isOnWaitingList())")
@@ -82,7 +86,11 @@ public interface EnrollmentRestMapper {
     @Mapping(target = "subjectName", source = "subjectName")
     @Mapping(target = "subjectCode", source = "subjectCode")
     @Mapping(target = "groupType", source = "groupType")
+    @Mapping(target = "groupName", source = "groupName")
     @Mapping(target = "teacherName", source = "teacherName")
+    @Mapping(target = "scheduleSummary", source = "scheduleSummary")
+    @Mapping(target = "groupCapacity", source = "groupCapacity")
+    @Mapping(target = "currentEnrollmentCount", source = "currentEnrollmentCount")
     @Mapping(target = "approvedByUserName", source = "approvedByUserName")
     @Mapping(target = "id", source = "enrollment.id")
     @Mapping(target = "studentId", source = "enrollment.studentId")
@@ -117,7 +125,11 @@ public interface EnrollmentRestMapper {
             String subjectName,
             String subjectCode,
             String groupType,
+            String groupName,
             String teacherName,
+            String scheduleSummary,
+            Integer groupCapacity,
+            Integer currentEnrollmentCount,
             String approvedByUserName
     );
 

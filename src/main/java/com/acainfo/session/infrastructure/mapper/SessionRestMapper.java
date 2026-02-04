@@ -44,6 +44,7 @@ public interface SessionRestMapper {
      */
     @Mapping(target = "subjectName", ignore = true)
     @Mapping(target = "subjectCode", ignore = true)
+    @Mapping(target = "groupName", ignore = true)
     @Mapping(target = "groupType", ignore = true)
     @Mapping(target = "teacherName", ignore = true)
     @Mapping(target = "durationMinutes", expression = "java(session.getDurationMinutes())")
@@ -65,12 +66,14 @@ public interface SessionRestMapper {
      * @param session     the session domain object
      * @param subjectName name of the subject
      * @param subjectCode code of the subject
+     * @param groupName   name of the group (nullable for sessions without group)
      * @param groupType   type of the group as string (nullable for sessions without group)
      * @param teacherName full name of the teacher (nullable for sessions without group)
      * @return enriched session response
      */
     @Mapping(target = "subjectName", source = "subjectName")
     @Mapping(target = "subjectCode", source = "subjectCode")
+    @Mapping(target = "groupName", source = "groupName")
     @Mapping(target = "groupType", source = "groupType")
     @Mapping(target = "teacherName", source = "teacherName")
     @Mapping(target = "id", source = "session.id")
@@ -102,6 +105,7 @@ public interface SessionRestMapper {
             Session session,
             String subjectName,
             String subjectCode,
+            String groupName,
             String groupType,
             String teacherName
     );

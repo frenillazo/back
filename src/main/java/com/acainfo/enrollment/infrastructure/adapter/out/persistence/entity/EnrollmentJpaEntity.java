@@ -24,13 +24,9 @@ import java.time.LocalDateTime;
         @Index(name = "idx_enrollment_student_group", columnList = "student_id, group_id"),
         @Index(name = "idx_enrollment_group_status", columnList = "group_id, status"),
         @Index(name = "idx_enrollment_waiting_list", columnList = "group_id, status, waiting_list_position")
-    },
-    uniqueConstraints = {
-        @UniqueConstraint(
-            name = "uk_enrollment_student_group_active",
-            columnNames = {"student_id", "group_id", "status"}
-        )
     }
+    // Note: Unique constraint for active enrollments is managed via partial index in PostgreSQL
+    // See: uk_enrollment_student_group_active_states (only applies to PENDING_APPROVAL, ACTIVE, WAITING_LIST)
 )
 @EntityListeners(AuditingEntityListener.class)
 @Getter

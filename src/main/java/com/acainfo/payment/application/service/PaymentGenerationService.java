@@ -5,9 +5,14 @@ import com.acainfo.enrollment.domain.exception.EnrollmentNotFoundException;
 import com.acainfo.enrollment.domain.model.Enrollment;
 import com.acainfo.enrollment.domain.model.EnrollmentStatus;
 import com.acainfo.group.application.port.out.GroupRepositoryPort;
+import com.acainfo.group.domain.exception.GroupNotFoundException;
 import com.acainfo.group.domain.model.SubjectGroup;
+import com.acainfo.payment.application.dto.GenerateGroupPaymentsCommand;
 import com.acainfo.payment.application.dto.GenerateMonthlyPaymentsCommand;
 import com.acainfo.payment.application.dto.GeneratePaymentCommand;
+import com.acainfo.payment.application.dto.GroupPaymentPreviewResponse;
+import com.acainfo.payment.application.dto.GroupPaymentPreviewResponse.EnrollmentPaymentPreview;
+import com.acainfo.payment.application.port.in.GenerateGroupPaymentsUseCase;
 import com.acainfo.payment.application.port.in.GenerateMonthlyPaymentsUseCase;
 import com.acainfo.payment.application.port.in.GeneratePaymentUseCase;
 import com.acainfo.payment.application.port.out.PaymentRepositoryPort;
@@ -18,6 +23,10 @@ import com.acainfo.payment.domain.model.PaymentStatus;
 import com.acainfo.payment.domain.model.PaymentType;
 import com.acainfo.session.application.port.out.SessionRepositoryPort;
 import com.acainfo.session.domain.model.Session;
+import com.acainfo.subject.application.port.in.GetSubjectUseCase;
+import com.acainfo.subject.domain.model.Subject;
+import com.acainfo.user.application.port.in.GetUserProfileUseCase;
+import com.acainfo.user.domain.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -45,7 +54,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class PaymentGenerationService implements GeneratePaymentUseCase, GenerateMonthlyPaymentsUseCase {
+public class PaymentGenerationService implements GeneratePaymentUseCase, GenerateMonthlyPaymentsUseCase, GenerateGroupPaymentsUseCase {
 
     private static final int PAYMENT_DUE_DAYS = 5;
     private static final BigDecimal MINUTES_PER_HOUR = new BigDecimal("60");
@@ -54,6 +63,8 @@ public class PaymentGenerationService implements GeneratePaymentUseCase, Generat
     private final EnrollmentRepositoryPort enrollmentRepository;
     private final GroupRepositoryPort groupRepository;
     private final SessionRepositoryPort sessionRepository;
+    private final GetUserProfileUseCase getUserProfileUseCase;
+    private final GetSubjectUseCase getSubjectUseCase;
 
     @Override
     public Payment generate(GeneratePaymentCommand command) {
@@ -285,5 +296,164 @@ public class PaymentGenerationService implements GeneratePaymentUseCase, Generat
      * Internal record for payment calculation result.
      */
     private record PaymentCalculation(BigDecimal amount, BigDecimal totalHours, BigDecimal pricePerHour) {
+    }
+
+    // ==================== GenerateGroupPaymentsUseCase Implementation ====================
+
+    @Override
+    @Transactional(readOnly = true)
+    public GroupPaymentPreviewResponse preview(Long groupId, Integer billingMonth, Integer billingYear) {
+        log.debug("Previewing group payments for group {} period {}/{}", groupId, billingMonth, billingYear);
+
+        // 1. Get group
+        SubjectGroup group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
+
+        // 2. Get subject for name
+        Subject subject = getSubjectUseCase.getById(group.getSubjectId());
+
+        // 3. Get active enrollments
+        List<Enrollment> activeEnrollments = enrollmentRepository
+                .findByGroupIdAndStatus(groupId, EnrollmentStatus.ACTIVE);
+
+        // 4. Determine payment type based on group type
+        PaymentType paymentType = group.isIntensive() ? PaymentType.INTENSIVE_FULL : PaymentType.MONTHLY;
+
+        // 5. Calculate hours for the period
+        BigDecimal totalHours;
+        if (paymentType == PaymentType.INTENSIVE_FULL) {
+            totalHours = calculateIntensiveHours(group);
+        } else {
+            totalHours = calculateMonthlyHours(group, billingMonth, billingYear);
+        }
+
+        BigDecimal groupPricePerHour = group.getEffectivePricePerHour();
+        BigDecimal suggestedAmount = totalHours.multiply(groupPricePerHour).setScale(2, RoundingMode.HALF_UP);
+
+        // 6. Build enrollment previews
+        List<EnrollmentPaymentPreview> enrollmentPreviews = activeEnrollments.stream()
+                .map(enrollment -> {
+                    User student = getUserProfileUseCase.getUserById(enrollment.getStudentId());
+                    BigDecimal enrollmentPricePerHour = enrollment.getPricePerHour() != null
+                            ? enrollment.getPricePerHour()
+                            : groupPricePerHour;
+                    BigDecimal individualAmount = totalHours.multiply(enrollmentPricePerHour)
+                            .setScale(2, RoundingMode.HALF_UP);
+
+                    return new EnrollmentPaymentPreview(
+                            enrollment.getId(),
+                            enrollment.getStudentId(),
+                            student.getFullName(),
+                            student.getEmail(),
+                            individualAmount
+                    );
+                })
+                .toList();
+
+        return new GroupPaymentPreviewResponse(
+                groupId,
+                group.getName(),
+                subject.getName(),
+                groupPricePerHour,
+                totalHours,
+                suggestedAmount,
+                paymentType,
+                billingMonth,
+                billingYear,
+                enrollmentPreviews
+        );
+    }
+
+    @Override
+    public List<Payment> generate(GenerateGroupPaymentsCommand command) {
+        log.info("Generating payments for group {} period {}/{} customAmount={}",
+                command.groupId(), command.billingMonth(), command.billingYear(), command.customAmount());
+
+        // 1. Get group
+        SubjectGroup group = groupRepository.findById(command.groupId())
+                .orElseThrow(() -> new GroupNotFoundException(command.groupId()));
+
+        // 2. Get active enrollments
+        List<Enrollment> activeEnrollments = enrollmentRepository
+                .findByGroupIdAndStatus(command.groupId(), EnrollmentStatus.ACTIVE);
+
+        if (activeEnrollments.isEmpty()) {
+            log.info("No active enrollments found for group {}", command.groupId());
+            return List.of();
+        }
+
+        // 3. Determine payment type
+        PaymentType paymentType = group.isIntensive() ? PaymentType.INTENSIVE_FULL : PaymentType.MONTHLY;
+
+        // 4. Calculate hours for the period (used if no custom amount)
+        BigDecimal totalHours;
+        if (paymentType == PaymentType.INTENSIVE_FULL) {
+            totalHours = calculateIntensiveHours(group);
+        } else {
+            totalHours = calculateMonthlyHours(group, command.billingMonth(), command.billingYear());
+        }
+
+        // 5. Generate payment for each enrollment
+        List<Payment> generatedPayments = new ArrayList<>();
+        BigDecimal groupPricePerHour = group.getEffectivePricePerHour();
+
+        for (Enrollment enrollment : activeEnrollments) {
+            try {
+                // Skip if payment already exists for this period
+                if (paymentRepository.existsByEnrollmentIdAndBillingPeriod(
+                        enrollment.getId(), command.billingMonth(), command.billingYear())) {
+                    log.debug("Payment already exists for enrollment {} period {}/{}",
+                            enrollment.getId(), command.billingMonth(), command.billingYear());
+                    continue;
+                }
+
+                // Calculate amount: use custom if provided, otherwise calculate
+                BigDecimal amount;
+                BigDecimal pricePerHour;
+
+                if (command.customAmount() != null) {
+                    amount = command.customAmount();
+                    pricePerHour = groupPricePerHour; // Store group price for reference
+                } else {
+                    pricePerHour = enrollment.getPricePerHour() != null
+                            ? enrollment.getPricePerHour()
+                            : groupPricePerHour;
+                    amount = totalHours.multiply(pricePerHour).setScale(2, RoundingMode.HALF_UP);
+                }
+
+                // Create payment
+                LocalDate today = LocalDate.now();
+                Payment payment = Payment.builder()
+                        .enrollmentId(enrollment.getId())
+                        .studentId(enrollment.getStudentId())
+                        .type(paymentType)
+                        .status(PaymentStatus.PENDING)
+                        .amount(amount)
+                        .totalHours(totalHours)
+                        .pricePerHour(pricePerHour)
+                        .billingMonth(command.billingMonth())
+                        .billingYear(command.billingYear())
+                        .generatedAt(today)
+                        .dueDate(today.plusDays(PAYMENT_DUE_DAYS))
+                        .description(generateDescription(paymentType, command.billingMonth(), command.billingYear()))
+                        .build();
+
+                Payment saved = paymentRepository.save(payment);
+                generatedPayments.add(saved);
+
+                log.debug("Generated payment {} for enrollment {} amount {}",
+                        saved.getId(), enrollment.getId(), saved.getAmount());
+
+            } catch (Exception e) {
+                log.error("Failed to generate payment for enrollment {}: {}",
+                        enrollment.getId(), e.getMessage());
+                // Continue with other enrollments
+            }
+        }
+
+        log.info("Generated {} payments for group {} period {}/{}",
+                generatedPayments.size(), command.groupId(), command.billingMonth(), command.billingYear());
+
+        return generatedPayments;
     }
 }

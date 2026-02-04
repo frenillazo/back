@@ -45,12 +45,14 @@ public class SessionResponseEnricher {
     public SessionResponse enrich(Session session) {
         Subject subject = getSubjectUseCase.getById(session.getSubjectId());
 
+        String groupName = null;
         String groupType = null;
         String teacherName = null;
 
         // Sessions may not have a group (e.g., SCHEDULING type sessions)
         if (session.getGroupId() != null) {
             SubjectGroup group = getGroupUseCase.getById(session.getGroupId());
+            groupName = group.getName();
             groupType = group.getType().name();
             User teacher = getUserProfileUseCase.getUserById(group.getTeacherId());
             teacherName = teacher.getFullName();
@@ -60,6 +62,7 @@ public class SessionResponseEnricher {
                 session,
                 subject.getName(),
                 subject.getCode(),
+                groupName,
                 groupType,
                 teacherName
         );
@@ -112,12 +115,14 @@ public class SessionResponseEnricher {
                 .map(session -> {
                     Subject subject = subjectsById.get(session.getSubjectId());
 
+                    String groupName = null;
                     String groupType = null;
                     String teacherName = null;
 
                     if (session.getGroupId() != null) {
                         SubjectGroup group = groupsById.get(session.getGroupId());
                         if (group != null) {
+                            groupName = group.getName();
                             groupType = group.getType().name();
                             User teacher = teachersById.get(group.getTeacherId());
                             if (teacher != null) {
@@ -130,6 +135,7 @@ public class SessionResponseEnricher {
                             session,
                             subject.getName(),
                             subject.getCode(),
+                            groupName,
                             groupType,
                             teacherName
                     );

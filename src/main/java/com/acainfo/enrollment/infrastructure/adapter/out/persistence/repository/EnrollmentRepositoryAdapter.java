@@ -98,6 +98,13 @@ public class EnrollmentRepositoryAdapter implements EnrollmentRepositoryPort {
     }
 
     @Override
+    public List<Enrollment> findByStudentIdAndStatusIn(Long studentId, List<EnrollmentStatus> statuses) {
+        return enrollmentPersistenceMapper.toDomainList(
+                jpaEnrollmentRepository.findByStudentIdAndStatusIn(studentId, statuses)
+        );
+    }
+
+    @Override
     public List<Enrollment> findByGroupIdAndStatus(Long groupId, EnrollmentStatus status) {
         return enrollmentPersistenceMapper.toDomainList(
                 jpaEnrollmentRepository.findByGroupIdAndStatus(groupId, status)

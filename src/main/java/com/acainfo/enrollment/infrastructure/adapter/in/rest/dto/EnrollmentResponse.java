@@ -32,7 +32,11 @@ public class EnrollmentResponse {
     private String subjectName;
     private String subjectCode;
     private String groupType;
+    private String groupName;
     private String teacherName;
+    private String scheduleSummary;
+    private Integer groupCapacity;
+    private Integer currentEnrollmentCount;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime enrolledAt;
