@@ -4,6 +4,7 @@ import com.acainfo.schedule.application.dto.ScheduleFilters;
 import com.acainfo.schedule.domain.model.Schedule;
 import org.springframework.data.domain.Page;
 
+import java.time.DayOfWeek;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,4 +61,14 @@ public interface ScheduleRepositoryPort {
      * @return true if exists, false otherwise
      */
     boolean existsById(Long id);
+
+    /**
+     * Find schedules by teacher ID and day of week.
+     * Used for teacher conflict validation.
+     *
+     * @param teacherId Teacher ID
+     * @param dayOfWeek Day of week
+     * @return List of schedules for the teacher on that day
+     */
+    List<Schedule> findByTeacherIdAndDayOfWeek(Long teacherId, DayOfWeek dayOfWeek);
 }

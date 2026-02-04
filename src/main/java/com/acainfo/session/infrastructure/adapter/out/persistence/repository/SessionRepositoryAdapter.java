@@ -126,4 +126,11 @@ public class SessionRepositoryAdapter implements SessionRepositoryPort {
                 .map(sessionPersistenceMapper::toDomain)
                 .getContent();
     }
+
+    @Override
+    public List<Session> findByTeacherIdAndDate(Long teacherId, LocalDate date) {
+        return sessionPersistenceMapper.toDomainList(
+                jpaSessionRepository.findByTeacherIdAndDate(teacherId, date)
+        );
+    }
 }

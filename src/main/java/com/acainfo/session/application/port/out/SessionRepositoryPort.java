@@ -109,4 +109,15 @@ public interface SessionRepositoryPort {
      * @return List of upcoming sessions sorted by date ascending
      */
     List<Session> findUpcomingByGroupIds(List<Long> groupIds, LocalDate fromDate, int limit);
+
+    /**
+     * Find sessions by teacher ID and date.
+     * Used for teacher conflict validation when creating sessions.
+     * Includes all session types (REGULAR, EXTRA, SCHEDULING) that are not cancelled.
+     *
+     * @param teacherId Teacher ID
+     * @param date Session date
+     * @return List of sessions for the teacher on that date
+     */
+    List<Session> findByTeacherIdAndDate(Long teacherId, LocalDate date);
 }

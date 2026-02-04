@@ -15,16 +15,21 @@ import com.acainfo.session.application.port.in.UpdateSessionUseCase;
 import com.acainfo.session.application.port.out.SessionRepositoryPort;
 import com.acainfo.session.domain.exception.InvalidSessionStateException;
 import com.acainfo.session.domain.exception.SessionNotFoundException;
+import com.acainfo.session.domain.exception.TeacherSessionConflictException;
 import com.acainfo.session.domain.model.Session;
+import com.acainfo.session.domain.model.SessionMode;
 import com.acainfo.session.domain.model.SessionStatus;
 import com.acainfo.subject.application.port.out.SubjectRepositoryPort;
 import com.acainfo.subject.domain.exception.SubjectNotFoundException;
+import com.acainfo.user.application.port.out.UserRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 /**
@@ -44,6 +49,7 @@ public class SessionService implements
     private final GroupRepositoryPort groupRepositoryPort;
     private final SubjectRepositoryPort subjectRepositoryPort;
     private final ScheduleRepositoryPort scheduleRepositoryPort;
+    private final UserRepositoryPort userRepositoryPort;
 
     // ==================== CreateSessionUseCase ====================
 
@@ -53,7 +59,23 @@ public class SessionService implements
         log.info("Creating session: type={}, groupId={}, date={}",
                 command.type(), command.groupId(), command.date());
 
+        // Resolve subject ID and get group info for teacher validation
         Long subjectId = resolveSubjectId(command);
+        Long teacherId = resolveTeacherId(command);
+
+        // Check for teacher conflicts (only for EXTRA and SCHEDULING sessions)
+        // REGULAR sessions are already validated at schedule level
+        if (command.type() != com.acainfo.session.domain.model.SessionType.REGULAR && teacherId != null) {
+            checkForTeacherConflicts(
+                    teacherId,
+                    subjectId,
+                    command.date(),
+                    command.startTime(),
+                    command.endTime(),
+                    command.mode(),
+                    null  // No session to exclude (new session)
+            );
+        }
 
         Session session = Session.builder()
                 .subjectId(subjectId)
@@ -209,5 +231,111 @@ public class SessionService implements
 
         sessionRepositoryPort.delete(id);
         log.info("Session deleted successfully: ID {}", id);
+    }
+
+    // ==================== Helper Methods ====================
+
+    /**
+     * Resolve teacher ID from the command based on session type.
+     */
+    private Long resolveTeacherId(CreateSessionCommand command) {
+        return switch (command.type()) {
+            case SCHEDULING -> null; // SCHEDULING sessions don't have a specific teacher
+            case EXTRA -> {
+                if (command.groupId() == null) {
+                    yield null;
+                }
+                SubjectGroup group = groupRepositoryPort.findById(command.groupId())
+                        .orElse(null);
+                yield group != null ? group.getTeacherId() : null;
+            }
+            case REGULAR -> {
+                if (command.scheduleId() == null) {
+                    yield null;
+                }
+                Schedule schedule = scheduleRepositoryPort.findById(command.scheduleId())
+                        .orElse(null);
+                if (schedule == null) {
+                    yield null;
+                }
+                SubjectGroup group = groupRepositoryPort.findById(schedule.getGroupId())
+                        .orElse(null);
+                yield group != null ? group.getTeacherId() : null;
+            }
+        };
+    }
+
+    /**
+     * Check for teacher session conflicts.
+     * A teacher can have overlapping sessions ONLY if:
+     * 1. Both sessions are online (SessionMode.ONLINE)
+     * 2. Both sessions are for the same subject
+     *
+     * @param teacherId The teacher's ID
+     * @param subjectId The subject ID for the new session
+     * @param date Session date
+     * @param startTime Start time
+     * @param endTime End time
+     * @param mode Session mode (to check if online)
+     * @param excludeSessionId Session ID to exclude (for updates)
+     */
+    private void checkForTeacherConflicts(
+            Long teacherId,
+            Long subjectId,
+            LocalDate date,
+            LocalTime startTime,
+            LocalTime endTime,
+            SessionMode mode,
+            Long excludeSessionId
+    ) {
+        // Get all sessions for this teacher on this date
+        List<Session> teacherSessions = sessionRepositoryPort.findByTeacherIdAndDate(teacherId, date);
+
+        boolean newSessionIsOnline = mode == SessionMode.ONLINE;
+
+        for (Session existing : teacherSessions) {
+            // Skip the session being updated
+            if (excludeSessionId != null && excludeSessionId.equals(existing.getId())) {
+                continue;
+            }
+
+            // Check time overlap: start1 < end2 AND end1 > start2
+            if (!timeOverlaps(startTime, endTime, existing.getStartTime(), existing.getEndTime())) {
+                continue; // No overlap, no conflict
+            }
+
+            // There's a time overlap - check if it's allowed
+            boolean existingSessionIsOnline = existing.getMode() == SessionMode.ONLINE;
+            boolean sameSubject = subjectId.equals(existing.getSubjectId());
+            boolean bothOnline = newSessionIsOnline && existingSessionIsOnline;
+
+            // Allow overlap ONLY if both are online AND same subject
+            if (bothOnline && sameSubject) {
+                log.debug("Allowing teacher session overlap: both online and same subject (subjectId={})", subjectId);
+                continue;
+            }
+
+            // Conflict! Get teacher name for the error message
+            String teacherName = userRepositoryPort.findById(teacherId)
+                    .map(user -> user.getFullName())
+                    .orElse("ID " + teacherId);
+
+            log.warn("Teacher session conflict detected: teacher={}, date={}, time={}-{} overlaps with existing session {}",
+                    teacherName, date, startTime, endTime, existing.getId());
+
+            throw new TeacherSessionConflictException(
+                    teacherName,
+                    date,
+                    existing.getStartTime(),
+                    existing.getEndTime()
+            );
+        }
+    }
+
+    /**
+     * Check if two time ranges overlap.
+     */
+    private boolean timeOverlaps(LocalTime start1, LocalTime end1, LocalTime start2, LocalTime end2) {
+        return start1.isBefore(end2) && end1.isAfter(start2);
     }
 }

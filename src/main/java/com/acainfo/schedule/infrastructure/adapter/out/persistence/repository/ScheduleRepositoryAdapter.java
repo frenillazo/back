@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
+import java.time.DayOfWeek;
 import java.util.List;
 import java.util.Optional;
 
@@ -73,5 +74,12 @@ public class ScheduleRepositoryAdapter implements ScheduleRepositoryPort {
     @Override
     public boolean existsById(Long id) {
         return jpaScheduleRepository.existsById(id);
+    }
+
+    @Override
+    public List<Schedule> findByTeacherIdAndDayOfWeek(Long teacherId, DayOfWeek dayOfWeek) {
+        return schedulePersistenceMapper.toDomainList(
+                jpaScheduleRepository.findByTeacherIdAndDayOfWeek(teacherId, dayOfWeek)
+        );
     }
 }

@@ -13,6 +13,9 @@ import com.acainfo.schedule.application.port.out.ScheduleRepositoryPort;
 import com.acainfo.schedule.domain.exception.InvalidScheduleDataException;
 import com.acainfo.schedule.domain.exception.ScheduleConflictException;
 import com.acainfo.schedule.domain.exception.ScheduleNotFoundException;
+import com.acainfo.schedule.domain.exception.TeacherScheduleConflictException;
+import com.acainfo.user.application.port.out.UserRepositoryPort;
+import com.acainfo.group.domain.model.SubjectGroup;
 import com.acainfo.schedule.domain.model.Classroom;
 import com.acainfo.schedule.domain.model.Schedule;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +44,7 @@ public class ScheduleService implements
 
     private final ScheduleRepositoryPort scheduleRepositoryPort;
     private final GroupRepositoryPort groupRepositoryPort;
+    private final UserRepositoryPort userRepositoryPort;
 
     @Override
     @Transactional
@@ -48,18 +52,30 @@ public class ScheduleService implements
         log.info("Creating schedule for group: {}, day: {}, time: {}-{}, classroom: {}",
                 command.groupId(), command.dayOfWeek(), command.startTime(), command.endTime(), command.classroom());
 
-        // Validate group exists
-        validateGroupExists(command.groupId());
+        // Validate group exists and get group data
+        SubjectGroup group = groupRepositoryPort.findById(command.groupId())
+                .orElseThrow(() -> new GroupNotFoundException(command.groupId()));
 
         // Validate time range
         validateTimeRange(command.startTime(), command.endTime());
 
-        // Check for conflicts
+        // Check for classroom conflicts
         checkForConflicts(
                 command.classroom(),
                 command.dayOfWeek(),
                 command.startTime(),
                 command.endTime(),
+                null  // No schedule to exclude (new schedule)
+        );
+
+        // Check for teacher conflicts
+        checkForTeacherConflicts(
+                group.getTeacherId(),
+                group.getSubjectId(),
+                command.dayOfWeek(),
+                command.startTime(),
+                command.endTime(),
+                command.classroom(),
                 null  // No schedule to exclude (new schedule)
         );
 
@@ -85,6 +101,10 @@ public class ScheduleService implements
 
         Schedule schedule = getById(id);
 
+        // Get group data for teacher conflict validation
+        SubjectGroup group = groupRepositoryPort.findById(schedule.getGroupId())
+                .orElseThrow(() -> new GroupNotFoundException(schedule.getGroupId()));
+
         // Determine final values (use existing if not provided)
         DayOfWeek finalDayOfWeek = command.dayOfWeek() != null ? command.dayOfWeek() : schedule.getDayOfWeek();
         LocalTime finalStartTime = command.startTime() != null ? command.startTime() : schedule.getStartTime();
@@ -94,8 +114,19 @@ public class ScheduleService implements
         // Validate time range
         validateTimeRange(finalStartTime, finalEndTime);
 
-        // Check for conflicts (excluding this schedule)
+        // Check for classroom conflicts (excluding this schedule)
         checkForConflicts(finalClassroom, finalDayOfWeek, finalStartTime, finalEndTime, id);
+
+        // Check for teacher conflicts (excluding this schedule)
+        checkForTeacherConflicts(
+                group.getTeacherId(),
+                group.getSubjectId(),
+                finalDayOfWeek,
+                finalStartTime,
+                finalEndTime,
+                finalClassroom,
+                id  // Exclude this schedule
+        );
 
         // Apply updates
         if (command.dayOfWeek() != null) {
@@ -156,15 +187,6 @@ public class ScheduleService implements
     // ==================== Helper Methods ====================
 
     /**
-     * Validate that the group exists.
-     */
-    private void validateGroupExists(Long groupId) {
-        if (!groupRepositoryPort.findById(groupId).isPresent()) {
-            throw new GroupNotFoundException(groupId);
-        }
-    }
-
-    /**
      * Validate that startTime is before endTime.
      */
     private void validateTimeRange(LocalTime startTime, LocalTime endTime) {
@@ -178,8 +200,11 @@ public class ScheduleService implements
 
     /**
      * Check for classroom conflicts.
-     * A conflict exists when another schedule uses the same classroom,
+     * A conflict exists when another schedule uses the same PHYSICAL classroom,
      * on the same day, with overlapping time.
+     *
+     * NOTE: Virtual classrooms (AULA_VIRTUAL) don't have conflicts -
+     * multiple groups can use the virtual classroom simultaneously.
      */
     private void checkForConflicts(
             Classroom classroom,
@@ -188,6 +213,12 @@ public class ScheduleService implements
             LocalTime endTime,
             Long excludeScheduleId
     ) {
+        // Virtual classrooms don't have physical conflicts - skip this check
+        if (classroom == Classroom.AULA_VIRTUAL) {
+            log.debug("Skipping classroom conflict check for AULA_VIRTUAL");
+            return;
+        }
+
         // Get all schedules and filter for conflicts
         ScheduleFilters filters = new ScheduleFilters(
                 null,  // all groups
@@ -221,5 +252,85 @@ public class ScheduleService implements
      */
     private boolean timeOverlaps(LocalTime start1, LocalTime end1, LocalTime start2, LocalTime end2) {
         return start1.isBefore(end2) && end1.isAfter(start2);
+    }
+
+    /**
+     * Check for teacher schedule conflicts.
+     * A teacher can have overlapping schedules ONLY if:
+     * 1. Both schedules are online (AULA_VIRTUAL)
+     * 2. Both schedules are for the same subject
+     *
+     * @param teacherId The teacher's ID
+     * @param subjectId The subject ID for the new schedule
+     * @param dayOfWeek The day of week
+     * @param startTime Start time
+     * @param endTime End time
+     * @param classroom The classroom (to check if online)
+     * @param excludeScheduleId Schedule ID to exclude (for updates)
+     */
+    private void checkForTeacherConflicts(
+            Long teacherId,
+            Long subjectId,
+            DayOfWeek dayOfWeek,
+            LocalTime startTime,
+            LocalTime endTime,
+            Classroom classroom,
+            Long excludeScheduleId
+    ) {
+        // Get all schedules for this teacher on this day
+        List<Schedule> teacherSchedules = scheduleRepositoryPort.findByTeacherIdAndDayOfWeek(teacherId, dayOfWeek);
+
+        boolean newScheduleIsOnline = classroom == Classroom.AULA_VIRTUAL;
+
+        for (Schedule existing : teacherSchedules) {
+            // Skip the schedule being updated
+            if (excludeScheduleId != null && excludeScheduleId.equals(existing.getId())) {
+                continue;
+            }
+
+            // Check time overlap
+            if (!timeOverlaps(startTime, endTime, existing.getStartTime(), existing.getEndTime())) {
+                continue; // No overlap, no conflict
+            }
+
+            // There's a time overlap - check if it's allowed
+            boolean existingScheduleIsOnline = existing.isOnline();
+
+            // Get the subject ID of the existing schedule's group
+            SubjectGroup existingGroup = groupRepositoryPort.findById(existing.getGroupId())
+                    .orElse(null);
+            if (existingGroup == null) {
+                continue; // Skip if group not found (shouldn't happen)
+            }
+
+            boolean sameSubject = subjectId.equals(existingGroup.getSubjectId());
+            boolean bothOnline = newScheduleIsOnline && existingScheduleIsOnline;
+
+            log.info("Checking teacher conflict: newSubjectId={}, existingSubjectId={}, sameSubject={}, " +
+                    "newClassroom={}, existingClassroom={}, newIsOnline={}, existingIsOnline={}, bothOnline={}",
+                    subjectId, existingGroup.getSubjectId(), sameSubject,
+                    classroom, existing.getClassroom(), newScheduleIsOnline, existingScheduleIsOnline, bothOnline);
+
+            // Allow overlap ONLY if both are online AND same subject
+            if (bothOnline && sameSubject) {
+                log.info("Allowing teacher schedule overlap: both online and same subject (subjectId={})", subjectId);
+                continue;
+            }
+
+            // Conflict! Get teacher name for the error message
+            String teacherName = userRepositoryPort.findById(teacherId)
+                    .map(user -> user.getFullName())
+                    .orElse("ID " + teacherId);
+
+            log.warn("Teacher schedule conflict detected: teacher={}, day={}, time={}-{} overlaps with existing schedule {}",
+                    teacherName, dayOfWeek, startTime, endTime, existing.getId());
+
+            throw new TeacherScheduleConflictException(
+                    teacherName,
+                    dayOfWeek,
+                    existing.getStartTime(),
+                    existing.getEndTime()
+            );
+        }
     }
 }
