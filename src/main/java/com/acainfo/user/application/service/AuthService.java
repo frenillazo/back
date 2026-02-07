@@ -6,6 +6,8 @@ import com.acainfo.security.refresh.RefreshTokenService;
 import com.acainfo.security.userdetails.CustomUserDetails;
 import com.acainfo.security.verification.EmailVerificationService;
 import com.acainfo.security.verification.EmailVerificationToken;
+import com.acainfo.security.verification.PasswordResetService;
+import com.acainfo.security.verification.PasswordResetToken;
 import com.acainfo.shared.application.port.out.EmailSenderPort;
 import com.acainfo.user.application.dto.AuthenticationCommand;
 import com.acainfo.user.application.dto.AuthenticationResult;
@@ -14,7 +16,9 @@ import com.acainfo.user.application.port.in.AuthenticateUserUseCase;
 import com.acainfo.user.application.port.in.LogoutUseCase;
 import com.acainfo.user.application.port.in.RefreshTokenUseCase;
 import com.acainfo.user.application.port.in.RegisterUserUseCase;
+import com.acainfo.user.application.port.in.RequestPasswordResetUseCase;
 import com.acainfo.user.application.port.in.ResendVerificationUseCase;
+import com.acainfo.user.application.port.in.ResetPasswordUseCase;
 import com.acainfo.user.application.port.in.VerifyEmailUseCase;
 import com.acainfo.user.application.port.out.RoleRepositoryPort;
 import com.acainfo.user.application.port.out.UserRepositoryPort;
@@ -55,7 +59,9 @@ public class AuthService implements
         RefreshTokenUseCase,
         LogoutUseCase,
         VerifyEmailUseCase,
-        ResendVerificationUseCase {
+        ResendVerificationUseCase,
+        RequestPasswordResetUseCase,
+        ResetPasswordUseCase {
 
     private final UserRepositoryPort userRepositoryPort;
     private final RoleRepositoryPort roleRepositoryPort;
@@ -64,6 +70,7 @@ public class AuthService implements
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenService refreshTokenService;
     private final EmailVerificationService emailVerificationService;
+    private final PasswordResetService passwordResetService;
     private final EmailSenderPort emailSenderPort;
 
     @Override
@@ -248,6 +255,78 @@ public class AuthService implements
     public void logoutAllDevices(Long userId) {
         log.info("Logging out user from all devices: {}", userId);
         refreshTokenService.revokeAllUserTokens(userId);
+    }
+
+    @Override
+    @Transactional
+    public void requestPasswordReset(String email) {
+        log.info("Password reset requested for email: {}", email);
+
+        // Find user - use generic message to not reveal if email exists
+        User user = userRepositoryPort.findByEmail(email.toLowerCase().trim()).orElse(null);
+
+        if (user == null) {
+            // Don't reveal that email doesn't exist - just log and return
+            log.warn("Password reset requested for non-existent email: {}", email);
+            return;
+        }
+
+        // Don't allow reset for blocked users
+        if (user.isBlocked()) {
+            log.warn("Password reset requested for blocked user: {}", email);
+            return;
+        }
+
+        // Don't allow reset for unverified users
+        if (user.getStatus() == UserStatus.PENDING_ACTIVATION) {
+            log.warn("Password reset requested for unverified user: {}", email);
+            return;
+        }
+
+        // Generate reset token and send email
+        sendPasswordResetEmail(user);
+
+        log.info("Password reset email sent to: {}", email);
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        log.info("Resetting password with token");
+
+        // Validate password length
+        if (newPassword == null || newPassword.length() < 6) {
+            throw new IllegalArgumentException("Password must be at least 6 characters");
+        }
+
+        // Validate token
+        PasswordResetToken resetToken = passwordResetService.validateToken(token);
+
+        // Get user
+        User user = userRepositoryPort.findById(resetToken.getUserId())
+                .orElseThrow(() -> new UserNotFoundException(resetToken.getUserId()));
+
+        // Update password
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepositoryPort.save(user);
+
+        // Mark token as used
+        passwordResetService.markAsUsed(token);
+
+        // Revoke all refresh tokens (force logout from all devices)
+        refreshTokenService.revokeAllUserTokens(user.getId());
+
+        log.info("Password reset successfully for user: {}", user.getEmail());
+    }
+
+    /**
+     * Send password reset email to user.
+     */
+    private void sendPasswordResetEmail(User user) {
+        String token = passwordResetService.createPasswordResetToken(user.getId());
+        String resetLink = passwordResetService.buildResetLink(token);
+        emailSenderPort.sendPasswordResetEmail(user.getEmail(), user.getFirstName(), resetLink);
+        log.info("Password reset email sent to: {}", user.getEmail());
     }
 
     /**

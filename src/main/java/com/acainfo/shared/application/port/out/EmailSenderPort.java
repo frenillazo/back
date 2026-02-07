@@ -32,4 +32,13 @@ public interface EmailSenderPort {
      * @param userName user's first name for personalization
      */
     void sendAccountReactivatedEmail(String to, String userName);
+
+    /**
+     * Send a password reset email with a link to reset the password.
+     *
+     * @param to        recipient email address
+     * @param userName  user's first name for personalization
+     * @param resetLink complete URL with reset token
+     */
+    void sendPasswordResetEmail(String to, String userName, String resetLink);
 }

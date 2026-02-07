@@ -83,6 +83,8 @@ public interface ReservationRestMapper {
     @Mapping(target = "wasAbsent", expression = "java(reservation.wasAbsent())")
     @Mapping(target = "canBeCancelled", expression = "java(reservation.canBeCancelled())")
     @Mapping(target = "canRequestOnline", expression = "java(reservation.canRequestOnline())")
+    @Mapping(target = "studentName", ignore = true)
+    @Mapping(target = "studentEmail", ignore = true)
     ReservationResponse toResponse(SessionReservation reservation);
 
     /**

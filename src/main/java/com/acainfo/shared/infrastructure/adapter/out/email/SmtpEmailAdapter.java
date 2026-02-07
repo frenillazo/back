@@ -165,6 +165,83 @@ public class SmtpEmailAdapter implements EmailSenderPort {
         }
     }
 
+    @Override
+    @Async
+    public void sendPasswordResetEmail(String to, String userName, String resetLink) {
+        String subject = "Restablecer tu contraseña de AcaInfo";
+        String htmlContent = buildPasswordResetEmailHtml(userName, resetLink);
+
+        if (emailProperties.isMock()) {
+            log.info("=== MOCK EMAIL (PASSWORD RESET) ===");
+            log.info("To: {}", to);
+            log.info("Subject: {}", subject);
+            log.info("Reset Link: {}", resetLink);
+            log.info("===================================");
+            return;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(emailProperties.getFrom());
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            log.info("Password reset email sent to: {}", to);
+
+        } catch (MessagingException e) {
+            log.error("Failed to send password reset email to {}: {}", to, e.getMessage());
+            throw new RuntimeException("Failed to send password reset email", e);
+        }
+    }
+
+    private String buildPasswordResetEmailHtml(String userName, String resetLink) {
+        return """
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Restablecer contraseña</title>
+            </head>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="background: linear-gradient(135deg, #f59e0b 0%%, #ea580c 100%%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                    <h1 style="color: white; margin: 0;">AcaInfo</h1>
+                    <p style="color: rgba(255,255,255,0.9); margin-top: 10px;">Recuperacion de contraseña</p>
+                </div>
+
+                <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+                    <h2 style="color: #333;">Hola %s,</h2>
+
+                    <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en AcaInfo.</p>
+
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="%s" style="background: linear-gradient(135deg, #f59e0b 0%%, #ea580c 100%%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+                            Restablecer mi contraseña
+                        </a>
+                    </div>
+
+                    <p style="color: #666; font-size: 14px;">Si el boton no funciona, copia y pega el siguiente enlace en tu navegador:</p>
+                    <p style="background: #eee; padding: 10px; border-radius: 5px; word-break: break-all; font-size: 12px;">%s</p>
+
+                    <p style="color: #666; font-size: 14px; margin-top: 20px;">
+                        <strong>Importante:</strong> Este enlace expirara en 1 hora.
+                    </p>
+
+                    <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+
+                    <p style="color: #999; font-size: 12px; text-align: center;">
+                        Si no has solicitado restablecer tu contraseña, puedes ignorar este correo. Tu cuenta permanecera segura.
+                    </p>
+                </div>
+            </body>
+            </html>
+            """.formatted(userName, resetLink, resetLink);
+    }
+
     private String buildDeactivationEmailHtml(String userName, String reason) {
         return """
             <!DOCTYPE html>

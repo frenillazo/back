@@ -7,7 +7,9 @@ import com.acainfo.user.application.port.in.AuthenticateUserUseCase;
 import com.acainfo.user.application.port.in.LogoutUseCase;
 import com.acainfo.user.application.port.in.RefreshTokenUseCase;
 import com.acainfo.user.application.port.in.RegisterUserUseCase;
+import com.acainfo.user.application.port.in.RequestPasswordResetUseCase;
 import com.acainfo.user.application.port.in.ResendVerificationUseCase;
+import com.acainfo.user.application.port.in.ResetPasswordUseCase;
 import com.acainfo.user.application.port.in.VerifyEmailUseCase;
 import com.acainfo.user.domain.model.User;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.*;
@@ -44,6 +46,8 @@ public class AuthController {
     private final LogoutUseCase logoutUseCase;
     private final VerifyEmailUseCase verifyEmailUseCase;
     private final ResendVerificationUseCase resendVerificationUseCase;
+    private final RequestPasswordResetUseCase requestPasswordResetUseCase;
+    private final ResetPasswordUseCase resetPasswordUseCase;
     private final UserRestMapper userRestMapper;
 
     @PostMapping("/register")
@@ -237,5 +241,56 @@ public class AuthController {
 
         log.info("Verification email resent to: {}", request.email());
         return ResponseEntity.ok(MessageResponse.of("Email de verificacion enviado. Revisa tu bandeja de entrada."));
+    }
+
+    @PostMapping("/request-password-reset")
+    @Operation(
+            summary = "Request password reset",
+            description = "Sends a password reset email if the email exists. Always returns success for security."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "If the email exists, a reset link has been sent",
+                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
+            )
+    })
+    public ResponseEntity<MessageResponse> requestPasswordReset(
+            @Valid @RequestBody RequestPasswordResetRequest request) {
+        log.info("Password reset request for email: {}", request.email());
+
+        requestPasswordResetUseCase.requestPasswordReset(request.email());
+
+        // Always return same message regardless of whether email exists (security)
+        return ResponseEntity.ok(MessageResponse.of(
+                "Si el email esta registrado, recibiras un enlace para restablecer tu contrasena."));
+    }
+
+    @PostMapping("/reset-password")
+    @Operation(
+            summary = "Reset password",
+            description = "Resets user password using a valid reset token. Revokes all refresh tokens."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Password reset successfully",
+                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid or expired token",
+                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
+            )
+    })
+    public ResponseEntity<MessageResponse> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request) {
+        log.info("Password reset with token");
+
+        resetPasswordUseCase.resetPassword(request.token(), request.newPassword());
+
+        log.info("Password reset successfully");
+        return ResponseEntity.ok(MessageResponse.of(
+                "Contrasena restablecida correctamente. Ya puedes iniciar sesion con tu nueva contrasena."));
     }
 }

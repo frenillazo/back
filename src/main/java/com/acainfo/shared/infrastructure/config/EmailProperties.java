@@ -30,6 +30,11 @@ public class EmailProperties {
      */
     private Verification verification = new Verification();
 
+    /**
+     * Password reset email settings.
+     */
+    private PasswordReset passwordReset = new PasswordReset();
+
     @Getter
     @Setter
     public static class Verification {
@@ -42,5 +47,19 @@ public class EmailProperties {
          * Base URL for verification links (e.g., http://localhost:5173/verify-email).
          */
         private String baseUrl = "http://localhost:5173/verify-email";
+    }
+
+    @Getter
+    @Setter
+    public static class PasswordReset {
+        /**
+         * Number of hours before password reset token expires.
+         */
+        private int expirationHours = 1;
+
+        /**
+         * Base URL for password reset links (e.g., http://localhost:5173/reset-password).
+         */
+        private String baseUrl = "http://localhost:5173/reset-password";
     }
 }
