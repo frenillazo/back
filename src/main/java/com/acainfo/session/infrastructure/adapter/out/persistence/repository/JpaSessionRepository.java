@@ -47,6 +47,12 @@ public interface JpaSessionRepository extends
     List<SessionJpaEntity> findByGroupIdAndDate(Long groupId, LocalDate date);
 
     /**
+     * Delete all sessions generated from a specific schedule.
+     * Used for cascade deletion when a schedule is removed.
+     */
+    void deleteByScheduleId(Long scheduleId);
+
+    /**
      * Find sessions by teacher ID and date.
      * Joins through the subject_groups table to get sessions where the group's teacher matches.
      * Only returns non-cancelled sessions.

@@ -12,6 +12,9 @@ import com.acainfo.group.domain.exception.GroupNotFoundException;
 import com.acainfo.group.domain.exception.InvalidGroupDataException;
 import com.acainfo.group.domain.model.GroupStatus;
 import com.acainfo.group.domain.model.SubjectGroup;
+import com.acainfo.schedule.application.port.out.ScheduleRepositoryPort;
+import com.acainfo.schedule.domain.model.Schedule;
+import com.acainfo.session.application.port.out.SessionRepositoryPort;
 import com.acainfo.subject.application.port.out.SubjectRepositoryPort;
 import com.acainfo.subject.domain.exception.SubjectNotFoundException;
 import com.acainfo.subject.domain.model.Subject;
@@ -25,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Service implementing group use cases.
@@ -42,6 +46,8 @@ public class GroupService implements
     private final GroupRepositoryPort groupRepositoryPort;
     private final SubjectRepositoryPort subjectRepositoryPort;
     private final UserRepositoryPort userRepositoryPort;
+    private final ScheduleRepositoryPort scheduleRepositoryPort;
+    private final SessionRepositoryPort sessionRepositoryPort;
 
     @Override
     @Transactional
@@ -174,6 +180,14 @@ public class GroupService implements
                     "Cannot delete group with existing enrollments. Cancel it instead."
             );
         }
+
+        // Delete all sessions and schedules associated with this group
+        List<Schedule> schedules = scheduleRepositoryPort.findByGroupId(id);
+        for (Schedule schedule : schedules) {
+            sessionRepositoryPort.deleteByScheduleId(schedule.getId());
+            scheduleRepositoryPort.delete(schedule.getId());
+        }
+        log.info("Deleted {} schedules and their associated sessions for group ID: {}", schedules.size(), id);
 
         // Decrement subject's group count
         Subject subject = subjectRepositoryPort.findById(group.getSubjectId())

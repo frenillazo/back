@@ -89,6 +89,14 @@ public interface SessionRepositoryPort {
     void delete(Long id);
 
     /**
+     * Delete all sessions generated from a specific schedule.
+     * Used for cascade deletion when a schedule is removed.
+     *
+     * @param scheduleId Schedule ID
+     */
+    void deleteByScheduleId(Long scheduleId);
+
+    /**
      * Check if there are any sessions for a group on a specific date and time range.
      * Used for conflict detection.
      *

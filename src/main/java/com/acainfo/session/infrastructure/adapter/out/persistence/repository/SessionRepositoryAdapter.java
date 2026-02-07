@@ -98,6 +98,11 @@ public class SessionRepositoryAdapter implements SessionRepositoryPort {
     }
 
     @Override
+    public void deleteByScheduleId(Long scheduleId) {
+        jpaSessionRepository.deleteByScheduleId(scheduleId);
+    }
+
+    @Override
     public boolean existsConflictingSession(Long groupId, LocalDate date, Long excludeSessionId) {
         List<SessionJpaEntity> sessionsOnDate = jpaSessionRepository.findByGroupIdAndDate(groupId, date);
 

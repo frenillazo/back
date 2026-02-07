@@ -14,6 +14,7 @@ import com.acainfo.schedule.domain.exception.InvalidScheduleDataException;
 import com.acainfo.schedule.domain.exception.ScheduleConflictException;
 import com.acainfo.schedule.domain.exception.ScheduleNotFoundException;
 import com.acainfo.schedule.domain.exception.TeacherScheduleConflictException;
+import com.acainfo.session.application.port.out.SessionRepositoryPort;
 import com.acainfo.user.application.port.out.UserRepositoryPort;
 import com.acainfo.group.domain.model.SubjectGroup;
 import com.acainfo.schedule.domain.model.Classroom;
@@ -45,6 +46,7 @@ public class ScheduleService implements
     private final ScheduleRepositoryPort scheduleRepositoryPort;
     private final GroupRepositoryPort groupRepositoryPort;
     private final UserRepositoryPort userRepositoryPort;
+    private final SessionRepositoryPort sessionRepositoryPort;
 
     @Override
     @Transactional
@@ -179,6 +181,10 @@ public class ScheduleService implements
         if (!scheduleRepositoryPort.existsById(id)) {
             throw new ScheduleNotFoundException(id);
         }
+
+        // Delete all sessions generated from this schedule before deleting the schedule itself
+        sessionRepositoryPort.deleteByScheduleId(id);
+        log.info("Deleted sessions associated with schedule ID: {}", id);
 
         scheduleRepositoryPort.delete(id);
         log.info("Schedule deleted successfully: ID {}", id);
