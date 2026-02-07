@@ -22,6 +22,8 @@ public class ReservationResponse {
 
     private Long id;
     private Long studentId;
+    private String studentName;
+    private String studentEmail;
     private Long sessionId;
     private Long enrollmentId;
 

@@ -30,6 +30,7 @@ public class AttendanceController {
     private final RecordAttendanceUseCase recordAttendanceUseCase;
     private final GetReservationUseCase getReservationUseCase;
     private final ReservationRestMapper reservationRestMapper;
+    private final ReservationResponseEnricher reservationResponseEnricher;
 
     /**
      * Record attendance for a single reservation.
@@ -49,7 +50,7 @@ public class AttendanceController {
                 reservationRestMapper.toRecordCommand(id, recordedById, request));
         ReservationResponse response = reservationRestMapper.toResponse(reservation);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(reservationResponseEnricher.enrich(response));
     }
 
     /**
@@ -70,7 +71,7 @@ public class AttendanceController {
                 reservationRestMapper.toBulkRecordCommand(sessionId, recordedById, request));
         List<ReservationResponse> responses = reservationRestMapper.toResponseList(reservations);
 
-        return ResponseEntity.ok(responses);
+        return ResponseEntity.ok(reservationResponseEnricher.enrichList(responses));
     }
 
     /**
@@ -85,6 +86,6 @@ public class AttendanceController {
         List<SessionReservation> reservations = getReservationUseCase.getBySessionId(sessionId);
         List<ReservationResponse> responses = reservationRestMapper.toResponseList(reservations);
 
-        return ResponseEntity.ok(responses);
+        return ResponseEntity.ok(reservationResponseEnricher.enrichList(responses));
     }
 }

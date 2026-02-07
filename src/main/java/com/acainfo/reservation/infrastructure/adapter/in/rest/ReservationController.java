@@ -44,6 +44,7 @@ public class ReservationController {
     private final SwitchSessionUseCase switchSessionUseCase;
     private final GetReservationUseCase getReservationUseCase;
     private final ReservationRestMapper reservationRestMapper;
+    private final ReservationResponseEnricher reservationResponseEnricher;
 
     /**
      * Create a new reservation.
@@ -59,7 +60,7 @@ public class ReservationController {
                 reservationRestMapper.toCommand(request));
         ReservationResponse response = reservationRestMapper.toResponse(reservation);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(reservationResponseEnricher.enrich(response));
     }
 
     /**
@@ -73,7 +74,7 @@ public class ReservationController {
         SessionReservation reservation = getReservationUseCase.getById(id);
         ReservationResponse response = reservationRestMapper.toResponse(reservation);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(reservationResponseEnricher.enrich(response));
     }
 
     /**
@@ -106,7 +107,7 @@ public class ReservationController {
 
         PageResponse<SessionReservation> pageResult = getReservationUseCase.findWithFilters(filters);
         PageResponse<ReservationResponse> response = new PageResponse<>(
-                reservationRestMapper.toResponseList(pageResult.content()),
+                reservationResponseEnricher.enrichList(reservationRestMapper.toResponseList(pageResult.content())),
                 pageResult.pageNumber(),
                 pageResult.pageSize(),
                 pageResult.totalElements(),
@@ -129,7 +130,7 @@ public class ReservationController {
         List<SessionReservation> reservations = getReservationUseCase.getBySessionId(sessionId);
         List<ReservationResponse> responses = reservationRestMapper.toResponseList(reservations);
 
-        return ResponseEntity.ok(responses);
+        return ResponseEntity.ok(reservationResponseEnricher.enrichList(responses));
     }
 
     /**
@@ -145,7 +146,7 @@ public class ReservationController {
         List<SessionReservation> reservations = getReservationUseCase.getByStudentId(studentId);
         List<ReservationResponse> responses = reservationRestMapper.toResponseList(reservations);
 
-        return ResponseEntity.ok(responses);
+        return ResponseEntity.ok(reservationResponseEnricher.enrichList(responses));
     }
 
     /**
@@ -163,7 +164,7 @@ public class ReservationController {
         SessionReservation reservation = cancelReservationUseCase.cancel(id, studentId);
         ReservationResponse response = reservationRestMapper.toResponse(reservation);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(reservationResponseEnricher.enrich(response));
     }
 
     /**
@@ -183,6 +184,6 @@ public class ReservationController {
                 reservationRestMapper.toSwitchCommand(id, studentId, request));
         ReservationResponse response = reservationRestMapper.toResponse(reservation);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(reservationResponseEnricher.enrich(response));
     }
 }
