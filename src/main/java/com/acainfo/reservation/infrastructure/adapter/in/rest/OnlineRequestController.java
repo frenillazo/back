@@ -31,6 +31,7 @@ public class OnlineRequestController {
     private final ProcessOnlineRequestUseCase processOnlineRequestUseCase;
     private final GetReservationUseCase getReservationUseCase;
     private final ReservationRestMapper reservationRestMapper;
+    private final ReservationResponseEnricher reservationResponseEnricher;
 
     /**
      * Request online attendance for a reservation.
@@ -48,7 +49,7 @@ public class OnlineRequestController {
                 reservationRestMapper.toRequestOnlineCommand(id, studentId));
         ReservationResponse response = reservationRestMapper.toResponse(reservation);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(reservationResponseEnricher.enrich(response));
     }
 
     /**
@@ -69,7 +70,7 @@ public class OnlineRequestController {
                 reservationRestMapper.toProcessCommand(id, teacherId, request));
         ReservationResponse response = reservationRestMapper.toResponse(reservation);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(reservationResponseEnricher.enrich(response));
     }
 
     /**
@@ -84,6 +85,6 @@ public class OnlineRequestController {
         List<SessionReservation> reservations = getReservationUseCase.getPendingOnlineRequestsForTeacher(teacherId);
         List<ReservationResponse> responses = reservationRestMapper.toResponseList(reservations);
 
-        return ResponseEntity.ok(responses);
+        return ResponseEntity.ok(reservationResponseEnricher.enrichList(responses));
     }
 }

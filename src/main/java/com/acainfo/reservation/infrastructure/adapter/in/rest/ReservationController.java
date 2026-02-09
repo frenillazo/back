@@ -11,6 +11,7 @@ import com.acainfo.reservation.domain.model.ReservationMode;
 import com.acainfo.reservation.domain.model.ReservationStatus;
 import com.acainfo.reservation.domain.model.SessionReservation;
 import com.acainfo.reservation.infrastructure.adapter.in.rest.dto.CreateReservationRequest;
+import com.acainfo.reservation.infrastructure.adapter.in.rest.dto.EnrichedReservationResponse;
 import com.acainfo.reservation.infrastructure.adapter.in.rest.dto.ReservationResponse;
 import com.acainfo.reservation.infrastructure.adapter.in.rest.dto.SwitchSessionRequest;
 import com.acainfo.reservation.infrastructure.mapper.ReservationRestMapper;
@@ -45,6 +46,7 @@ public class ReservationController {
     private final GetReservationUseCase getReservationUseCase;
     private final ReservationRestMapper reservationRestMapper;
     private final ReservationResponseEnricher reservationResponseEnricher;
+    private final ReservationSessionEnricher reservationSessionEnricher;
 
     /**
      * Create a new reservation.
@@ -147,6 +149,24 @@ public class ReservationController {
         List<ReservationResponse> responses = reservationRestMapper.toResponseList(reservations);
 
         return ResponseEntity.ok(reservationResponseEnricher.enrichList(responses));
+    }
+
+    /**
+     * Get enriched reservations for a student (includes session, subject, group, teacher data).
+     * GET /api/reservations/student/{studentId}/enriched
+     * Used by the student attendance history page.
+     */
+    @GetMapping("/student/{studentId}/enriched")
+    @PreAuthorize("hasRole('ADMIN') or #studentId == authentication.principal.userId")
+    public ResponseEntity<List<EnrichedReservationResponse>> getEnrichedByStudentId(@PathVariable Long studentId) {
+        log.debug("REST: Getting enriched reservations for student: {}", studentId);
+
+        List<SessionReservation> reservations = getReservationUseCase.getByStudentId(studentId);
+        List<ReservationResponse> responses = reservationResponseEnricher.enrichList(
+                reservationRestMapper.toResponseList(reservations));
+        List<EnrichedReservationResponse> enriched = reservationSessionEnricher.enrichWithSessionData(responses);
+
+        return ResponseEntity.ok(enriched);
     }
 
     /**

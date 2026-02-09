@@ -2,6 +2,7 @@ package com.acainfo.reservation.application.service;
 
 import com.acainfo.enrollment.application.port.out.EnrollmentRepositoryPort;
 import com.acainfo.enrollment.domain.model.Enrollment;
+import com.acainfo.group.application.port.out.GroupRepositoryPort;
 import com.acainfo.reservation.application.dto.CreateReservationCommand;
 import com.acainfo.reservation.application.dto.SwitchSessionCommand;
 import com.acainfo.reservation.application.port.in.CancelReservationUseCase;
@@ -43,6 +44,7 @@ public class ReservationService implements
     private final ReservationRepositoryPort reservationRepositoryPort;
     private final SessionRepositoryPort sessionRepositoryPort;
     private final EnrollmentRepositoryPort enrollmentRepositoryPort;
+    private final GroupRepositoryPort groupRepositoryPort;
 
     // ==================== CreateReservationUseCase ====================
 
@@ -196,10 +198,10 @@ public class ReservationService implements
     }
 
     private Long getSubjectIdFromEnrollment(Enrollment enrollment) {
-        // The enrollment has a groupId, we need to get the subject from that group
-        // For now, we'll use the session's subjectId directly since sessions always have it
-        // In a real implementation, we'd inject GroupRepositoryPort to get the group's subjectId
-        return enrollment.getGroupId(); // This is a simplification - should be group.getSubjectId()
+        return groupRepositoryPort.findById(enrollment.getGroupId())
+                .orElseThrow(() -> new InvalidReservationStateException(
+                        "Group not found: " + enrollment.getGroupId()))
+                .getSubjectId();
     }
 
     private void validateInPersonCapacity(Long sessionId) {
