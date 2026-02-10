@@ -111,6 +111,11 @@ public class ReservationRepositoryAdapter implements ReservationRepositoryPort {
     }
 
     @Override
+    public boolean existsConfirmedByStudentIdAndSubjectId(Long studentId, Long subjectId) {
+        return jpaReservationRepository.existsConfirmedByStudentIdAndSubjectId(studentId, subjectId);
+    }
+
+    @Override
     public long countBySessionIdAndStatusAndMode(Long sessionId, ReservationStatus status, ReservationMode mode) {
         return jpaReservationRepository.countBySessionIdAndStatusAndMode(sessionId, status, mode);
     }

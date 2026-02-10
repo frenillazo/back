@@ -14,6 +14,7 @@ import com.acainfo.reservation.domain.exception.InvalidReservationStateException
 import com.acainfo.reservation.domain.exception.ReservationAlreadyExistsException;
 import com.acainfo.reservation.domain.exception.ReservationNotFoundException;
 import com.acainfo.reservation.domain.exception.SessionFullException;
+import com.acainfo.reservation.domain.exception.SubjectReservationAlreadyExistsException;
 import com.acainfo.reservation.domain.model.ReservationMode;
 import com.acainfo.reservation.domain.model.ReservationStatus;
 import com.acainfo.reservation.domain.model.SessionReservation;
@@ -69,6 +70,12 @@ public class ReservationService implements
                         "Enrollment not found: " + command.enrollmentId()));
 
         validateCrossGroupReservation(enrollment, session, command.studentId());
+
+        // Check subject-level uniqueness: only one CONFIRMED reservation per subject
+        if (reservationRepositoryPort.existsConfirmedByStudentIdAndSubjectId(
+                command.studentId(), session.getSubjectId())) {
+            throw new SubjectReservationAlreadyExistsException(command.studentId(), session.getSubjectId());
+        }
 
         // Check in-person capacity if needed
         if (command.mode() == ReservationMode.IN_PERSON) {

@@ -3,6 +3,8 @@ package com.acainfo.session.application.service;
 import com.acainfo.group.application.port.out.GroupRepositoryPort;
 import com.acainfo.group.domain.exception.GroupNotFoundException;
 import com.acainfo.group.domain.model.SubjectGroup;
+import com.acainfo.reservation.application.dto.GenerateReservationsCommand;
+import com.acainfo.reservation.application.port.in.GenerateReservationsUseCase;
 import com.acainfo.schedule.application.port.out.ScheduleRepositoryPort;
 import com.acainfo.schedule.domain.model.Schedule;
 import com.acainfo.session.application.dto.GenerateSessionsCommand;
@@ -39,6 +41,7 @@ public class SessionGenerationService implements GenerateSessionsUseCase {
     private final GroupRepositoryPort groupRepositoryPort;
     private final ScheduleRepositoryPort scheduleRepositoryPort;
     private final UserRepositoryPort userRepositoryPort;
+    private final GenerateReservationsUseCase generateReservationsUseCase;
 
     @Override
     @Transactional
@@ -55,7 +58,14 @@ public class SessionGenerationService implements GenerateSessionsUseCase {
 
         List<Session> savedSessions = sessionRepositoryPort.saveAll(sessionsToCreate);
 
-        log.info("Generated {} sessions", savedSessions.size());
+        // Auto-generate reservations for all newly created sessions
+        for (Session session : savedSessions) {
+            generateReservationsUseCase.generate(
+                    new GenerateReservationsCommand(session.getId(), session.getGroupId())
+            );
+        }
+
+        log.info("Generated {} sessions with auto-reservations", savedSessions.size());
         return savedSessions;
     }
 

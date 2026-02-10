@@ -1,6 +1,7 @@
 package com.acainfo.enrollment.application.service;
 
 import com.acainfo.enrollment.application.port.in.WaitingListUseCase;
+import com.acainfo.enrollment.application.port.out.AutoReservationPort;
 import com.acainfo.enrollment.application.port.out.EnrollmentRepositoryPort;
 import com.acainfo.enrollment.domain.exception.EnrollmentNotFoundException;
 import com.acainfo.enrollment.domain.exception.InvalidEnrollmentStateException;
@@ -24,6 +25,7 @@ import java.util.List;
 public class WaitingListService implements WaitingListUseCase {
 
     private final EnrollmentRepositoryPort enrollmentRepositoryPort;
+    private final AutoReservationPort autoReservationPort;
 
     @Override
     @Transactional(readOnly = true)
@@ -99,6 +101,13 @@ public class WaitingListService implements WaitingListUseCase {
         if (oldPosition != null) {
             enrollmentRepositoryPort.decrementWaitingListPositionsAfter(groupId, oldPosition);
         }
+
+        // Auto-generate reservations for promoted student
+        autoReservationPort.generateForNewEnrollment(
+                promotedEnrollment.getStudentId(),
+                groupId,
+                promotedEnrollment.getId()
+        );
 
         log.info("Student {} promoted from waiting list to ACTIVE for group {}",
                 promotedEnrollment.getStudentId(), groupId);

@@ -195,11 +195,16 @@ public class StudentOverviewService {
         Map<Long, Subject> subjectsById = subjectRepository.findByIds(subjectIds.stream().toList()).stream()
                 .collect(Collectors.toMap(Subject::getId, Function.identity()));
 
-        // Get all reservations for the student for these sessions
+        // Get confirmed reservations for the student (exclude cancelled)
         List<SessionReservation> studentReservations = reservationRepository.findByStudentId(studentId);
         Set<Long> reservedSessionIds = studentReservations.stream()
+                .filter(SessionReservation::isConfirmed)
                 .map(SessionReservation::getSessionId)
                 .collect(Collectors.toSet());
+
+        // Build enrollment lookup by groupId for enriching with enrollmentId
+        Map<Long, Long> groupIdToEnrollmentId = activeEnrollments.stream()
+                .collect(Collectors.toMap(Enrollment::getGroupId, Enrollment::getId, (a, b) -> a));
 
         // Build summaries
         return upcomingSessions.stream()
@@ -210,6 +215,7 @@ public class StudentOverviewService {
                     return new UpcomingSessionSummary(
                             session.getId(),
                             session.getGroupId(),
+                            groupIdToEnrollmentId.get(session.getGroupId()),
                             subject != null ? subject.getName() : "Unknown",
                             subject != null ? subject.getCode() : null,
                             group != null ? group.getType().name() : null,

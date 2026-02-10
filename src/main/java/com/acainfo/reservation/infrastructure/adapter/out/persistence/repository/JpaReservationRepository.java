@@ -81,4 +81,21 @@ public interface JpaReservationRepository extends
      * Find reservations by enrollment.
      */
     List<SessionReservationJpaEntity> findByEnrollmentId(Long enrollmentId);
+
+    /**
+     * Check if a student has a confirmed reservation for any session of a given subject.
+     * Used to enforce one-reservation-per-subject business rule.
+     */
+    @Query("""
+        SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END
+        FROM SessionReservationJpaEntity r
+        JOIN SessionJpaEntity s ON r.sessionId = s.id
+        WHERE r.studentId = :studentId
+        AND s.subjectId = :subjectId
+        AND r.status = 'CONFIRMED'
+        """)
+    boolean existsConfirmedByStudentIdAndSubjectId(
+            @Param("studentId") Long studentId,
+            @Param("subjectId") Long subjectId
+    );
 }

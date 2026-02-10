@@ -7,6 +7,7 @@ import com.acainfo.enrollment.application.port.in.ChangeGroupUseCase;
 import com.acainfo.enrollment.application.port.in.EnrollStudentUseCase;
 import com.acainfo.enrollment.application.port.in.GetEnrollmentUseCase;
 import com.acainfo.enrollment.application.port.in.WithdrawEnrollmentUseCase;
+import com.acainfo.enrollment.application.port.out.AutoReservationPort;
 import com.acainfo.enrollment.application.port.out.EnrollmentRepositoryPort;
 import com.acainfo.enrollment.domain.exception.AlreadyEnrolledException;
 import com.acainfo.enrollment.domain.exception.EnrollmentNotFoundException;
@@ -43,6 +44,7 @@ public class EnrollmentService implements
     private final EnrollmentRepositoryPort enrollmentRepositoryPort;
     private final GroupRepositoryPort groupRepositoryPort;
     private final WaitingListService waitingListService;
+    private final AutoReservationPort autoReservationPort;
 
     // ==================== EnrollStudentUseCase ====================
 
@@ -104,12 +106,17 @@ public class EnrollmentService implements
 
         Enrollment savedEnrollment = enrollmentRepositoryPort.save(enrollment);
 
+        // Cancel future reservations for the withdrawn student
+        if (wasActive) {
+            autoReservationPort.cancelFutureReservations(enrollment.getStudentId(), groupId);
+        }
+
         // If was on waiting list, adjust positions
         if (oldPosition != null) {
             enrollmentRepositoryPort.decrementWaitingListPositionsAfter(groupId, oldPosition);
         }
 
-        // If was active, promote next from waiting list
+        // If was active, promote next from waiting list (which will auto-generate their reservations)
         if (wasActive) {
             waitingListService.promoteNextFromWaitingList(groupId);
         }

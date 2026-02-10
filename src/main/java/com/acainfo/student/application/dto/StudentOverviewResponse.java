@@ -45,6 +45,7 @@ public record StudentOverviewResponse(
     public record UpcomingSessionSummary(
             Long sessionId,
             Long groupId,
+            Long enrollmentId,
             String subjectName,
             String subjectCode,
             String groupType,

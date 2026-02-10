@@ -2,6 +2,7 @@ package com.acainfo.enrollment.application.service;
 
 import com.acainfo.enrollment.application.port.in.ApproveEnrollmentUseCase;
 import com.acainfo.enrollment.application.port.in.RejectEnrollmentUseCase;
+import com.acainfo.enrollment.application.port.out.AutoReservationPort;
 import com.acainfo.enrollment.application.port.out.EnrollmentRepositoryPort;
 import com.acainfo.enrollment.domain.exception.EnrollmentNotFoundException;
 import com.acainfo.enrollment.domain.exception.InvalidEnrollmentStateException;
@@ -32,6 +33,7 @@ public class EnrollmentApprovalService implements ApproveEnrollmentUseCase, Reje
     private final EnrollmentRepositoryPort enrollmentRepositoryPort;
     private final GroupRepositoryPort groupRepositoryPort;
     private final GetUserProfileUseCase getUserProfileUseCase;
+    private final AutoReservationPort autoReservationPort;
 
     @Override
     @Transactional
@@ -72,7 +74,18 @@ public class EnrollmentApprovalService implements ApproveEnrollmentUseCase, Reje
         enrollment.setApprovedAt(LocalDateTime.now());
         enrollment.setApprovedByUserId(approverUserId);
 
-        return enrollmentRepositoryPort.save(enrollment);
+        Enrollment savedEnrollment = enrollmentRepositoryPort.save(enrollment);
+
+        // Auto-generate reservations for the newly active student
+        if (savedEnrollment.isActive()) {
+            autoReservationPort.generateForNewEnrollment(
+                    savedEnrollment.getStudentId(),
+                    savedEnrollment.getGroupId(),
+                    savedEnrollment.getId()
+            );
+        }
+
+        return savedEnrollment;
     }
 
     @Override

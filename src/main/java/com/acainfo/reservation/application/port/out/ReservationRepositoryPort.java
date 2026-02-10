@@ -109,6 +109,16 @@ public interface ReservationRepositoryPort {
     boolean existsByStudentIdAndSessionId(Long studentId, Long sessionId);
 
     /**
+     * Check if a student has a confirmed reservation for any session of a given subject.
+     * Used to enforce one-reservation-per-subject business rule.
+     *
+     * @param studentId Student ID
+     * @param subjectId Subject ID
+     * @return true if a confirmed reservation exists for any session of the subject
+     */
+    boolean existsConfirmedByStudentIdAndSubjectId(Long studentId, Long subjectId);
+
+    /**
      * Count confirmed reservations for a session by mode.
      *
      * @param sessionId Session ID
