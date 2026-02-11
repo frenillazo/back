@@ -17,11 +17,13 @@ public final class AllowedFileTypes {
      */
     public static final Set<String> ALLOWED_EXTENSIONS = Set.of(
             // Documents
-            "pdf", "docx", "txt", "md",
+            "pdf", "docx", "txt", "md", "tex",
             // Code
             "java", "cpp", "c", "h", "py",
             // Archives
-            "zip"
+            "zip",
+            // Images
+            "jpeg", "jpg", "png"
     );
 
     /**

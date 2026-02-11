@@ -1,5 +1,6 @@
 package com.acainfo.user.infrastructure.adapter.in.rest;
 
+import com.acainfo.security.terms.TermsAcceptanceService;
 import com.acainfo.user.application.dto.AuthenticationCommand;
 import com.acainfo.user.application.dto.AuthenticationResult;
 import com.acainfo.user.application.dto.RegisterUserCommand;
@@ -20,6 +21,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +51,7 @@ public class AuthController {
     private final RequestPasswordResetUseCase requestPasswordResetUseCase;
     private final ResetPasswordUseCase resetPasswordUseCase;
     private final UserRestMapper userRestMapper;
+    private final TermsAcceptanceService termsAcceptanceService;
 
     @PostMapping("/register")
     @Operation(
@@ -67,11 +70,20 @@ public class AuthController {
                     content = @Content(schema = @Schema(implementation = MessageResponse.class))
             )
     })
-    public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<UserResponse> register(
+            @Valid @RequestBody RegisterRequest request,
+            HttpServletRequest httpRequest
+    ) {
         log.info("Registration request for email: {}", request.email());
 
         RegisterUserCommand command = userRestMapper.toRegisterUserCommand(request);
         User user = registerUserUseCase.register(command);
+
+        // Record terms acceptance at registration time (GDPR Art. 7.1)
+        String ipAddress = extractClientIp(httpRequest);
+        termsAcceptanceService.acceptTerms(user.getId(), ipAddress);
+        log.info("Terms accepted during registration for user: {}", user.getEmail());
+
         UserResponse response = userRestMapper.toUserResponse(user);
 
         log.info("User registered successfully: {}", user.getEmail());
@@ -100,7 +112,18 @@ public class AuthController {
 
         AuthenticationCommand command = userRestMapper.toAuthenticationCommand(request);
         AuthenticationResult result = authenticateUserUseCase.authenticate(command);
-        AuthResponse response = userRestMapper.toAuthResponse(result);
+        AuthResponse authResponse = userRestMapper.toAuthResponse(result);
+
+        // Check terms acceptance and include in response
+        boolean termsAccepted = termsAcceptanceService.hasAcceptedCurrentTerms(result.user().getId());
+        AuthResponse response = AuthResponse.builder()
+                .accessToken(authResponse.accessToken())
+                .refreshToken(authResponse.refreshToken())
+                .tokenType(authResponse.tokenType())
+                .expiresIn(authResponse.expiresIn())
+                .user(authResponse.user())
+                .termsAccepted(termsAccepted)
+                .build();
 
         log.info("User logged in successfully: {}", request.email());
         return ResponseEntity.ok(response);
@@ -127,7 +150,18 @@ public class AuthController {
         log.info("Token refresh request");
 
         AuthenticationResult result = refreshTokenUseCase.refreshToken(request.refreshToken());
-        AuthResponse response = userRestMapper.toAuthResponse(result);
+        AuthResponse authResponse = userRestMapper.toAuthResponse(result);
+
+        // Check terms acceptance and include in response
+        boolean termsAccepted = termsAcceptanceService.hasAcceptedCurrentTerms(result.user().getId());
+        AuthResponse response = AuthResponse.builder()
+                .accessToken(authResponse.accessToken())
+                .refreshToken(authResponse.refreshToken())
+                .tokenType(authResponse.tokenType())
+                .expiresIn(authResponse.expiresIn())
+                .user(authResponse.user())
+                .termsAccepted(termsAccepted)
+                .build();
 
         log.info("Token refreshed successfully for user: {}", result.user().getEmail());
         return ResponseEntity.ok(response);
@@ -292,5 +326,21 @@ public class AuthController {
         log.info("Password reset successfully");
         return ResponseEntity.ok(MessageResponse.of(
                 "Contrasena restablecida correctamente. Ya puedes iniciar sesion con tu nueva contrasena."));
+    }
+
+    /**
+     * Extract the real client IP address.
+     * Cloudflare sets CF-Connecting-IP and X-Forwarded-For headers.
+     */
+    private String extractClientIp(HttpServletRequest request) {
+        String ip = request.getHeader("CF-Connecting-IP");
+        if (ip != null && !ip.isBlank()) {
+            return ip.trim();
+        }
+        ip = request.getHeader("X-Forwarded-For");
+        if (ip != null && !ip.isBlank()) {
+            return ip.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }
