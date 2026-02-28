@@ -110,12 +110,13 @@ public class ReservationController {
         PageResponse<SessionReservation> pageResult = getReservationUseCase.findWithFilters(filters);
         PageResponse<ReservationResponse> response = new PageResponse<>(
                 reservationResponseEnricher.enrichList(reservationRestMapper.toResponseList(pageResult.content())),
-                pageResult.pageNumber(),
-                pageResult.pageSize(),
+                pageResult.page(),
+                pageResult.size(),
                 pageResult.totalElements(),
                 pageResult.totalPages(),
                 pageResult.first(),
-                pageResult.last()
+                pageResult.last(),
+                pageResult.empty()
         );
 
         return ResponseEntity.ok(response);

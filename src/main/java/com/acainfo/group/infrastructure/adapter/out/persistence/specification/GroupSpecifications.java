@@ -50,6 +50,12 @@ public class GroupSpecifications {
                 predicates.add(criteriaBuilder.equal(root.get("status"), filters.status()));
             }
 
+            // Search by group name (case-insensitive LIKE)
+            if (filters.searchTerm() != null && !filters.searchTerm().isBlank()) {
+                String pattern = "%" + filters.searchTerm().toLowerCase() + "%";
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), pattern));
+            }
+
             // Combine all predicates with AND
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };

@@ -16,8 +16,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Adapter implementing ReservationRepositoryPort.
@@ -130,5 +134,30 @@ public class ReservationRepositoryAdapter implements ReservationRepositoryPort {
     @Override
     public void delete(Long id) {
         jpaReservationRepository.deleteById(id);
+    }
+
+    @Override
+    public Set<Long> findStudentIdsWithReservationForSession(Long sessionId) {
+        return new HashSet<>(jpaReservationRepository.findStudentIdsBySessionId(sessionId));
+    }
+
+    @Override
+    public Set<Long> findExistingSessionIdsForStudent(Long studentId, List<Long> sessionIds) {
+        if (sessionIds == null || sessionIds.isEmpty()) {
+            return Set.of();
+        }
+        return new HashSet<>(jpaReservationRepository.findSessionIdsByStudentIdAndSessionIdIn(studentId, sessionIds));
+    }
+
+    @Override
+    public Map<Long, Long> countInPersonReservationsBySessionIds(List<Long> sessionIds) {
+        if (sessionIds == null || sessionIds.isEmpty()) {
+            return Map.of();
+        }
+        return jpaReservationRepository.countInPersonReservationsBySessionIds(sessionIds).stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
     }
 }

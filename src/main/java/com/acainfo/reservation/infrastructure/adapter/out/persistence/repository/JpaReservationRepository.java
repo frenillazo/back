@@ -83,6 +83,37 @@ public interface JpaReservationRepository extends
     List<SessionReservationJpaEntity> findByEnrollmentId(Long enrollmentId);
 
     /**
+     * Find all student IDs that have a reservation for a given session.
+     * Used to batch-check existing reservations (avoids N+1 existsByStudentIdAndSessionId calls).
+     */
+    @Query("SELECT r.studentId FROM SessionReservationJpaEntity r WHERE r.sessionId = :sessionId")
+    List<Long> findStudentIdsBySessionId(@Param("sessionId") Long sessionId);
+
+    /**
+     * Find all session IDs where a student already has a reservation, filtered to given session IDs.
+     * Used to batch-check existing reservations for a student across multiple sessions.
+     */
+    @Query("SELECT r.sessionId FROM SessionReservationJpaEntity r WHERE r.studentId = :studentId AND r.sessionId IN :sessionIds")
+    List<Long> findSessionIdsByStudentIdAndSessionIdIn(
+            @Param("studentId") Long studentId,
+            @Param("sessionIds") List<Long> sessionIds
+    );
+
+    /**
+     * Count confirmed in-person reservations grouped by session ID.
+     * Returns pairs of [sessionId, count] for batch counting.
+     */
+    @Query("""
+        SELECT r.sessionId, COUNT(r)
+        FROM SessionReservationJpaEntity r
+        WHERE r.sessionId IN :sessionIds
+        AND r.status = 'CONFIRMED'
+        AND r.mode = 'IN_PERSON'
+        GROUP BY r.sessionId
+        """)
+    List<Object[]> countInPersonReservationsBySessionIds(@Param("sessionIds") List<Long> sessionIds);
+
+    /**
      * Check if a student has a confirmed reservation for any session of a given subject.
      * Used to enforce one-reservation-per-subject business rule.
      */

@@ -51,15 +51,7 @@ public class MaterialQueryService implements GetMaterialUseCase {
         log.debug("Finding materials with filters: {}", filters);
         Page<Material> page = materialRepository.findWithFilters(filters);
 
-        return new PageResponse<>(
-                page.getContent(),
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages(),
-                page.isFirst(),
-                page.isLast()
-        );
+        return PageResponse.of(page);
     }
 
     @Override

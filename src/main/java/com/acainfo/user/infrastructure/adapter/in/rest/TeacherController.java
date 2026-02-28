@@ -6,6 +6,7 @@ import com.acainfo.user.application.dto.UserFilters;
 import com.acainfo.user.application.port.in.ManageTeachersUseCase;
 import com.acainfo.user.domain.model.User;
 import com.acainfo.user.domain.model.UserStatus;
+import com.acainfo.shared.application.dto.PageResponse;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.*;
 import com.acainfo.user.infrastructure.mapper.UserRestMapper;
 import io.swagger.v3.oas.annotations.Operation;

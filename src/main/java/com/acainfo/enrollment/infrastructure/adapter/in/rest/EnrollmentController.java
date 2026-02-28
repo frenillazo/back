@@ -15,6 +15,7 @@ import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.EnrollmentRespo
 import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.RejectEnrollmentRequest;
 import com.acainfo.enrollment.infrastructure.mapper.EnrollmentRestMapper;
 import com.acainfo.security.userdetails.CustomUserDetails;
+import com.acainfo.shared.application.dto.PageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -104,7 +105,7 @@ public class EnrollmentController {
      */
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Page<EnrollmentResponse>> getEnrollmentsWithFilters(
+    public ResponseEntity<PageResponse<EnrollmentResponse>> getEnrollmentsWithFilters(
             @RequestParam(required = false) Long studentId,
             @RequestParam(required = false) String studentEmail,
             @RequestParam(required = false) Long groupId,
@@ -132,7 +133,7 @@ public class EnrollmentController {
         Page<Enrollment> enrollmentsPage = getEnrollmentUseCase.findWithFilters(filters);
         Page<EnrollmentResponse> responsePage = enrollmentResponseEnricher.enrichPage(enrollmentsPage);
 
-        return ResponseEntity.ok(responsePage);
+        return ResponseEntity.ok(PageResponse.of(responsePage));
     }
 
     /**

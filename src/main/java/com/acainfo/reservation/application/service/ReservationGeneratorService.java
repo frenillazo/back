@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Service implementing automatic reservation generation.
@@ -53,12 +54,17 @@ public class ReservationGeneratorService implements GenerateReservationsUseCase 
 
         LocalDateTime now = LocalDateTime.now();
         List<SessionReservation> reservations = new ArrayList<>();
-        int inPersonCount = 0;
+
+        // Batch-fetch: get all student IDs that already have a reservation for this session
+        Set<Long> existingStudentIds = reservationRepositoryPort
+                .findStudentIdsWithReservationForSession(command.sessionId());
+
+        // Batch-fetch: count current in-person reservations once
+        long inPersonCount = reservationRepositoryPort.countInPersonReservations(command.sessionId());
 
         for (Enrollment enrollment : activeEnrollments) {
-            // Skip if reservation already exists (idempotency)
-            if (reservationRepositoryPort.existsByStudentIdAndSessionId(
-                    enrollment.getStudentId(), command.sessionId())) {
+            // Skip if reservation already exists (idempotency) - in-memory lookup
+            if (existingStudentIds.contains(enrollment.getStudentId())) {
                 log.debug("Reservation already exists for student {} in session {}, skipping",
                         enrollment.getStudentId(), command.sessionId());
                 continue;

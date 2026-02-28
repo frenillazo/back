@@ -8,7 +8,9 @@ import com.acainfo.reservation.domain.model.SessionReservation;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Output port for SessionReservation persistence.
@@ -152,4 +154,33 @@ public interface ReservationRepositoryPort {
      * @param id Reservation ID
      */
     void delete(Long id);
+
+    /**
+     * Find all student IDs that have a reservation for a given session.
+     * Used to batch-check existing reservations (avoids N+1 queries).
+     *
+     * @param sessionId Session ID
+     * @return Set of student IDs with existing reservations
+     */
+    Set<Long> findStudentIdsWithReservationForSession(Long sessionId);
+
+    /**
+     * Find all session IDs where a student already has a reservation,
+     * filtered to the given session IDs.
+     * Used to batch-check existing reservations across multiple sessions.
+     *
+     * @param studentId  Student ID
+     * @param sessionIds List of session IDs to check
+     * @return Set of session IDs where the student already has a reservation
+     */
+    Set<Long> findExistingSessionIdsForStudent(Long studentId, List<Long> sessionIds);
+
+    /**
+     * Count confirmed in-person reservations for multiple sessions in a single query.
+     * Returns a map from session ID to in-person count.
+     *
+     * @param sessionIds List of session IDs
+     * @return Map of session ID to confirmed in-person reservation count
+     */
+    Map<Long, Long> countInPersonReservationsBySessionIds(List<Long> sessionIds);
 }

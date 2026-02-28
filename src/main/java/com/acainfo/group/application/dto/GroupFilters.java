@@ -12,6 +12,7 @@ public record GroupFilters(
         Long teacherId,
         GroupType type,
         GroupStatus status,
+        String searchTerm,
         Integer page,
         Integer size,
         String sortBy,

@@ -86,4 +86,14 @@ public interface GroupRepositoryPort {
      * @return Total count of groups
      */
     long countAllBySubjectId(Long subjectId);
+
+    /**
+     * Find group by ID with a pessimistic write lock.
+     * Locks the row for the duration of the transaction, preventing
+     * concurrent modifications (used for enrollment approval and waiting list promotion).
+     *
+     * @param id Group ID
+     * @return Optional containing the group if found
+     */
+    Optional<SubjectGroup> findByIdForUpdate(Long id);
 }

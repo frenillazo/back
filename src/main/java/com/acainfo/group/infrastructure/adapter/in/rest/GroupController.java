@@ -12,6 +12,7 @@ import com.acainfo.group.infrastructure.adapter.in.rest.dto.CreateGroupRequest;
 import com.acainfo.group.infrastructure.adapter.in.rest.dto.GroupResponse;
 import com.acainfo.group.infrastructure.adapter.in.rest.dto.UpdateGroupRequest;
 import com.acainfo.group.infrastructure.mapper.GroupRestMapper;
+import com.acainfo.shared.application.dto.PageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -96,24 +97,26 @@ public class GroupController {
      * @return Page of GroupResponse with 200 OK
      */
     @GetMapping
-    public ResponseEntity<Page<GroupResponse>> getGroupsWithFilters(
+    public ResponseEntity<PageResponse<GroupResponse>> getGroupsWithFilters(
             @RequestParam(required = false) Long subjectId,
             @RequestParam(required = false) Long teacherId,
             @RequestParam(required = false) GroupType type,
             @RequestParam(required = false) GroupStatus status,
+            @RequestParam(required = false) String searchTerm,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDirection
     ) {
-        log.debug("REST: Getting groups with filters - subjectId: {}, teacherId: {}, type: {}, status: {}",
-                subjectId, teacherId, type, status);
+        log.debug("REST: Getting groups with filters - subjectId: {}, teacherId: {}, type: {}, status: {}, searchTerm: {}",
+                subjectId, teacherId, type, status, searchTerm);
 
         GroupFilters filters = new GroupFilters(
                 subjectId,
                 teacherId,
                 type,
                 status,
+                searchTerm,
                 page,
                 size,
                 sortBy,
@@ -123,7 +126,7 @@ public class GroupController {
         Page<SubjectGroup> groupsPage = getGroupUseCase.findWithFilters(filters);
         Page<GroupResponse> responsePage = groupResponseEnricher.enrichPage(groupsPage);
 
-        return ResponseEntity.ok(responsePage);
+        return ResponseEntity.ok(PageResponse.of(responsePage));
     }
 
     /**

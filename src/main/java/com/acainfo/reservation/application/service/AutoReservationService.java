@@ -9,12 +9,15 @@ import com.acainfo.session.application.port.out.SessionRepositoryPort;
 import com.acainfo.session.domain.model.Session;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Service implementing automatic reservation generation and cancellation.
@@ -38,6 +41,7 @@ public class AutoReservationService implements AutoReservationPort {
     private final ReservationRepositoryPort reservationRepositoryPort;
 
     @Override
+    @Async
     @Transactional
     public void generateForNewEnrollment(Long studentId, Long groupId, Long enrollmentId) {
         log.info("Auto-generating reservations for student {} in group {} (enrollment {})",
@@ -46,19 +50,34 @@ public class AutoReservationService implements AutoReservationPort {
         List<Session> futureSessions = sessionRepositoryPort
                 .findUpcomingByGroupIds(List.of(groupId), LocalDate.now(), 999);
 
+        if (futureSessions.isEmpty()) {
+            log.info("No future sessions for group {}, no reservations generated", groupId);
+            return;
+        }
+
+        List<Long> sessionIds = futureSessions.stream().map(Session::getId).toList();
+
+        // Batch-fetch: find which sessions already have a reservation for this student
+        Set<Long> existingSessionIds = reservationRepositoryPort
+                .findExistingSessionIdsForStudent(studentId, sessionIds);
+
+        // Batch-fetch: count in-person reservations for all future sessions at once
+        Map<Long, Long> inPersonCounts = reservationRepositoryPort
+                .countInPersonReservationsBySessionIds(sessionIds);
+
         int created = 0;
         LocalDateTime now = LocalDateTime.now();
 
         for (Session session : futureSessions) {
-            // Idempotency: skip if reservation already exists
-            if (reservationRepositoryPort.existsByStudentIdAndSessionId(studentId, session.getId())) {
+            // Idempotency: skip if reservation already exists - in-memory lookup
+            if (existingSessionIds.contains(session.getId())) {
                 log.debug("Reservation already exists for student {} in session {}, skipping",
                         studentId, session.getId());
                 continue;
             }
 
             // Determine mode: first 24 in-person seats, rest online
-            long inPersonCount = reservationRepositoryPort.countInPersonReservations(session.getId());
+            long inPersonCount = inPersonCounts.getOrDefault(session.getId(), 0L);
             ReservationMode mode = inPersonCount < MAX_IN_PERSON_CAPACITY
                     ? ReservationMode.IN_PERSON
                     : ReservationMode.ONLINE;

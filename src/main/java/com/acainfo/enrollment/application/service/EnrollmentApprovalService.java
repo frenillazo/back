@@ -48,19 +48,17 @@ public class EnrollmentApprovalService implements ApproveEnrollmentUseCase, Reje
             );
         }
 
-        SubjectGroup group = getGroupById(enrollment.getGroupId());
+        SubjectGroup group = groupRepositoryPort.findByIdForUpdate(enrollment.getGroupId())
+                .orElseThrow(() -> new GroupNotFoundException(enrollment.getGroupId()));
         validateApproverAuthorization(approverUserId, group);
 
-        // Check capacity to determine final status
+        // Check capacity to determine final status (group row is locked for the transaction)
         long activeCount = enrollmentRepositoryPort.countActiveByGroupId(group.getId());
         boolean hasAvailableSeats = activeCount < group.getMaxCapacity();
 
         if (hasAvailableSeats) {
             // Direct enrollment as ACTIVE
             enrollment.setStatus(EnrollmentStatus.ACTIVE);
-            // Update group enrollment count
-            group.setCurrentEnrollmentCount(group.getCurrentEnrollmentCount() + 1);
-            groupRepositoryPort.save(group);
             log.info("Enrollment {} approved as ACTIVE (seats available)", enrollmentId);
         } else {
             // Add to waiting list

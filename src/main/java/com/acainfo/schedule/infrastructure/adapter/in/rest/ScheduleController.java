@@ -12,6 +12,7 @@ import com.acainfo.schedule.infrastructure.adapter.in.rest.dto.ScheduleEnrichedR
 import com.acainfo.schedule.infrastructure.adapter.in.rest.dto.ScheduleResponse;
 import com.acainfo.schedule.infrastructure.adapter.in.rest.dto.UpdateScheduleRequest;
 import com.acainfo.schedule.infrastructure.mapper.ScheduleRestMapper;
+import com.acainfo.shared.application.dto.PageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -96,7 +97,7 @@ public class ScheduleController {
      * @return Page of ScheduleResponse with 200 OK
      */
     @GetMapping
-    public ResponseEntity<Page<ScheduleResponse>> getSchedulesWithFilters(
+    public ResponseEntity<PageResponse<ScheduleResponse>> getSchedulesWithFilters(
             @RequestParam(required = false) Long groupId,
             @RequestParam(required = false) Classroom classroom,
             @RequestParam(required = false) DayOfWeek dayOfWeek,
@@ -121,7 +122,7 @@ public class ScheduleController {
         Page<Schedule> schedulesPage = getScheduleUseCase.findWithFilters(filters);
         Page<ScheduleResponse> responsePage = schedulesPage.map(scheduleRestMapper::toResponse);
 
-        return ResponseEntity.ok(responsePage);
+        return ResponseEntity.ok(PageResponse.of(responsePage));
     }
 
     /**
@@ -197,7 +198,7 @@ public class ScheduleController {
      * @return Page of ScheduleEnrichedResponse with 200 OK
      */
     @GetMapping("/enriched")
-    public ResponseEntity<Page<ScheduleEnrichedResponse>> getEnrichedSchedulesWithFilters(
+    public ResponseEntity<PageResponse<ScheduleEnrichedResponse>> getEnrichedSchedulesWithFilters(
             @RequestParam(required = false) Long groupId,
             @RequestParam(required = false) Classroom classroom,
             @RequestParam(required = false) DayOfWeek dayOfWeek,
@@ -222,6 +223,6 @@ public class ScheduleController {
         Page<Schedule> schedulesPage = getScheduleUseCase.findWithFilters(filters);
         Page<ScheduleEnrichedResponse> responsePage = scheduleResponseEnricher.enrichPage(schedulesPage);
 
-        return ResponseEntity.ok(responsePage);
+        return ResponseEntity.ok(PageResponse.of(responsePage));
     }
 }

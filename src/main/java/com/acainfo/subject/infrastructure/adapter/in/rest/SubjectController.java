@@ -15,7 +15,7 @@ import com.acainfo.subject.infrastructure.adapter.in.rest.dto.SubjectResponse;
 import com.acainfo.subject.infrastructure.adapter.in.rest.dto.UpdateSubjectRequest;
 import com.acainfo.subject.infrastructure.mapper.SubjectRestMapper;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.MessageResponse;
-import com.acainfo.user.infrastructure.adapter.in.rest.dto.PageResponse;
+import com.acainfo.shared.application.dto.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

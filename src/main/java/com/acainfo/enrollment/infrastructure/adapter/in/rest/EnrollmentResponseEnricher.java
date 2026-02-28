@@ -1,5 +1,6 @@
 package com.acainfo.enrollment.infrastructure.adapter.in.rest;
 
+import com.acainfo.enrollment.application.port.in.GetEnrollmentUseCase;
 import com.acainfo.enrollment.domain.model.Enrollment;
 import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.EnrollmentResponse;
 import com.acainfo.enrollment.infrastructure.mapper.EnrollmentRestMapper;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 public class EnrollmentResponseEnricher {
 
     private final EnrollmentRestMapper enrollmentRestMapper;
+    private final GetEnrollmentUseCase getEnrollmentUseCase;
     private final GetGroupUseCase getGroupUseCase;
     private final GetSubjectUseCase getSubjectUseCase;
     private final GetUserProfileUseCase getUserProfileUseCase;
@@ -75,6 +77,7 @@ public class EnrollmentResponseEnricher {
             approvedByUserName = approver.getFullName();
         }
 
+        int activeCount = (int) getEnrollmentUseCase.countActiveByGroupId(group.getId());
         return enrollmentRestMapper.toEnrichedResponse(
                 enrollment,
                 student.getFullName(),
@@ -87,7 +90,7 @@ public class EnrollmentResponseEnricher {
                 teacher.getFullName(),
                 scheduleSummary,
                 group.getMaxCapacity(),
-                group.getCurrentEnrollmentCount(),
+                activeCount,
                 approvedByUserName
         );
     }
@@ -165,6 +168,7 @@ public class EnrollmentResponseEnricher {
                     List<Schedule> schedules = schedulesByGroupId.getOrDefault(group.getId(), List.of());
                     String scheduleSummary = buildScheduleSummary(schedules);
 
+                    int activeCount = (int) getEnrollmentUseCase.countActiveByGroupId(group.getId());
                     return enrollmentRestMapper.toEnrichedResponse(
                             enrollment,
                             student.getFullName(),
@@ -177,7 +181,7 @@ public class EnrollmentResponseEnricher {
                             teacher.getFullName(),
                             scheduleSummary,
                             group.getMaxCapacity(),
-                            group.getCurrentEnrollmentCount(),
+                            activeCount,
                             approvedByUserName
                     );
                 })

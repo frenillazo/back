@@ -13,6 +13,7 @@ import com.acainfo.session.infrastructure.adapter.in.rest.dto.CreateSessionReque
 import com.acainfo.session.infrastructure.adapter.in.rest.dto.SessionResponse;
 import com.acainfo.session.infrastructure.adapter.in.rest.dto.UpdateSessionRequest;
 import com.acainfo.session.infrastructure.mapper.SessionRestMapper;
+import com.acainfo.shared.application.dto.PageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -88,7 +89,7 @@ public class SessionController {
      */
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Page<SessionResponse>> getSessionsWithFilters(
+    public ResponseEntity<PageResponse<SessionResponse>> getSessionsWithFilters(
             @RequestParam(required = false) Long subjectId,
             @RequestParam(required = false) Long groupId,
             @RequestParam(required = false) Long scheduleId,
@@ -113,7 +114,7 @@ public class SessionController {
         Page<Session> sessionsPage = getSessionUseCase.findWithFilters(filters);
         Page<SessionResponse> responsePage = sessionResponseEnricher.enrichPage(sessionsPage);
 
-        return ResponseEntity.ok(responsePage);
+        return ResponseEntity.ok(PageResponse.of(responsePage));
     }
 
     /**

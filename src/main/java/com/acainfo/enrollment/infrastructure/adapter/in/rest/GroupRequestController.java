@@ -14,6 +14,7 @@ import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.GroupRequestRes
 import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.ProcessGroupRequestRequest;
 import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.SubjectInterestSummary;
 import com.acainfo.enrollment.infrastructure.mapper.GroupRequestRestMapper;
+import com.acainfo.shared.application.dto.PageResponse;
 import com.acainfo.subject.application.port.out.SubjectRepositoryPort;
 import com.acainfo.subject.domain.model.Subject;
 import com.acainfo.group.domain.model.GroupType;
@@ -94,7 +95,7 @@ public class GroupRequestController {
      * GET /api/group-requests?subjectId=1&requesterId=2&status=PENDING&...
      */
     @GetMapping
-    public ResponseEntity<Page<GroupRequestResponse>> getGroupRequestsWithFilters(
+    public ResponseEntity<PageResponse<GroupRequestResponse>> getGroupRequestsWithFilters(
             @RequestParam(required = false) Long subjectId,
             @RequestParam(required = false) Long requesterId,
             @RequestParam(required = false) GroupType requestedGroupType,
@@ -115,7 +116,7 @@ public class GroupRequestController {
         Page<GroupRequest> requestsPage = getGroupRequestUseCase.findWithFilters(filters);
         Page<GroupRequestResponse> responsePage = groupRequestResponseEnricher.enrichPage(requestsPage);
 
-        return ResponseEntity.ok(responsePage);
+        return ResponseEntity.ok(PageResponse.of(responsePage));
     }
 
     /**

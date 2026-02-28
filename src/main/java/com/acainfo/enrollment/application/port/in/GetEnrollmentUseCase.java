@@ -53,4 +53,12 @@ public interface GetEnrollmentUseCase {
      * @return List of active enrollments
      */
     List<Enrollment> findActiveByGroupId(Long groupId);
+
+    /**
+     * Count active enrollments for a group.
+     *
+     * @param groupId Group ID
+     * @return Number of active enrollments
+     */
+    long countActiveByGroupId(Long groupId);
 }

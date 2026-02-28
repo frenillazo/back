@@ -16,7 +16,7 @@ import com.acainfo.user.infrastructure.adapter.in.rest.dto.BatchActivateRequest;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.BatchDeactivateRequest;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.DeactivationResult;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.MessageResponse;
-import com.acainfo.user.infrastructure.adapter.in.rest.dto.PageResponse;
+import com.acainfo.shared.application.dto.PageResponse;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.RevokeRoleRequest;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.UpdateUserStatusRequest;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.UserResponse;

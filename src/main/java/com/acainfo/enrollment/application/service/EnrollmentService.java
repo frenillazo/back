@@ -206,4 +206,11 @@ public class EnrollmentService implements
         log.debug("Finding active enrollments for group: {}", groupId);
         return enrollmentRepositoryPort.findByGroupIdAndStatus(groupId, EnrollmentStatus.ACTIVE);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countActiveByGroupId(Long groupId) {
+        log.debug("Counting active enrollments for group: {}", groupId);
+        return enrollmentRepositoryPort.countActiveByGroupId(groupId);
+    }
 }

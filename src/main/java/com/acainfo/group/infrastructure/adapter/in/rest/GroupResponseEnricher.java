@@ -1,5 +1,6 @@
 package com.acainfo.group.infrastructure.adapter.in.rest;
 
+import com.acainfo.enrollment.application.port.in.GetEnrollmentUseCase;
 import com.acainfo.group.domain.model.SubjectGroup;
 import com.acainfo.group.infrastructure.adapter.in.rest.dto.GroupResponse;
 import com.acainfo.group.infrastructure.adapter.in.rest.dto.ScheduleSummary;
@@ -34,6 +35,7 @@ public class GroupResponseEnricher {
     private final GetSubjectUseCase getSubjectUseCase;
     private final GetUserProfileUseCase getUserProfileUseCase;
     private final GetScheduleUseCase getScheduleUseCase;
+    private final GetEnrollmentUseCase getEnrollmentUseCase;
 
     /**
      * Enrich a single group with related entity data.
@@ -53,6 +55,10 @@ public class GroupResponseEnricher {
                 teacher.getFullName()
         );
         response.setSchedules(schedules);
+
+        // Dynamic enrollment count — single source of truth
+        applyDynamicEnrollmentCount(response, group);
+
         return response;
     }
 
@@ -128,6 +134,10 @@ public class GroupResponseEnricher {
                             teacher.getFullName()
                     );
                     response.setSchedules(schedulesByGroupId.getOrDefault(group.getId(), List.of()));
+
+                    // Dynamic enrollment count — single source of truth
+                    applyDynamicEnrollmentCount(response, group);
+
                     return response;
                 })
                 .toList();
@@ -139,6 +149,17 @@ public class GroupResponseEnricher {
      * @param groupsPage the page of groups to enrich
      * @return page of enriched group responses
      */
+    /**
+     * Override currentEnrollmentCount with a dynamic count from the enrollment table.
+     * This ensures the count is always accurate, regardless of the stored field.
+     */
+    private void applyDynamicEnrollmentCount(GroupResponse response, SubjectGroup group) {
+        int activeCount = (int) getEnrollmentUseCase.countActiveByGroupId(group.getId());
+        response.setCurrentEnrollmentCount(activeCount);
+        response.setAvailableSeats(Math.max(0, group.getMaxCapacity() - activeCount));
+        response.setCanEnroll(group.isOpen() && activeCount < group.getMaxCapacity());
+    }
+
     public Page<GroupResponse> enrichPage(Page<SubjectGroup> groupsPage) {
         List<GroupResponse> enrichedList = enrichList(groupsPage.getContent());
 

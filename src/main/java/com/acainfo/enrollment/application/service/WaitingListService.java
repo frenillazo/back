@@ -7,6 +7,8 @@ import com.acainfo.enrollment.domain.exception.EnrollmentNotFoundException;
 import com.acainfo.enrollment.domain.exception.InvalidEnrollmentStateException;
 import com.acainfo.enrollment.domain.model.Enrollment;
 import com.acainfo.enrollment.domain.model.EnrollmentStatus;
+import com.acainfo.group.application.port.out.GroupRepositoryPort;
+import com.acainfo.group.domain.exception.GroupNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ public class WaitingListService implements WaitingListUseCase {
 
     private final EnrollmentRepositoryPort enrollmentRepositoryPort;
     private final AutoReservationPort autoReservationPort;
+    private final GroupRepositoryPort groupRepositoryPort;
 
     @Override
     @Transactional(readOnly = true)
@@ -78,6 +81,10 @@ public class WaitingListService implements WaitingListUseCase {
     @Transactional
     public Enrollment promoteNextFromWaitingList(Long groupId) {
         log.debug("Attempting to promote next student from waiting list for group: {}", groupId);
+
+        // Lock the group row to prevent concurrent promotions from exceeding capacity
+        groupRepositoryPort.findByIdForUpdate(groupId)
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
 
         List<Enrollment> waitingList = enrollmentRepositoryPort.findWaitingListByGroupId(groupId);
 

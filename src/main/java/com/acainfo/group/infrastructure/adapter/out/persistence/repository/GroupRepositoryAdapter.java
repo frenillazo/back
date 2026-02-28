@@ -101,4 +101,10 @@ public class GroupRepositoryAdapter implements GroupRepositoryPort {
     public long countAllBySubjectId(Long subjectId) {
         return jpaGroupRepository.countBySubjectId(subjectId);
     }
+
+    @Override
+    public Optional<SubjectGroup> findByIdForUpdate(Long id) {
+        return jpaGroupRepository.findByIdForUpdate(id)
+                .map(groupPersistenceMapper::toDomain);
+    }
 }

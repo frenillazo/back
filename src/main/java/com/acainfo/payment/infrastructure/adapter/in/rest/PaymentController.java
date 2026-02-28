@@ -74,12 +74,13 @@ public class PaymentController {
 
         return ResponseEntity.ok(new PageResponse<>(
                 content,
-                result.pageNumber(),
-                result.totalPages(),
+                result.page(),
+                result.size(),
                 result.totalElements(),
                 result.totalPages(),
                 result.first(),
-                result.last()
+                result.last(),
+                result.empty()
         ));
     }
 

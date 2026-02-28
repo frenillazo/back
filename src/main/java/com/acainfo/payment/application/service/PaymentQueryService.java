@@ -42,15 +42,7 @@ public class PaymentQueryService implements GetPaymentUseCase {
         log.debug("Finding payments with filters: {}", filters);
         Page<Payment> page = paymentRepository.findWithFilters(filters);
 
-        return new PageResponse<>(
-                page.getContent(),
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages(),
-                page.isFirst(),
-                page.isLast()
-        );
+        return PageResponse.of(page);
     }
 
     @Override

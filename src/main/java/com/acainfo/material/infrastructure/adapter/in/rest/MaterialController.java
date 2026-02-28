@@ -144,12 +144,13 @@ public class MaterialController {
 
         return ResponseEntity.ok(new PageResponse<>(
                 content,
-                result.pageNumber(),
-                result.pageSize(),
+                result.page(),
+                result.size(),
                 result.totalElements(),
                 result.totalPages(),
                 result.first(),
-                result.last()
+                result.last(),
+                result.empty()
         ));
     }
 
