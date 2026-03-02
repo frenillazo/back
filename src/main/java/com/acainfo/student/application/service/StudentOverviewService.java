@@ -16,6 +16,7 @@ import com.acainfo.student.application.dto.StudentOverviewResponse;
 import com.acainfo.student.application.dto.StudentOverviewResponse.EnrollmentSummary;
 import com.acainfo.student.application.dto.StudentOverviewResponse.PaymentSummary;
 import com.acainfo.student.application.dto.StudentOverviewResponse.UpcomingSessionSummary;
+import com.acainfo.student.application.port.in.GetStudentOverviewUseCase;
 import com.acainfo.subject.application.port.out.SubjectRepositoryPort;
 import com.acainfo.subject.domain.model.Subject;
 import com.acainfo.user.application.port.out.UserRepositoryPort;
@@ -43,7 +44,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class StudentOverviewService {
+public class StudentOverviewService implements GetStudentOverviewUseCase {
 
     private static final int DEFAULT_UPCOMING_SESSIONS_LIMIT = 5;
 
@@ -62,6 +63,7 @@ public class StudentOverviewService {
      * @param upcomingSessionsLimit Maximum number of upcoming sessions to return
      * @return Aggregated overview response
      */
+    @Override
     public StudentOverviewResponse getOverview(Long studentId, int upcomingSessionsLimit) {
         log.debug("Building overview for student: {}", studentId);
 
@@ -101,6 +103,7 @@ public class StudentOverviewService {
     /**
      * Get overview with default upcoming sessions limit.
      */
+    @Override
     public StudentOverviewResponse getOverview(Long studentId) {
         return getOverview(studentId, DEFAULT_UPCOMING_SESSIONS_LIMIT);
     }

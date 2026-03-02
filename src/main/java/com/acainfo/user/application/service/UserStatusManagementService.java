@@ -6,8 +6,10 @@ import com.acainfo.enrollment.domain.model.EnrollmentStatus;
 import com.acainfo.payment.application.port.out.PaymentRepositoryPort;
 import com.acainfo.payment.domain.model.Payment;
 import com.acainfo.shared.application.port.out.EmailSenderPort;
+import com.acainfo.payment.application.port.out.UserReactivationPort;
 import com.acainfo.user.application.port.in.ActivateUsersUseCase;
 import com.acainfo.user.application.port.in.DeactivateUsersUseCase;
+import com.acainfo.user.application.port.in.ProcessOverduePaymentsUseCase;
 import com.acainfo.user.application.port.out.UserRepositoryPort;
 import com.acainfo.user.domain.model.User;
 import com.acainfo.user.domain.model.UserStatus;
@@ -33,7 +35,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class UserStatusManagementService implements DeactivateUsersUseCase, ActivateUsersUseCase {
+public class UserStatusManagementService implements DeactivateUsersUseCase, ActivateUsersUseCase, ProcessOverduePaymentsUseCase, UserReactivationPort {
 
     private final UserRepositoryPort userRepository;
     private final PaymentRepositoryPort paymentRepository;
@@ -44,6 +46,7 @@ public class UserStatusManagementService implements DeactivateUsersUseCase, Acti
      * Scheduled job that runs every day at 3:00 AM.
      * Deactivates users with overdue payments (PENDING > 5 days from generation).
      */
+    @Override
     @Scheduled(cron = "0 0 3 * * *")
     @Transactional
     public void processOverduePayments() {
@@ -115,6 +118,7 @@ public class UserStatusManagementService implements DeactivateUsersUseCase, Acti
      *
      * @param userId the user ID to check
      */
+    @Override
     @Transactional
     public void checkAndReactivateUser(Long userId) {
         User user = userRepository.findById(userId).orElse(null);

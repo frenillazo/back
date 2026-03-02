@@ -2,7 +2,7 @@ package com.acainfo.student.infrastructure.adapter.in.rest;
 
 import com.acainfo.security.userdetails.CustomUserDetails;
 import com.acainfo.student.application.dto.StudentOverviewResponse;
-import com.acainfo.student.application.service.StudentOverviewService;
+import com.acainfo.student.application.port.in.GetStudentOverviewUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -33,7 +33,7 @@ public class StudentController {
     private static final int DEFAULT_UPCOMING_SESSIONS = 5;
     private static final int MAX_UPCOMING_SESSIONS = 20;
 
-    private final StudentOverviewService studentOverviewService;
+    private final GetStudentOverviewUseCase getStudentOverviewUseCase;
 
     /**
      * Get overview for the authenticated student.
@@ -64,7 +64,7 @@ public class StudentController {
         log.info("REST: Getting overview for authenticated student: {}", studentId);
 
         int limit = Math.min(Math.max(upcomingSessionsLimit, 1), MAX_UPCOMING_SESSIONS);
-        StudentOverviewResponse response = studentOverviewService.getOverview(studentId, limit);
+        StudentOverviewResponse response = getStudentOverviewUseCase.getOverview(studentId, limit);
 
         return ResponseEntity.ok(response);
     }
@@ -98,7 +98,7 @@ public class StudentController {
         log.info("REST: Admin getting overview for student: {}", studentId);
 
         int limit = Math.min(Math.max(upcomingSessionsLimit, 1), MAX_UPCOMING_SESSIONS);
-        StudentOverviewResponse response = studentOverviewService.getOverview(studentId, limit);
+        StudentOverviewResponse response = getStudentOverviewUseCase.getOverview(studentId, limit);
 
         return ResponseEntity.ok(response);
     }

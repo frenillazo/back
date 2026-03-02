@@ -5,14 +5,13 @@ import com.acainfo.payment.application.dto.MarkPaymentPaidCommand;
 import com.acainfo.payment.application.port.in.CancelPaymentUseCase;
 import com.acainfo.payment.application.port.in.MarkPaymentPaidUseCase;
 import com.acainfo.payment.application.port.out.PaymentRepositoryPort;
+import com.acainfo.payment.application.port.out.UserReactivationPort;
 import com.acainfo.payment.domain.exception.InvalidPaymentStateException;
 import com.acainfo.payment.domain.exception.PaymentNotFoundException;
 import com.acainfo.payment.domain.model.Payment;
 import com.acainfo.payment.domain.model.PaymentStatus;
-import com.acainfo.user.application.service.UserStatusManagementService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,18 +30,12 @@ import java.time.LocalDateTime;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 @Transactional
 public class PaymentStatusService implements MarkPaymentPaidUseCase, CancelPaymentUseCase {
 
     private final PaymentRepositoryPort paymentRepository;
-    private final UserStatusManagementService userStatusManagementService;
-
-    public PaymentStatusService(
-            PaymentRepositoryPort paymentRepository,
-            @Lazy UserStatusManagementService userStatusManagementService) {
-        this.paymentRepository = paymentRepository;
-        this.userStatusManagementService = userStatusManagementService;
-    }
+    private final UserReactivationPort userReactivationPort;
 
     @Override
     public Payment markAsPaid(MarkPaymentPaidCommand command) {
@@ -77,7 +70,7 @@ public class PaymentStatusService implements MarkPaymentPaidUseCase, CancelPayme
 
         // 5. Check if user should be reactivated (async - after transaction commits)
         try {
-            userStatusManagementService.checkAndReactivateUser(saved.getStudentId());
+            userReactivationPort.checkAndReactivateUser(saved.getStudentId());
         } catch (Exception e) {
             log.warn("Failed to check user reactivation for student {}: {}",
                     saved.getStudentId(), e.getMessage());

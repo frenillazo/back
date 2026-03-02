@@ -6,7 +6,7 @@ import com.acainfo.user.application.port.in.ActivateUsersUseCase;
 import com.acainfo.user.application.port.in.DeactivateUsersUseCase;
 import com.acainfo.user.application.port.in.GetUserProfileUseCase;
 import com.acainfo.user.application.port.in.ManageUserRolesUseCase;
-import com.acainfo.user.application.service.UserStatusManagementService;
+import com.acainfo.user.application.port.in.ProcessOverduePaymentsUseCase;
 import com.acainfo.user.domain.model.RoleType;
 import com.acainfo.user.domain.model.User;
 import com.acainfo.user.domain.model.UserStatus;
@@ -55,7 +55,7 @@ public class AdminController {
     private final ManageUserRolesUseCase manageUserRolesUseCase;
     private final DeactivateUsersUseCase deactivateUsersUseCase;
     private final ActivateUsersUseCase activateUsersUseCase;
-    private final UserStatusManagementService userStatusManagementService;
+    private final ProcessOverduePaymentsUseCase processOverduePaymentsUseCase;
     private final UserRepositoryPort userRepositoryPort;
     private final UserRestMapper userRestMapper;
 
@@ -379,7 +379,7 @@ public class AdminController {
     public ResponseEntity<MessageResponse> triggerStatusCheck() {
         log.info("Manual trigger of status check job");
 
-        userStatusManagementService.processOverduePayments();
+        processOverduePaymentsUseCase.processOverduePayments();
 
         return ResponseEntity.ok(MessageResponse.of("Job ejecutado correctamente"));
     }

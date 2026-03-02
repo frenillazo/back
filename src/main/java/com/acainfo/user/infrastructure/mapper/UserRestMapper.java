@@ -74,6 +74,7 @@ public interface UserRestMapper {
     @Mapping(target = "refreshToken", source = "refreshToken")
     @Mapping(target = "tokenType", constant = "Bearer")
     @Mapping(target = "expiresIn", expression = "java(getAccessTokenExpiration())")
+    @Mapping(target = "termsAccepted", ignore = true)
     AuthResponse toAuthResponse(AuthenticationResult result);
 
     // ==================== Helper Methods ====================
