@@ -46,6 +46,9 @@ public class EnrollmentSpecifications {
             }
 
             // Combine all predicates with AND
+            if (predicates.isEmpty()) {
+                return criteriaBuilder.conjunction();
+            }
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }
