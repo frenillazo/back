@@ -61,18 +61,13 @@ public class SubjectGroupJpaEntity {
     @Column(name = "price_per_hour", precision = 10, scale = 2)
     private BigDecimal pricePerHour;
 
-    // Deploy 1: nullable=true so Hibernate ddl-auto=update can ALTER ADD COLUMN
-    // on a non-empty subject_groups table without failing.
-    // The application layer (GroupService.create / .update) still requires both
-    // dates, so any NEW group has them populated; legacy rows are filled by
-    // GroupDateBackfillRunner at startup.
-    // Deploy 2: re-tighten to nullable=false AND run
-    //   ALTER TABLE subject_groups ALTER COLUMN start_date SET NOT NULL;
-    //   ALTER TABLE subject_groups ALTER COLUMN end_date SET NOT NULL;
-    @Column(name = "start_date")
+    // Mapping aligned with the DB constraint (NOT NULL applied during Deploy 1 +
+    // manual ALTER on prod). The application layer (GroupService.create / .update)
+    // also enforces both dates at validation time.
+    @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
 
-    @Column(name = "end_date")
+    @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
     @CreatedDate
