@@ -33,7 +33,6 @@ public record StudentOverviewResponse(
             Long groupId,
             String subjectName,
             String subjectCode,
-            String groupType,
             String teacherName,
             LocalDateTime enrolledAt
     ) {
@@ -48,7 +47,6 @@ public record StudentOverviewResponse(
             Long enrollmentId,
             String subjectName,
             String subjectCode,
-            String groupType,
             LocalDate date,
             LocalTime startTime,
             LocalTime endTime,

@@ -1,7 +1,6 @@
 package com.acainfo.schedule.infrastructure.adapter.in.rest.dto;
 
 import com.acainfo.group.domain.model.GroupStatus;
-import com.acainfo.group.domain.model.GroupType;
 import com.acainfo.schedule.domain.model.Classroom;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
@@ -45,7 +44,6 @@ public class ScheduleEnrichedResponse {
     private LocalDateTime updatedAt;
 
     // Enriched data from Group
-    private GroupType groupType;
     private GroupStatus groupStatus;
     private BigDecimal pricePerHour;
 

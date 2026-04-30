@@ -35,7 +35,6 @@ public class SessionResponse {
     private String subjectName;
     private String subjectCode;
     private String groupName;
-    private String groupType;
     private String teacherName;
 
     @JsonFormat(pattern = "yyyy-MM-dd")

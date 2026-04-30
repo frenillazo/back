@@ -21,7 +21,9 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_material_uploaded_by", columnList = "uploaded_by_id"),
                 @Index(name = "idx_material_file_extension", columnList = "file_extension"),
                 @Index(name = "idx_material_uploaded_at", columnList = "uploaded_at"),
-                @Index(name = "idx_material_category", columnList = "subject_id, category")
+                @Index(name = "idx_material_category", columnList = "subject_id, category"),
+                @Index(name = "idx_material_auto_disable",
+                        columnList = "visible, download_disabled, visibility_enabled_at, download_enabled_at")
         }
 )
 @EntityListeners(AuditingEntityListener.class)
@@ -73,6 +75,20 @@ public class MaterialJpaEntity {
 
     @Column(name = "uploaded_at", nullable = false)
     private LocalDateTime uploadedAt;
+
+    @Column(name = "visible", nullable = false, columnDefinition = "BOOLEAN NOT NULL DEFAULT TRUE")
+    @Builder.Default
+    private boolean visible = true;
+
+    @Column(name = "download_disabled", nullable = false, columnDefinition = "BOOLEAN NOT NULL DEFAULT FALSE")
+    @Builder.Default
+    private boolean downloadDisabled = false;
+
+    @Column(name = "visibility_enabled_at")
+    private LocalDateTime visibilityEnabledAt;
+
+    @Column(name = "download_enabled_at")
+    private LocalDateTime downloadEnabledAt;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

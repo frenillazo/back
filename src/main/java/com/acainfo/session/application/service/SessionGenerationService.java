@@ -91,10 +91,16 @@ public class SessionGenerationService implements GenerateSessionsUseCase {
         SubjectGroup group = groupRepositoryPort.findById(command.groupId())
                 .orElseThrow(() -> new GroupNotFoundException(command.groupId()));
 
+        // Cap the requested endDate by the group's own endDate so we never generate
+        // sessions past the group's lifespan, regardless of the caller (cron or REST).
+        LocalDate effectiveEnd = group.getEndDate() != null && group.getEndDate().isBefore(command.endDate())
+                ? group.getEndDate()
+                : command.endDate();
+
         List<Session> sessionsToCreate = new ArrayList<>();
 
         LocalDate currentDate = command.startDate();
-        while (!currentDate.isAfter(command.endDate())) {
+        while (!currentDate.isAfter(effectiveEnd)) {
             DayOfWeek dayOfWeek = currentDate.getDayOfWeek();
 
             for (Schedule schedule : schedules) {

@@ -26,6 +26,11 @@ public record MaterialResponse(
         LocalDateTime uploadedAt,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
+        // Admin flags
+        boolean visible,
+        boolean downloadDisabled,
+        LocalDateTime visibilityEnabledAt,
+        LocalDateTime downloadEnabledAt,
         // Enriched data from related entities
         String subjectName,
         String uploadedByName

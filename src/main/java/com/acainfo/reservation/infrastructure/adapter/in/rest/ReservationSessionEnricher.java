@@ -102,7 +102,6 @@ public class ReservationSessionEnricher {
                         if (session.getGroupId() != null) {
                             SubjectGroup group = groupsById.get(session.getGroupId());
                             if (group != null) {
-                                enriched.setGroupType(group.getType().name());
                                 User teacher = teachersById.get(group.getTeacherId());
                                 if (teacher != null) {
                                     enriched.setTeacherName(teacher.getFullName());

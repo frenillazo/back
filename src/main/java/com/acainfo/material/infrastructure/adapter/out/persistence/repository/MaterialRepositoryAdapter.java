@@ -92,6 +92,39 @@ public class MaterialRepositoryAdapter implements MaterialRepositoryPort {
         );
     }
 
+    @Override
+    public List<Material> findAllByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return mapper.toDomainList(jpaRepository.findAllById(ids));
+    }
+
+    @Override
+    public int batchUpdateDownloadDisabled(List<Long> ids, boolean disabled, LocalDateTime enabledAt) {
+        if (ids == null || ids.isEmpty()) {
+            return 0;
+        }
+        // When disabled=true, enabledAt is ignored by the query but JPA forbids null params -> use a safe sentinel.
+        LocalDateTime safe = enabledAt != null ? enabledAt : LocalDateTime.now();
+        return jpaRepository.batchUpdateDownloadDisabled(ids, disabled, safe);
+    }
+
+    @Override
+    public int batchUpdateVisibility(List<Long> ids, boolean visible, LocalDateTime enabledAt) {
+        if (ids == null || ids.isEmpty()) {
+            return 0;
+        }
+        LocalDateTime safe = enabledAt != null ? enabledAt : LocalDateTime.now();
+        return jpaRepository.batchUpdateVisibility(ids, visible, safe);
+    }
+
+    @Override
+    public List<Material> findExpiredActiveMaterials(int daysThreshold) {
+        LocalDateTime threshold = LocalDateTime.now().minusDays(daysThreshold);
+        return mapper.toDomainList(jpaRepository.findExpiredActiveMaterials(threshold));
+    }
+
     private Pageable createPageable(MaterialFilters filters) {
         Sort.Direction direction = "ASC".equalsIgnoreCase(filters.sortDirection())
                 ? Sort.Direction.ASC

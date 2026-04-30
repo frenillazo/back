@@ -47,7 +47,6 @@ public interface EnrollmentRestMapper {
     @Mapping(target = "subjectId", ignore = true)
     @Mapping(target = "subjectName", ignore = true)
     @Mapping(target = "subjectCode", ignore = true)
-    @Mapping(target = "groupType", ignore = true)
     @Mapping(target = "groupName", ignore = true)
     @Mapping(target = "teacherName", ignore = true)
     @Mapping(target = "scheduleSummary", ignore = true)
@@ -76,7 +75,6 @@ public interface EnrollmentRestMapper {
      * @param subjectId    ID of the subject
      * @param subjectName  name of the subject
      * @param subjectCode  code of the subject
-     * @param groupType    type of the group as string
      * @param teacherName  full name of the teacher
      * @return enriched enrollment response
      */
@@ -85,7 +83,6 @@ public interface EnrollmentRestMapper {
     @Mapping(target = "subjectId", source = "subjectId")
     @Mapping(target = "subjectName", source = "subjectName")
     @Mapping(target = "subjectCode", source = "subjectCode")
-    @Mapping(target = "groupType", source = "groupType")
     @Mapping(target = "groupName", source = "groupName")
     @Mapping(target = "teacherName", source = "teacherName")
     @Mapping(target = "scheduleSummary", source = "scheduleSummary")
@@ -124,7 +121,6 @@ public interface EnrollmentRestMapper {
             Long subjectId,
             String subjectName,
             String subjectCode,
-            String groupType,
             String groupName,
             String teacherName,
             String scheduleSummary,

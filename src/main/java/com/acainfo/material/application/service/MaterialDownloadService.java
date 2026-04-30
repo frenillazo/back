@@ -2,6 +2,7 @@ package com.acainfo.material.application.service;
 
 import com.acainfo.material.application.dto.MaterialDownload;
 import com.acainfo.material.application.port.in.DownloadMaterialUseCase;
+import com.acainfo.material.application.port.in.PreviewMaterialUseCase;
 import com.acainfo.material.application.port.out.FileStoragePort;
 import com.acainfo.material.application.port.out.MaterialRepositoryPort;
 import com.acainfo.material.domain.exception.MaterialAccessDeniedException;
@@ -34,7 +35,7 @@ import java.io.InputStream;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class MaterialDownloadService implements DownloadMaterialUseCase {
+public class MaterialDownloadService implements DownloadMaterialUseCase, PreviewMaterialUseCase {
 
     private final MaterialRepositoryPort materialRepository;
     private final FileStoragePort fileStorage;
@@ -46,18 +47,15 @@ public class MaterialDownloadService implements DownloadMaterialUseCase {
     public MaterialDownload download(Long materialId, Long userId) {
         log.debug("Download request for material {} by user {}", materialId, userId);
 
-        // 1. Find material
         Material material = materialRepository.findById(materialId)
                 .orElseThrow(() -> new MaterialNotFoundException(materialId));
 
-        // 2. Check access
-        if (!canUserDownload(material, userId)) {
+        // Download requires the full check, including downloadDisabled
+        if (!canUserAccess(material, userId, /* checkDownloadDisabled */ true)) {
             throw new MaterialAccessDeniedException(materialId, userId);
         }
 
-        // 3. Retrieve file content
         InputStream content = fileStorage.retrieve(material.getStoragePath());
-
         log.info("Material downloaded: id={}, user={}", materialId, userId);
 
         return new MaterialDownload(
@@ -68,22 +66,59 @@ public class MaterialDownloadService implements DownloadMaterialUseCase {
         );
     }
 
+    @Override
+    public MaterialDownload preview(Long materialId, Long userId) {
+        log.debug("Preview request for material {} by user {}", materialId, userId);
+
+        Material material = materialRepository.findById(materialId)
+                .orElseThrow(() -> new MaterialNotFoundException(materialId));
+
+        // Preview ignores downloadDisabled — a hidden-from-download material can still
+        // be opened in the in-app viewer if it remains visible.
+        if (!canUserAccess(material, userId, /* checkDownloadDisabled */ false)) {
+            throw new MaterialAccessDeniedException(materialId, userId);
+        }
+
+        InputStream content = fileStorage.retrieve(material.getStoragePath());
+        log.info("Material previewed: id={}, user={}", materialId, userId);
+
+        return new MaterialDownload(
+                material.getOriginalFilename(),
+                material.getMimeType(),
+                material.getFileSize(),
+                content
+        );
+    }
+
     /**
-     * Check if user can download the material.
+     * Shared access check for download and preview.
+     *
+     * @param checkDownloadDisabled when true, materials with {@code downloadDisabled=true}
+     *                              are denied to non-admin/teacher users; when false the
+     *                              flag is ignored (used by the in-app viewer).
      */
-    private boolean canUserDownload(Material material, Long userId) {
-        // Get user
+    private boolean canUserAccess(Material material, Long userId, boolean checkDownloadDisabled) {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) {
             return false;
         }
 
-        // Admins and teachers can always download
+        // Admins and teachers can always access (download & preview)
         if (user.isAdmin() || user.isTeacher()) {
             return true;
         }
 
-        // Students need active enrollment in a group of the subject
+        // Hidden materials are never accessible to non-admin users
+        if (!material.isVisible()) {
+            return false;
+        }
+
+        // Download endpoint additionally enforces the downloadDisabled flag
+        if (checkDownloadDisabled && material.isDownloadDisabled()) {
+            return false;
+        }
+
+        // Students need active enrollment in a group of the subject + payments up to date
         if (user.isStudent()) {
             return hasActiveEnrollmentInSubject(userId, material.getSubjectId())
                     && hasPaymentsUpToDate(userId);

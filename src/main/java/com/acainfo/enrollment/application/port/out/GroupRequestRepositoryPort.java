@@ -3,7 +3,6 @@ package com.acainfo.enrollment.application.port.out;
 import com.acainfo.enrollment.application.dto.GroupRequestFilters;
 import com.acainfo.enrollment.domain.model.GroupRequest;
 import com.acainfo.enrollment.domain.model.GroupRequestStatus;
-import com.acainfo.group.domain.model.GroupType;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
@@ -66,13 +65,12 @@ public interface GroupRequestRepositoryPort {
     List<GroupRequest> findByStatus(GroupRequestStatus status);
 
     /**
-     * Find pending group requests for a subject with a specific type.
+     * Find pending group requests for a subject.
      *
      * @param subjectId Subject ID
-     * @param type Requested group type
      * @return List of pending group requests
      */
-    List<GroupRequest> findPendingBySubjectIdAndType(Long subjectId, GroupType type);
+    List<GroupRequest> findPendingBySubjectId(Long subjectId);
 
     /**
      * Find expired pending requests (for scheduled cleanup).

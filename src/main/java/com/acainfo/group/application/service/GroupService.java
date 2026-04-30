@@ -32,7 +32,7 @@ import java.util.List;
 
 /**
  * Service implementing group use cases.
- * Contains business logic and validations for group operations.
+ * Contains business logic and validations for regular group operations.
  */
 @Service
 @RequiredArgsConstructor
@@ -52,8 +52,8 @@ public class GroupService implements
     @Override
     @Transactional
     public SubjectGroup create(CreateGroupCommand command) {
-        log.info("Creating group for subject: {}, teacher: {}, type: {}",
-                command.subjectId(), command.teacherId(), command.type());
+        log.info("Creating group for subject: {}, teacher: {}",
+                command.subjectId(), command.teacherId());
 
         // Validate that subject exists
         Subject subject = subjectRepositoryPort.findById(command.subjectId())
@@ -69,18 +69,17 @@ public class GroupService implements
             );
         }
 
-        // Validate custom capacity if provided
-        if (command.capacity() != null) {
-            int maxCapacity = command.type().isIntensive()
-                    ? SubjectGroup.INTENSIVE_MAX_CAPACITY
-                    : SubjectGroup.REGULAR_MAX_CAPACITY;
+        // Validate dates
+        if (command.startDate() == null || command.endDate() == null) {
+            throw new InvalidGroupDataException("startDate and endDate are required");
+        }
+        if (command.endDate().isBefore(command.startDate())) {
+            throw new InvalidGroupDataException("endDate must be on or after startDate");
+        }
 
-            if (command.capacity() < 1 || command.capacity() > maxCapacity) {
-                throw new InvalidGroupDataException(
-                        String.format("Capacity must be between 1 and %d for type %s",
-                                maxCapacity, command.type())
-                );
-            }
+        // Validate custom capacity if provided
+        if (command.capacity() != null && command.capacity() < 1) {
+            throw new InvalidGroupDataException("Capacity must be at least 1");
         }
 
         // Generate group name automatically
@@ -91,11 +90,12 @@ public class GroupService implements
                 .name(groupName)
                 .subjectId(command.subjectId())
                 .teacherId(command.teacherId())
-                .type(command.type())
                 .status(GroupStatus.OPEN)
                 .currentEnrollmentCount(0)
                 .capacity(command.capacity())        // null = use default
                 .pricePerHour(command.pricePerHour()) // null = use default (15€/hour)
+                .startDate(command.startDate())
+                .endDate(command.endDate())
                 .build();
 
         SubjectGroup savedGroup = groupRepositoryPort.save(group);
@@ -104,9 +104,7 @@ public class GroupService implements
         subject.setCurrentGroupCount(subject.getCurrentGroupCount() + 1);
         subjectRepositoryPort.save(subject);
 
-        log.info("Group created successfully: ID {}, Subject: {}, Type: {}",
-                savedGroup.getId(), command.subjectId(), command.type());
-
+        log.info("Group created successfully: ID {}, Subject: {}", savedGroup.getId(), command.subjectId());
         return savedGroup;
     }
 
@@ -117,33 +115,33 @@ public class GroupService implements
 
         SubjectGroup group = getById(id);
 
-        // Update capacity if provided
         if (command.capacity() != null) {
-            int maxCapacity = group.isIntensive()
-                    ? SubjectGroup.INTENSIVE_MAX_CAPACITY
-                    : SubjectGroup.REGULAR_MAX_CAPACITY;
-
             if (command.capacity() < group.getCurrentEnrollmentCount()) {
                 throw new InvalidGroupDataException(
                         String.format("Capacity cannot be less than current enrollments (%d)",
                                 group.getCurrentEnrollmentCount())
                 );
             }
-
-            if (command.capacity() > maxCapacity) {
-                throw new InvalidGroupDataException(
-                        String.format("Capacity cannot exceed %d for type %s",
-                                maxCapacity, group.getType())
-                );
-            }
-
             group.setCapacity(command.capacity());
         }
 
-        // Update status if provided
         if (command.status() != null) {
             group.setStatus(command.status());
         }
+
+        if (command.pricePerHour() != null) {
+            group.setPricePerHour(command.pricePerHour());
+        }
+
+        // Validate dates if updated
+        LocalDate newStart = command.startDate() != null ? command.startDate() : group.getStartDate();
+        LocalDate newEnd = command.endDate() != null ? command.endDate() : group.getEndDate();
+
+        if (newEnd.isBefore(newStart)) {
+            throw new InvalidGroupDataException("endDate must be on or after startDate");
+        }
+        group.setStartDate(newStart);
+        group.setEndDate(newEnd);
 
         SubjectGroup updatedGroup = groupRepositoryPort.save(group);
         log.info("Group updated successfully: ID {}", id);
@@ -162,8 +160,8 @@ public class GroupService implements
     @Override
     @Transactional(readOnly = true)
     public Page<SubjectGroup> findWithFilters(GroupFilters filters) {
-        log.debug("Finding groups with filters: subjectId={}, teacherId={}, type={}, status={}",
-                filters.subjectId(), filters.teacherId(), filters.type(), filters.status());
+        log.debug("Finding groups with filters: subjectId={}, teacherId={}, status={}",
+                filters.subjectId(), filters.teacherId(), filters.status());
         return groupRepositoryPort.findWithFilters(filters);
     }
 
@@ -174,7 +172,6 @@ public class GroupService implements
 
         SubjectGroup group = getById(id);
 
-        // Check if group has enrollments
         if (group.getCurrentEnrollmentCount() > 0) {
             throw new InvalidGroupDataException(
                     "Cannot delete group with existing enrollments. Cancel it instead."
@@ -220,9 +217,6 @@ public class GroupService implements
      * Generate group name automatically.
      * Format: "[subjectName] grupo N YY-YY"
      * Example: "Álgebra grupo 1 25-26"
-     *
-     * @param subject Subject entity
-     * @return Generated group name
      */
     private String generateGroupName(Subject subject) {
         long existingCount = groupRepositoryPort.countAllBySubjectId(subject.getId());
@@ -235,17 +229,12 @@ public class GroupService implements
     }
 
     /**
-     * Calculate academic year in format "YY-YY".
-     * Academic year runs from September to August.
-     * Example: Feb 2026 -> "25-26", Oct 2025 -> "25-26"
-     *
-     * @return Academic year string
+     * Calculate academic year in format "YY-YY". Sep-Dec → year starts; Jan-Aug → previous year started.
      */
     private String calculateAcademicYear() {
         LocalDate now = LocalDate.now();
         int year = now.getYear();
         int month = now.getMonthValue();
-        // Sep-Dec = current year starts, Jan-Aug = previous year started
         int startYear = month >= 9 ? year : year - 1;
         int endYear = startYear + 1;
         return String.format("%02d-%02d", startYear % 100, endYear % 100);

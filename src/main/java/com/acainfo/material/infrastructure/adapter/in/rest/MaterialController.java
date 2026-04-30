@@ -2,13 +2,20 @@ package com.acainfo.material.infrastructure.adapter.in.rest;
 
 import com.acainfo.material.application.dto.MaterialDownload;
 import com.acainfo.material.application.dto.MaterialFilters;
+import com.acainfo.material.application.dto.UpdateMaterialCommand;
 import com.acainfo.material.application.dto.UploadMaterialCommand;
 import com.acainfo.material.application.port.in.DeleteMaterialUseCase;
 import com.acainfo.material.application.port.in.DownloadMaterialUseCase;
 import com.acainfo.material.application.port.in.GetMaterialUseCase;
+import com.acainfo.material.application.port.in.PreviewMaterialUseCase;
+import com.acainfo.material.application.port.in.UpdateMaterialUseCase;
 import com.acainfo.material.application.port.in.UploadMaterialUseCase;
 import com.acainfo.material.domain.model.Material;
+import com.acainfo.material.infrastructure.adapter.in.rest.dto.BatchDownloadDisabledRequest;
+import com.acainfo.material.infrastructure.adapter.in.rest.dto.BatchUpdateResponse;
+import com.acainfo.material.infrastructure.adapter.in.rest.dto.BatchVisibilityRequest;
 import com.acainfo.material.infrastructure.adapter.in.rest.dto.MaterialResponse;
+import com.acainfo.material.infrastructure.adapter.in.rest.dto.UpdateMaterialRequest;
 import com.acainfo.material.infrastructure.adapter.in.rest.dto.UploadMaterialRequest;
 import com.acainfo.material.infrastructure.adapter.in.rest.mapper.MaterialRestMapper;
 import com.acainfo.security.userdetails.CustomUserDetails;
@@ -42,8 +49,10 @@ public class MaterialController {
 
     private final UploadMaterialUseCase uploadMaterialUseCase;
     private final DownloadMaterialUseCase downloadMaterialUseCase;
+    private final PreviewMaterialUseCase previewMaterialUseCase;
     private final DeleteMaterialUseCase deleteMaterialUseCase;
     private final GetMaterialUseCase getMaterialUseCase;
+    private final UpdateMaterialUseCase updateMaterialUseCase;
     private final MaterialRestMapper mapper;
     private final MaterialResponseEnricher materialResponseEnricher;
 
@@ -88,7 +97,8 @@ public class MaterialController {
 
     /**
      * Download material content.
-     * Requires proper access (admin/teacher or student with enrollment + payments ok).
+     * Requires proper access (admin/teacher or student with enrollment + payments ok)
+     * AND that the material does not have downloads disabled by an admin.
      */
     @GetMapping("/{id}/download")
     @PreAuthorize("isAuthenticated()")
@@ -108,6 +118,29 @@ public class MaterialController {
     }
 
     /**
+     * Stream material content for in-browser visualization.
+     * Same access rules as download EXCEPT it does not enforce {@code downloadDisabled}:
+     * a material whose download is disabled can still be opened in the in-app viewer.
+     * Returns the content with {@code Content-Disposition: inline}.
+     */
+    @GetMapping("/{id}/preview")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Resource> preview(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        Long userId = userDetails.getUserId();
+        MaterialDownload download = previewMaterialUseCase.preview(id, userId);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(download.mimeType()))
+                .contentLength(download.fileSize())
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "inline; filename=\"" + download.filename() + "\"")
+                .body(new InputStreamResource(download.content()));
+    }
+
+    /**
      * Delete a material.
      * Requires ADMIN or TEACHER role.
      */
@@ -120,7 +153,7 @@ public class MaterialController {
 
     /**
      * List materials with filters.
-     * Requires authentication.
+     * Requires authentication. Non-admin/teacher users only see visible materials.
      */
     @GetMapping
     @PreAuthorize("isAuthenticated()")
@@ -132,7 +165,8 @@ public class MaterialController {
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "20") Integer size,
             @RequestParam(defaultValue = "uploadedAt") String sortBy,
-            @RequestParam(defaultValue = "DESC") String sortDirection
+            @RequestParam(defaultValue = "DESC") String sortDirection,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         MaterialFilters filters = new MaterialFilters(
                 subjectId, uploadedById, fileExtension, searchTerm,
@@ -140,7 +174,8 @@ public class MaterialController {
         );
 
         PageResponse<Material> result = getMaterialUseCase.findWithFilters(filters);
-        List<MaterialResponse> content = materialResponseEnricher.enrichList(result.content());
+        List<Material> visibleForCaller = filterVisibleForCaller(result.content(), userDetails);
+        List<MaterialResponse> content = materialResponseEnricher.enrichList(visibleForCaller);
 
         return ResponseEntity.ok(new PageResponse<>(
                 content,
@@ -156,13 +191,34 @@ public class MaterialController {
 
     /**
      * Get materials for a subject.
-     * Requires authentication.
+     * Requires authentication. Non-admin/teacher users only see visible materials.
      */
     @GetMapping("/subject/{subjectId}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<MaterialResponse>> getBySubjectId(@PathVariable Long subjectId) {
+    public ResponseEntity<List<MaterialResponse>> getBySubjectId(
+            @PathVariable Long subjectId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
         List<Material> materials = getMaterialUseCase.getBySubjectId(subjectId);
-        return ResponseEntity.ok(materialResponseEnricher.enrichList(materials));
+        List<Material> visible = filterVisibleForCaller(materials, userDetails);
+        return ResponseEntity.ok(materialResponseEnricher.enrichList(visible));
+    }
+
+    /**
+     * Hide non-visible materials from non-admin/non-teacher users.
+     * Admin and teacher always see everything (so they can manage).
+     */
+    private List<Material> filterVisibleForCaller(List<Material> materials, CustomUserDetails userDetails) {
+        if (userDetails == null || isAdminOrTeacher(userDetails)) {
+            return materials;
+        }
+        return materials.stream().filter(Material::isVisible).toList();
+    }
+
+    private boolean isAdminOrTeacher(CustomUserDetails userDetails) {
+        return userDetails.getAuthorities().stream()
+                .map(a -> a.getAuthority())
+                .anyMatch(role -> "ROLE_ADMIN".equals(role) || "ROLE_TEACHER".equals(role));
     }
 
     /**
@@ -191,7 +247,55 @@ public class MaterialController {
     ) {
         Long userId = userDetails.getUserId();
         List<Material> materials = getMaterialUseCase.getRecentForStudent(userId, days);
-        return ResponseEntity.ok(materialResponseEnricher.enrichList(materials));
+        // Recent endpoint is for students -> always filter hidden materials
+        List<Material> visible = filterVisibleForCaller(materials, userDetails);
+        return ResponseEntity.ok(materialResponseEnricher.enrichList(visible));
+    }
+
+    /**
+     * Update material metadata and/or admin flags (visible / downloadDisabled).
+     * Requires ADMIN role.
+     */
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<MaterialResponse> updateMaterial(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateMaterialRequest request
+    ) {
+        UpdateMaterialCommand command = new UpdateMaterialCommand(
+                request.name(),
+                request.description(),
+                request.visible(),
+                request.downloadDisabled()
+        );
+        Material updated = updateMaterialUseCase.updateMetadata(id, command);
+        return ResponseEntity.ok(materialResponseEnricher.enrich(updated));
+    }
+
+    /**
+     * Batch toggle the downloadDisabled flag for several materials.
+     * Requires ADMIN role.
+     */
+    @PatchMapping("/batch/download-disabled")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<BatchUpdateResponse> batchSetDownloadDisabled(
+            @Valid @RequestBody BatchDownloadDisabledRequest request
+    ) {
+        int updated = updateMaterialUseCase.batchSetDownloadDisabled(request.ids(), request.disabled());
+        return ResponseEntity.ok(new BatchUpdateResponse(updated));
+    }
+
+    /**
+     * Batch toggle the visibility for several materials.
+     * Requires ADMIN role.
+     */
+    @PatchMapping("/batch/visibility")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<BatchUpdateResponse> batchSetVisibility(
+            @Valid @RequestBody BatchVisibilityRequest request
+    ) {
+        int updated = updateMaterialUseCase.batchSetVisibility(request.ids(), request.visible());
+        return ResponseEntity.ok(new BatchUpdateResponse(updated));
     }
 
     /**

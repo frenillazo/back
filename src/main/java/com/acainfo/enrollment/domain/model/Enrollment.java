@@ -39,8 +39,16 @@ public class Enrollment {
 
     /**
      * Reference to the subject group the student is enrolled in.
+     * <p>Nullable: exactly one of {@code groupId} and {@code intensiveId} must be set
+     * (CHECK constraint at the DB level).</p>
      */
     private Long groupId;
+
+    /**
+     * Reference to the intensive course the student is enrolled in.
+     * <p>Nullable: exactly one of {@code groupId} and {@code intensiveId} must be set.</p>
+     */
+    private Long intensiveId;
 
     /**
      * Price per hour for this enrollment (€/hour).
@@ -181,5 +189,21 @@ public class Enrollment {
      */
     public boolean canBeRejected() {
         return isPendingApproval();
+    }
+
+    // ==================== Polymorphic helpers ====================
+
+    /**
+     * Whether this enrollment is for a regular {@code SubjectGroup}.
+     */
+    public boolean isForGroup() {
+        return groupId != null;
+    }
+
+    /**
+     * Whether this enrollment is for an {@code Intensive} course.
+     */
+    public boolean isForIntensive() {
+        return intensiveId != null;
     }
 }

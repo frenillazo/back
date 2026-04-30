@@ -48,6 +48,7 @@ public class MaterialUploadService implements UploadMaterialUseCase, DeleteMater
         String storagePath = fileStorage.store(command.content(), storedFilename, command.subjectId(), command.category());
 
         // 4. Create and save material metadata
+        LocalDateTime now = LocalDateTime.now();
         Material material = Material.builder()
                 .subjectId(command.subjectId())
                 .uploadedById(command.uploadedById())
@@ -60,7 +61,13 @@ public class MaterialUploadService implements UploadMaterialUseCase, DeleteMater
                 .fileSize(command.fileSize())
                 .storagePath(storagePath)
                 .category(command.category())
-                .uploadedAt(LocalDateTime.now())
+                .uploadedAt(now)
+                // Newly uploaded materials are visible and downloadable; record activation
+                // timestamps so the auto-disable scheduled task can count from upload.
+                .visible(true)
+                .downloadDisabled(false)
+                .visibilityEnabledAt(now)
+                .downloadEnabledAt(now)
                 .build();
 
         Material saved = materialRepository.save(material);

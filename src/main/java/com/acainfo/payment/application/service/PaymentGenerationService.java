@@ -257,20 +257,13 @@ public class PaymentGenerationService implements GeneratePaymentUseCase, Generat
     }
 
     private List<Enrollment> findActiveRegularEnrollments() {
-        // Get all active enrollments
-        // Then filter by REGULAR groups
+        // All SubjectGroups are now regular (intensives are a separate entity).
         List<Enrollment> allActive = new ArrayList<>();
-
-        // This would ideally be a single query with join
-        // For now, we get all and filter
-        groupRepository.findAll().stream()
-                .filter(SubjectGroup::isRegular)
-                .forEach(group -> {
-                    List<Enrollment> groupEnrollments = enrollmentRepository
-                            .findByGroupIdAndStatus(group.getId(), EnrollmentStatus.ACTIVE);
-                    allActive.addAll(groupEnrollments);
-                });
-
+        groupRepository.findAll().forEach(group -> {
+            List<Enrollment> groupEnrollments = enrollmentRepository
+                    .findByGroupIdAndStatus(group.getId(), EnrollmentStatus.ACTIVE);
+            allActive.addAll(groupEnrollments);
+        });
         return allActive;
     }
 
@@ -317,7 +310,9 @@ public class PaymentGenerationService implements GeneratePaymentUseCase, Generat
                 .findByGroupIdAndStatus(groupId, EnrollmentStatus.ACTIVE);
 
         // 4. Determine payment type based on group type
-        PaymentType paymentType = group.isIntensive() ? PaymentType.INTENSIVE_FULL : PaymentType.MONTHLY;
+        // SubjectGroup is now always regular -> MONTHLY. Intensives have their own flow
+        // (PaymentType.INTENSIVE_FULL applied via the polymorphic Enrollment in Phase 7).
+        PaymentType paymentType = PaymentType.MONTHLY;
 
         // 5. Calculate hours for the period
         BigDecimal totalHours;
@@ -383,7 +378,9 @@ public class PaymentGenerationService implements GeneratePaymentUseCase, Generat
         }
 
         // 3. Determine payment type
-        PaymentType paymentType = group.isIntensive() ? PaymentType.INTENSIVE_FULL : PaymentType.MONTHLY;
+        // SubjectGroup is now always regular -> MONTHLY. Intensives have their own flow
+        // (PaymentType.INTENSIVE_FULL applied via the polymorphic Enrollment in Phase 7).
+        PaymentType paymentType = PaymentType.MONTHLY;
 
         // 4. Calculate hours for the period (used if no custom amount)
         BigDecimal totalHours;

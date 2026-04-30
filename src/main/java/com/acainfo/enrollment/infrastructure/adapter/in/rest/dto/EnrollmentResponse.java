@@ -31,7 +31,6 @@ public class EnrollmentResponse {
     private Long subjectId;
     private String subjectName;
     private String subjectCode;
-    private String groupType;
     private String groupName;
     private String teacherName;
     private String scheduleSummary;

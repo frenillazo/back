@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
     indexes = {
         @Index(name = "idx_enrollment_student_id", columnList = "student_id"),
         @Index(name = "idx_enrollment_group_id", columnList = "group_id"),
+        @Index(name = "idx_enrollment_intensive_id", columnList = "intensive_id"),
         @Index(name = "idx_enrollment_status", columnList = "status"),
         @Index(name = "idx_enrollment_student_group", columnList = "student_id, group_id"),
         @Index(name = "idx_enrollment_group_status", columnList = "group_id, status"),
@@ -43,8 +44,13 @@ public class EnrollmentJpaEntity {
     @Column(name = "student_id", nullable = false)
     private Long studentId;
 
-    @Column(name = "group_id", nullable = false)
+    // group_id is nullable: enrollments now point either to a regular group OR
+    // to an intensive course (CHECK constraint at the DB level enforces XOR).
+    @Column(name = "group_id")
     private Long groupId;
+
+    @Column(name = "intensive_id")
+    private Long intensiveId;
 
     @Column(name = "price_per_hour", nullable = false, precision = 10, scale = 2)
     private BigDecimal pricePerHour;

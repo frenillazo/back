@@ -1,7 +1,6 @@
 package com.acainfo.enrollment.infrastructure.adapter.in.rest.dto;
 
 import com.acainfo.enrollment.domain.model.GroupRequestStatus;
-import com.acainfo.group.domain.model.GroupType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
@@ -11,7 +10,6 @@ import java.util.Set;
 
 /**
  * REST DTO for group request response.
- * Response body for GET /api/group-requests
  */
 @Getter
 @Setter
@@ -26,7 +24,6 @@ public class GroupRequestResponse {
     private String subjectDegree;
     private Long requesterId;
     private String requesterName;
-    private GroupType requestedGroupType;
     private GroupRequestStatus status;
     private Set<Long> supporterIds;
     private Map<Long, String> supporterNames;
@@ -49,7 +46,7 @@ public class GroupRequestResponse {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
 
-    // Convenience properties from domain
+    // Convenience flags from domain
     private Integer supporterCount;
     private Boolean hasMinimumSupporters;
     private Integer supportersNeeded;

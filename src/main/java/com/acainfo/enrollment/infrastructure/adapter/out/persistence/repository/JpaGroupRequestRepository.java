@@ -2,7 +2,6 @@ package com.acainfo.enrollment.infrastructure.adapter.out.persistence.repository
 
 import com.acainfo.enrollment.domain.model.GroupRequestStatus;
 import com.acainfo.enrollment.infrastructure.adapter.out.persistence.entity.GroupRequestJpaEntity;
-import com.acainfo.group.domain.model.GroupType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -38,10 +37,9 @@ public interface JpaGroupRequestRepository extends
     List<GroupRequestJpaEntity> findByStatus(GroupRequestStatus status);
 
     /**
-     * Find pending group requests for a subject with a specific type.
+     * Find pending group requests for a subject.
      */
-    List<GroupRequestJpaEntity> findBySubjectIdAndRequestedGroupTypeAndStatus(
-            Long subjectId, GroupType requestedGroupType, GroupRequestStatus status);
+    List<GroupRequestJpaEntity> findBySubjectIdAndStatus(Long subjectId, GroupRequestStatus status);
 
     /**
      * Find expired pending requests (for scheduled cleanup job).

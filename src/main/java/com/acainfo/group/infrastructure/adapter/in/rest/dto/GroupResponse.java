@@ -1,19 +1,16 @@
 package com.acainfo.group.infrastructure.adapter.in.rest.dto;
 
 import com.acainfo.group.domain.model.GroupStatus;
-import com.acainfo.group.domain.model.GroupType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * REST DTO for group response.
- * Response body for GET /api/groups
- *
- * Enriched with related entity data to reduce frontend API calls.
+ * REST DTO for group response. Enriched with related entity data.
  */
 @Getter
 @Setter
@@ -27,13 +24,18 @@ public class GroupResponse {
     private String name;
     private Long subjectId;
     private Long teacherId;
-    private GroupType type;
     private GroupStatus status;
     private Integer currentEnrollmentCount;
     private Integer capacity;
     private Integer availableSeats;
     private Integer maxCapacity;
     private BigDecimal pricePerHour;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate startDate;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate endDate;
 
     // Enriched data from related entities
     private String subjectName;
@@ -49,8 +51,6 @@ public class GroupResponse {
     // Convenience flags
     private Boolean isOpen;
     private Boolean canEnroll;
-    private Boolean isIntensive;
-    private Boolean isRegular;
 
     // Schedule summary for display
     private List<ScheduleSummary> schedules;

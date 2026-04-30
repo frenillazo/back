@@ -17,6 +17,7 @@ import java.time.LocalTime;
  *   <li>REGULAR: Has scheduleId (derived from Schedule), groupId derived from schedule</li>
  *   <li>EXTRA: Has groupId (required), no scheduleId - additional sessions for groups</li>
  *   <li>SCHEDULING: Has subjectId only, no groupId - meetings to agree on schedules before group creation</li>
+ *   <li>INTENSIVE: Has intensiveId (required), no groupId, no scheduleId - sessions of an intensive course</li>
  * </ul>
  */
 @Getter
@@ -48,9 +49,15 @@ public class Session {
     /**
      * Reference to the schedule. Nullable.
      * Only present for REGULAR sessions (generated from a Schedule).
-     * EXTRA and SCHEDULING sessions have no associated schedule.
+     * EXTRA, SCHEDULING and INTENSIVE sessions have no associated schedule.
      */
     private Long scheduleId;
+
+    /**
+     * Reference to the intensive course this session belongs to. Nullable.
+     * Only present for INTENSIVE sessions (groupId stays null in that case).
+     */
+    private Long intensiveId;
 
     /**
      * Classroom where the session takes place.
@@ -111,6 +118,10 @@ public class Session {
         return type == SessionType.SCHEDULING;
     }
 
+    public boolean isIntensive() {
+        return type == SessionType.INTENSIVE;
+    }
+
     // ==================== Mode Query Methods ====================
 
     public boolean isInPerson() {
@@ -144,5 +155,12 @@ public class Session {
      */
     public boolean hasSchedule() {
         return scheduleId != null;
+    }
+
+    /**
+     * Check if this session belongs to an intensive course.
+     */
+    public boolean hasIntensive() {
+        return intensiveId != null;
     }
 }

@@ -3,11 +3,17 @@ package com.acainfo.group.domain.model;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
  * SubjectGroup domain entity (anemic model with Lombok).
- * Represents a group of students taking a subject with a specific teacher.
+ *
+ * <p>Represents a regular group of students taking a subject with a specific teacher.
+ * Sessions for regular groups are derived from {@code Schedule}s (weekly recurrence)
+ * and bound by {@code [startDate, endDate]}.</p>
+ *
+ * <p>Intensive courses live in a separate entity ({@code com.acainfo.intensive.Intensive}).</p>
  */
 @Getter
 @Setter
@@ -18,137 +24,77 @@ import java.time.LocalDateTime;
 @ToString
 public class SubjectGroup {
 
-    // Capacity constants
-    public static final int REGULAR_MAX_CAPACITY = 24;
-    public static final int INTENSIVE_MAX_CAPACITY = 50;
+    /** Default maximum capacity for regular groups. */
+    public static final int DEFAULT_MAX_CAPACITY = 24;
 
-    // Default price per hour (€/hour)
+    /** Default price per hour (€/hour) when not customised. */
     public static final BigDecimal DEFAULT_PRICE_PER_HOUR = new BigDecimal("15.00");
 
     private Long id;
-    private String name;                         // Auto-generated: "[code] grupo N YY-YY"
-    private Long subjectId;                      // Reference to Subject
-    private Long teacherId;                      // Reference to User (teacher)
-    private GroupType type;                      // REGULAR_Q1, INTENSIVE_Q1, etc.
+    private String name;                         // Auto-generated: "[subjectName] grupo N YY-YY"
+    private Long subjectId;
+    private Long teacherId;
     private GroupStatus status;                  // OPEN, CLOSED, CANCELLED
-    private BigDecimal pricePerHour;             // Price per hour for this group (€/hour)
+    private BigDecimal pricePerHour;             // Optional: null = use default
 
     @Builder.Default
-    private Integer currentEnrollmentCount = 0;  // Current enrolled students
+    private Integer currentEnrollmentCount = 0;
 
-    private Integer capacity;                    // Custom capacity (optional, null = use default)
+    private Integer capacity;                    // Optional: null = use default (24)
+
+    private LocalDate startDate;                 // Inclusive — first day sessions can be generated
+    private LocalDate endDate;                   // Inclusive — last day sessions can be generated
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     // ==================== Query Methods ====================
 
-    /**
-     * Check if group is open for enrollments.
-     */
     public boolean isOpen() {
         return status == GroupStatus.OPEN;
     }
 
-    /**
-     * Check if group is closed.
-     */
     public boolean isClosed() {
         return status == GroupStatus.CLOSED;
     }
 
-    /**
-     * Check if group is cancelled.
-     */
     public boolean isCancelled() {
         return status == GroupStatus.CANCELLED;
     }
 
     /**
-     * Check if this is a regular group (Q1 or Q2).
-     */
-    public boolean isRegular() {
-        return type != null && type.isRegular();
-    }
-
-    /**
-     * Check if this is an intensive group (Q1 or Q2).
-     */
-    public boolean isIntensive() {
-        return type != null && type.isIntensive();
-    }
-
-    /**
-     * Get the maximum capacity for this group based on its type.
-     * Regular: 24 students (mostly in-person sessions)
-     * Intensive: 50 students (dual/hybrid sessions)
-     * If custom capacity is set, returns the custom value.
-     *
-     * @return Maximum capacity
+     * Maximum students this group can host. Returns the custom capacity if configured,
+     * otherwise {@link #DEFAULT_MAX_CAPACITY}.
      */
     public int getMaxCapacity() {
-        // If custom capacity is set, use it
-        if (capacity != null) {
-            return capacity;
-        }
-
-        // Otherwise, use default based on type
-        return isIntensive() ? INTENSIVE_MAX_CAPACITY : REGULAR_MAX_CAPACITY;
+        return capacity != null ? capacity : DEFAULT_MAX_CAPACITY;
     }
 
-    /**
-     * Get the number of available seats remaining.
-     *
-     * @return Available seats (never negative)
-     */
     public int getAvailableSeats() {
         return Math.max(0, getMaxCapacity() - currentEnrollmentCount);
     }
 
-    /**
-     * Check if the group has available seats.
-     *
-     * @return true if there are available seats
-     */
     public boolean hasAvailableSeats() {
         return getAvailableSeats() > 0;
     }
 
-    /**
-     * Check if the group is full (no more seats available).
-     *
-     * @return true if the group is at maximum capacity
-     */
     public boolean isFull() {
         return currentEnrollmentCount >= getMaxCapacity();
     }
 
-    /**
-     * Check if a student can enroll in this group.
-     * Requires: group is open AND has available seats.
-     *
-     * @return true if enrollment is possible
-     */
     public boolean canEnroll() {
         return isOpen() && hasAvailableSeats();
     }
 
-    /**
-     * Get display name combining subject and group type.
-     * Format: "Subject [ID] - TYPE"
-     *
-     * @return Display name
-     */
-    public String getDisplayName() {
-        return "Subject " + subjectId + " - " + type;
+    public BigDecimal getEffectivePricePerHour() {
+        return pricePerHour != null ? pricePerHour : DEFAULT_PRICE_PER_HOUR;
     }
 
     /**
-     * Get the effective price per hour for this group.
-     * Returns the configured price or the default if not set.
-     *
-     * @return Price per hour in euros
+     * Whether {@code date} is contained in the [startDate, endDate] range (both inclusive).
      */
-    public BigDecimal getEffectivePricePerHour() {
-        return pricePerHour != null ? pricePerHour : DEFAULT_PRICE_PER_HOUR;
+    public boolean containsDate(LocalDate date) {
+        if (date == null || startDate == null || endDate == null) return false;
+        return !date.isBefore(startDate) && !date.isAfter(endDate);
     }
 }

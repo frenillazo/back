@@ -154,7 +154,6 @@ public class StudentOverviewService implements GetStudentOverviewUseCase {
                             enrollment.getGroupId(),
                             subject != null ? subject.getName() : "Unknown",
                             subject != null ? subject.getCode() : null,
-                            group != null ? group.getType().name() : null,
                             teacher != null ? teacher.getFullName() : "Unknown",
                             enrollment.getEnrolledAt()
                     );
@@ -221,7 +220,6 @@ public class StudentOverviewService implements GetStudentOverviewUseCase {
                             groupIdToEnrollmentId.get(session.getGroupId()),
                             subject != null ? subject.getName() : "Unknown",
                             subject != null ? subject.getCode() : null,
-                            group != null ? group.getType().name() : null,
                             session.getDate(),
                             session.getStartTime(),
                             session.getEndTime(),

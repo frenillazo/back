@@ -134,6 +134,13 @@ public class SessionService implements
                         .orElseThrow(() -> new GroupNotFoundException(schedule.getGroupId()));
                 yield group.getSubjectId();
             }
+            case INTENSIVE -> {
+                // INTENSIVE sessions are created via the intensive module's bulk endpoint,
+                // not via the generic POST /api/sessions, so this branch should not be hit.
+                throw new InvalidSessionStateException(
+                        "INTENSIVE sessions must be created through POST /api/intensives/{id}/sessions"
+                );
+            }
         };
     }
 
@@ -262,6 +269,7 @@ public class SessionService implements
                         .orElse(null);
                 yield group != null ? group.getTeacherId() : null;
             }
+            case INTENSIVE -> null; // Resolved by IntensiveSessionService when creating in bulk
         };
     }
 

@@ -7,7 +7,6 @@ import com.acainfo.enrollment.domain.model.GroupRequestStatus;
 import com.acainfo.enrollment.infrastructure.adapter.out.persistence.entity.GroupRequestJpaEntity;
 import com.acainfo.enrollment.infrastructure.adapter.out.persistence.specification.GroupRequestSpecifications;
 import com.acainfo.enrollment.infrastructure.mapper.GroupRequestPersistenceMapper;
-import com.acainfo.group.domain.model.GroupType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -79,10 +78,9 @@ public class GroupRequestRepositoryAdapter implements GroupRequestRepositoryPort
     }
 
     @Override
-    public List<GroupRequest> findPendingBySubjectIdAndType(Long subjectId, GroupType type) {
+    public List<GroupRequest> findPendingBySubjectId(Long subjectId) {
         return groupRequestPersistenceMapper.toDomainList(
-                jpaGroupRequestRepository.findBySubjectIdAndRequestedGroupTypeAndStatus(
-                        subjectId, type, GroupRequestStatus.PENDING)
+                jpaGroupRequestRepository.findBySubjectIdAndStatus(subjectId, GroupRequestStatus.PENDING)
         );
     }
 

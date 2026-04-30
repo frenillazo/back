@@ -1,6 +1,5 @@
 package com.acainfo.enrollment.domain.model;
 
-import com.acainfo.group.domain.model.GroupType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -47,11 +46,6 @@ public class GroupRequest {
      * Reference to the student who created the request.
      */
     private Long requesterId;
-
-    /**
-     * Requested type of group (e.g., REGULAR_Q1, INTENSIVE_Q2).
-     */
-    private GroupType requestedGroupType;
 
     /**
      * Current status of this request.

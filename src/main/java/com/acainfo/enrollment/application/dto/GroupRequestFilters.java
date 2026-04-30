@@ -1,16 +1,13 @@
 package com.acainfo.enrollment.application.dto;
 
 import com.acainfo.enrollment.domain.model.GroupRequestStatus;
-import com.acainfo.group.domain.model.GroupType;
 
 /**
  * DTO for GroupRequest dynamic filtering (Criteria Builder).
- * Used by repository ports to build dynamic queries.
  */
 public record GroupRequestFilters(
         Long subjectId,
         Long requesterId,
-        GroupType requestedGroupType,
         GroupRequestStatus status,
         Integer page,
         Integer size,
@@ -22,9 +19,6 @@ public record GroupRequestFilters(
     public static final String DEFAULT_SORT_BY = "createdAt";
     public static final String DEFAULT_SORT_DIRECTION = "DESC";
 
-    /**
-     * Compact constructor with default values for pagination.
-     */
     public GroupRequestFilters {
         page = (page != null && page >= 0) ? page : DEFAULT_PAGE;
         size = (size != null && size > 0) ? size : DEFAULT_SIZE;

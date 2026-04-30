@@ -6,7 +6,6 @@ import com.acainfo.group.application.port.in.DeleteGroupUseCase;
 import com.acainfo.group.application.port.in.GetGroupUseCase;
 import com.acainfo.group.application.port.in.UpdateGroupUseCase;
 import com.acainfo.group.domain.model.GroupStatus;
-import com.acainfo.group.domain.model.GroupType;
 import com.acainfo.group.domain.model.SubjectGroup;
 import com.acainfo.group.infrastructure.adapter.in.rest.dto.CreateGroupRequest;
 import com.acainfo.group.infrastructure.adapter.in.rest.dto.GroupResponse;
@@ -30,8 +29,7 @@ import org.springframework.web.bind.annotation.*;
  * - GET (all, by id): Authenticated users
  * - POST, PUT, DELETE: ADMIN only
  *
- * All responses are enriched with related entity data (subject name, teacher name, etc.)
- * to reduce the number of API calls the frontend needs to make.
+ * All responses are enriched with related entity data (subject name, teacher name, etc.).
  */
 @RestController
 @RequestMapping("/api/groups")
@@ -46,18 +44,11 @@ public class GroupController {
     private final GroupRestMapper groupRestMapper;
     private final GroupResponseEnricher groupResponseEnricher;
 
-    /**
-     * Create a new group.
-     * POST /api/groups
-     *
-     * @param request CreateGroupRequest
-     * @return GroupResponse with 201 CREATED
-     */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GroupResponse> createGroup(@Valid @RequestBody CreateGroupRequest request) {
-        log.info("REST: Creating group for subject: {}, teacher: {}, type: {}",
-                request.getSubjectId(), request.getTeacherId(), request.getType());
+        log.info("REST: Creating group for subject: {}, teacher: {}",
+                request.getSubjectId(), request.getTeacherId());
 
         SubjectGroup createdGroup = createGroupUseCase.create(groupRestMapper.toCommand(request));
         GroupResponse response = groupResponseEnricher.enrich(createdGroup);
@@ -65,13 +56,6 @@ public class GroupController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /**
-     * Get group by ID.
-     * GET /api/groups/{id}
-     *
-     * @param id Group ID
-     * @return GroupResponse with 200 OK
-     */
     @GetMapping("/{id}")
     public ResponseEntity<GroupResponse> getGroupById(@PathVariable Long id) {
         log.debug("REST: Getting group by ID: {}", id);
@@ -83,24 +67,12 @@ public class GroupController {
     }
 
     /**
-     * Get groups with filters (pagination + sorting + filtering).
-     * GET /api/groups?subjectId=1&teacherId=2&type=REGULAR_Q1&status=OPEN&page=0&size=10&sortBy=createdAt&sortDirection=DESC
-     *
-     * @param subjectId Filter by subject ID (optional)
-     * @param teacherId Filter by teacher ID (optional)
-     * @param type Filter by group type (optional)
-     * @param status Filter by status (optional)
-     * @param page Page number (default 0)
-     * @param size Page size (default 10)
-     * @param sortBy Sort field (default "createdAt")
-     * @param sortDirection Sort direction (default "DESC")
-     * @return Page of GroupResponse with 200 OK
+     * GET /api/groups?subjectId=1&teacherId=2&status=OPEN&page=0&size=10&sortBy=createdAt&sortDirection=DESC
      */
     @GetMapping
     public ResponseEntity<PageResponse<GroupResponse>> getGroupsWithFilters(
             @RequestParam(required = false) Long subjectId,
             @RequestParam(required = false) Long teacherId,
-            @RequestParam(required = false) GroupType type,
             @RequestParam(required = false) GroupStatus status,
             @RequestParam(required = false) String searchTerm,
             @RequestParam(defaultValue = "0") int page,
@@ -108,13 +80,12 @@ public class GroupController {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDirection
     ) {
-        log.debug("REST: Getting groups with filters - subjectId: {}, teacherId: {}, type: {}, status: {}, searchTerm: {}",
-                subjectId, teacherId, type, status, searchTerm);
+        log.debug("REST: Getting groups with filters - subjectId: {}, teacherId: {}, status: {}, searchTerm: {}",
+                subjectId, teacherId, status, searchTerm);
 
         GroupFilters filters = new GroupFilters(
                 subjectId,
                 teacherId,
-                type,
                 status,
                 searchTerm,
                 page,
@@ -129,14 +100,6 @@ public class GroupController {
         return ResponseEntity.ok(PageResponse.of(responsePage));
     }
 
-    /**
-     * Update group (status, capacity).
-     * PUT /api/groups/{id}
-     *
-     * @param id Group ID
-     * @param request UpdateGroupRequest
-     * @return GroupResponse with 200 OK
-     */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GroupResponse> updateGroup(
@@ -151,13 +114,6 @@ public class GroupController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Delete group by ID.
-     * DELETE /api/groups/{id}
-     *
-     * @param id Group ID
-     * @return 204 NO CONTENT
-     */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteGroup(@PathVariable Long id) {
@@ -168,13 +124,6 @@ public class GroupController {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Cancel group (set status to CANCELLED).
-     * POST /api/groups/{id}/cancel
-     *
-     * @param id Group ID
-     * @return GroupResponse with 200 OK
-     */
     @PostMapping("/{id}/cancel")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GroupResponse> cancelGroup(@PathVariable Long id) {

@@ -1,7 +1,6 @@
 package com.acainfo.enrollment.infrastructure.adapter.out.persistence.entity;
 
 import com.acainfo.enrollment.domain.model.GroupRequestStatus;
-import com.acainfo.group.domain.model.GroupType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -23,7 +22,6 @@ import java.util.Set;
         @Index(name = "idx_group_request_subject_id", columnList = "subject_id"),
         @Index(name = "idx_group_request_requester_id", columnList = "requester_id"),
         @Index(name = "idx_group_request_status", columnList = "status"),
-        @Index(name = "idx_group_request_type", columnList = "requested_group_type"),
         @Index(name = "idx_group_request_subject_status", columnList = "subject_id, status")
     }
 )
@@ -44,10 +42,6 @@ public class GroupRequestJpaEntity {
 
     @Column(name = "requester_id", nullable = false)
     private Long requesterId;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "requested_group_type", nullable = false, length = 20)
-    private GroupType requestedGroupType;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)

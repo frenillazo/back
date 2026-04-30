@@ -63,7 +63,6 @@ public interface ScheduleRestMapper {
                 .durationMinutes(schedule.getDurationMinutes())
                 .createdAt(schedule.getCreatedAt())
                 .updatedAt(schedule.getUpdatedAt())
-                .groupType(group.getType())
                 .groupStatus(group.getStatus())
                 .pricePerHour(group.getEffectivePricePerHour())
                 .subjectId(group.getSubjectId())

@@ -17,7 +17,6 @@ import com.acainfo.enrollment.infrastructure.mapper.GroupRequestRestMapper;
 import com.acainfo.shared.application.dto.PageResponse;
 import com.acainfo.subject.application.port.out.SubjectRepositoryPort;
 import com.acainfo.subject.domain.model.Subject;
-import com.acainfo.group.domain.model.GroupType;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -98,7 +97,6 @@ public class GroupRequestController {
     public ResponseEntity<PageResponse<GroupRequestResponse>> getGroupRequestsWithFilters(
             @RequestParam(required = false) Long subjectId,
             @RequestParam(required = false) Long requesterId,
-            @RequestParam(required = false) GroupType requestedGroupType,
             @RequestParam(required = false) GroupRequestStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -109,7 +107,7 @@ public class GroupRequestController {
                 subjectId, status);
 
         GroupRequestFilters filters = new GroupRequestFilters(
-                subjectId, requesterId, requestedGroupType, status,
+                subjectId, requesterId, status,
                 page, size, sortBy, sortDirection
         );
 

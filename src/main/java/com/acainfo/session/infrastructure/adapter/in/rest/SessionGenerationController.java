@@ -1,6 +1,8 @@
 package com.acainfo.session.infrastructure.adapter.in.rest;
 
 import com.acainfo.session.application.port.in.GenerateSessionsUseCase;
+import com.acainfo.session.application.service.MonthlySessionGenerationService;
+import com.acainfo.session.application.service.MonthlySessionGenerationService.RunSummary;
 import com.acainfo.session.domain.model.Session;
 import com.acainfo.session.infrastructure.adapter.in.rest.dto.GenerateSessionsRequest;
 import com.acainfo.session.infrastructure.adapter.in.rest.dto.SessionResponse;
@@ -32,6 +34,7 @@ import java.util.List;
 public class SessionGenerationController {
 
     private final GenerateSessionsUseCase generateSessionsUseCase;
+    private final MonthlySessionGenerationService monthlySessionGenerationService;
     private final SessionRestMapper sessionRestMapper;
 
     /**
@@ -76,5 +79,17 @@ public class SessionGenerationController {
         List<SessionResponse> responses = sessionRestMapper.toResponseList(previewSessions);
 
         return ResponseEntity.ok(responses);
+    }
+
+    /**
+     * Manually trigger the monthly session generation cron (admin only).
+     * Useful for development and recovery if the scheduled run failed.
+     * POST /api/sessions/generate/monthly/run
+     */
+    @PostMapping("/monthly/run")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<RunSummary> runMonthlyNow() {
+        log.info("REST: Manual trigger of monthly session generation");
+        return ResponseEntity.ok(monthlySessionGenerationService.runForCurrentMonth());
     }
 }

@@ -97,7 +97,6 @@ public class EnrichedReservationResponse {
     // Subject & group details
     private String subjectName;
     private String subjectCode;
-    private String groupType;
     private String teacherName;
 
     /**

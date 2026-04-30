@@ -81,6 +81,11 @@ public class MaterialQueryService implements GetMaterialUseCase {
             return true;
         }
 
+        // Admin disable: hide and block downloads for non-admin users
+        if (material.isDownloadDisabled() || !material.isVisible()) {
+            return false;
+        }
+
         // Students need active enrollment and payments up to date
         if (user.isStudent()) {
             boolean hasActiveEnrollment = enrollmentRepository

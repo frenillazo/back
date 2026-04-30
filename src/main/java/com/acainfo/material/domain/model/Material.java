@@ -88,6 +88,34 @@ public class Material {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    /**
+     * Whether the material is visible to students.
+     * Hidden materials are still listed for ADMIN/TEACHER but filtered out for students.
+     */
+    @Builder.Default
+    private boolean visible = true;
+
+    /**
+     * Whether downloads are disabled for this material.
+     * When true, ADMIN/TEACHER can still download; students get 403.
+     */
+    @Builder.Default
+    private boolean downloadDisabled = false;
+
+    /**
+     * Last time visibility was set to true (or material was uploaded).
+     * Reset to now() each time visible transitions false -> true.
+     * Used by the auto-disable scheduled task.
+     */
+    private LocalDateTime visibilityEnabledAt;
+
+    /**
+     * Last time download was enabled (or material was uploaded).
+     * Reset to now() each time downloadDisabled transitions true -> false.
+     * Used by the auto-disable scheduled task.
+     */
+    private LocalDateTime downloadEnabledAt;
+
     // ==================== Query Methods ====================
 
     /**

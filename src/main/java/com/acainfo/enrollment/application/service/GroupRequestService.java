@@ -25,6 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -67,7 +68,6 @@ public class GroupRequestService implements
         GroupRequest groupRequest = GroupRequest.builder()
                 .subjectId(command.subjectId())
                 .requesterId(command.requesterId())
-                .requestedGroupType(command.requestedGroupType())
                 .status(GroupRequestStatus.PENDING)
                 .supporterIds(supporters)
                 .justification(command.justification())
@@ -156,11 +156,14 @@ public class GroupRequestService implements
             throw new InsufficientSupportersException(groupRequest.getSupporterCount());
         }
 
-        // Create the new group
+        // Create the new (regular) group with placeholder dates that the admin must adjust
+        // afterwards (startDate = today, endDate = today + 4 months as a sensible default).
+        LocalDate today = LocalDate.now();
         CreateGroupCommand createGroupCommand = new CreateGroupCommand(
                 groupRequest.getSubjectId(),
                 null, // teacherId will be assigned later by admin
-                groupRequest.getRequestedGroupType(),
+                today,
+                today.plusMonths(4),
                 null,  // default capacity
                 null
         );
