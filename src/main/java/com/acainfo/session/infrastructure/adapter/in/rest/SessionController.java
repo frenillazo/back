@@ -134,6 +134,21 @@ public class SessionController {
     }
 
     /**
+     * Get sessions by intensive ID.
+     * GET /api/sessions/intensive/{intensiveId}
+     */
+    @GetMapping("/intensive/{intensiveId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<SessionResponse>> getSessionsByIntensive(@PathVariable Long intensiveId) {
+        log.debug("REST: Getting sessions for intensive: {}", intensiveId);
+
+        List<Session> sessions = getSessionUseCase.findByIntensiveId(intensiveId);
+        List<SessionResponse> responses = sessionResponseEnricher.enrichList(sessions);
+
+        return ResponseEntity.ok(responses);
+    }
+
+    /**
      * Get sessions by subject ID.
      * GET /api/sessions/subject/{subjectId}
      * Any authenticated user can view sessions for any subject.

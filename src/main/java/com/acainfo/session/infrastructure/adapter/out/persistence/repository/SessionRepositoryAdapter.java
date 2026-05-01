@@ -74,6 +74,13 @@ public class SessionRepositoryAdapter implements SessionRepositoryPort {
     }
 
     @Override
+    public List<Session> findByIntensiveId(Long intensiveId) {
+        return sessionPersistenceMapper.toDomainList(
+                jpaSessionRepository.findByIntensiveId(intensiveId)
+        );
+    }
+
+    @Override
     public List<Session> findBySubjectId(Long subjectId) {
         return sessionPersistenceMapper.toDomainList(
                 jpaSessionRepository.findBySubjectId(subjectId)

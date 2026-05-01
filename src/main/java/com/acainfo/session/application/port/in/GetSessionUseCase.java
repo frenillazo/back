@@ -38,6 +38,11 @@ public interface GetSessionUseCase {
     List<Session> findByGroupId(Long groupId);
 
     /**
+     * Get all sessions for a specific intensive course.
+     */
+    List<Session> findByIntensiveId(Long intensiveId);
+
+    /**
      * Get all sessions for a specific subject.
      *
      * @param subjectId Subject ID

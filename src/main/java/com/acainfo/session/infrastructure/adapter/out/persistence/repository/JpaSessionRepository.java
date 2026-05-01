@@ -25,6 +25,11 @@ public interface JpaSessionRepository extends
     List<SessionJpaEntity> findByGroupId(Long groupId);
 
     /**
+     * Find all sessions for a specific intensive course.
+     */
+    List<SessionJpaEntity> findByIntensiveId(Long intensiveId);
+
+    /**
      * Find all sessions for a specific subject.
      */
     List<SessionJpaEntity> findBySubjectId(Long subjectId);

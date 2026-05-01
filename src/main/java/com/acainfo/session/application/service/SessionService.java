@@ -172,6 +172,13 @@ public class SessionService implements
 
     @Override
     @Transactional(readOnly = true)
+    public List<Session> findByIntensiveId(Long intensiveId) {
+        log.debug("Finding sessions by intensiveId: {}", intensiveId);
+        return sessionRepositoryPort.findByIntensiveId(intensiveId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Session> findBySubjectId(Long subjectId) {
         log.debug("Finding sessions by subjectId: {}", subjectId);
         return sessionRepositoryPort.findBySubjectId(subjectId);

@@ -56,6 +56,11 @@ public interface SessionRepositoryPort {
     List<Session> findByGroupId(Long groupId);
 
     /**
+     * Find all sessions for a given intensive course.
+     */
+    List<Session> findByIntensiveId(Long intensiveId);
+
+    /**
      * Find all sessions for a specific subject.
      *
      * @param subjectId Subject ID
