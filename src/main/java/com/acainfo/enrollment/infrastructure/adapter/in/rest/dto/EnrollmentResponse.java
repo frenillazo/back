@@ -21,7 +21,7 @@ public class EnrollmentResponse {
 
     private Long id;
     private Long studentId;
-    private Long groupId;
+    private Long courseId;
     private EnrollmentStatus status;
     private Integer waitingListPosition;
 
@@ -31,10 +31,10 @@ public class EnrollmentResponse {
     private Long subjectId;
     private String subjectName;
     private String subjectCode;
-    private String groupName;
+    private String courseName;
     private String teacherName;
     private String scheduleSummary;
-    private Integer groupCapacity;
+    private Integer courseCapacity;
     private Integer currentEnrollmentCount;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")

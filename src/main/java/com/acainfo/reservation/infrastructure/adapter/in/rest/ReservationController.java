@@ -5,8 +5,6 @@ import com.acainfo.reservation.application.port.in.CancelReservationUseCase;
 import com.acainfo.reservation.application.port.in.CreateReservationUseCase;
 import com.acainfo.reservation.application.port.in.GetReservationUseCase;
 import com.acainfo.reservation.application.port.in.SwitchSessionUseCase;
-import com.acainfo.reservation.domain.model.AttendanceStatus;
-import com.acainfo.reservation.domain.model.OnlineRequestStatus;
 import com.acainfo.reservation.domain.model.ReservationMode;
 import com.acainfo.reservation.domain.model.ReservationStatus;
 import com.acainfo.reservation.domain.model.SessionReservation;
@@ -90,9 +88,6 @@ public class ReservationController {
             @RequestParam(required = false) Long enrollmentId,
             @RequestParam(required = false) ReservationStatus status,
             @RequestParam(required = false) ReservationMode mode,
-            @RequestParam(required = false) OnlineRequestStatus onlineRequestStatus,
-            @RequestParam(required = false) AttendanceStatus attendanceStatus,
-            @RequestParam(required = false) Boolean hasAttendanceRecorded,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "reservedAt") String sortBy,
@@ -103,7 +98,6 @@ public class ReservationController {
 
         ReservationFilters filters = new ReservationFilters(
                 studentId, sessionId, enrollmentId, status, mode,
-                onlineRequestStatus, attendanceStatus, hasAttendanceRecorded,
                 page, size, sortBy, sortDirection
         );
 

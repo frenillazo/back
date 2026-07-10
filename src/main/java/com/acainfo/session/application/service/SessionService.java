@@ -1,8 +1,8 @@
 package com.acainfo.session.application.service;
 
-import com.acainfo.group.application.port.out.GroupRepositoryPort;
-import com.acainfo.group.domain.exception.GroupNotFoundException;
-import com.acainfo.group.domain.model.SubjectGroup;
+import com.acainfo.course.application.port.out.CourseRepositoryPort;
+import com.acainfo.course.domain.exception.CourseNotFoundException;
+import com.acainfo.course.domain.model.Course;
 import com.acainfo.schedule.application.port.out.ScheduleRepositoryPort;
 import com.acainfo.schedule.domain.model.Schedule;
 import com.acainfo.session.application.dto.CreateSessionCommand;
@@ -19,8 +19,6 @@ import com.acainfo.session.domain.exception.TeacherSessionConflictException;
 import com.acainfo.session.domain.model.Session;
 import com.acainfo.session.domain.model.SessionMode;
 import com.acainfo.session.domain.model.SessionStatus;
-import com.acainfo.subject.application.port.out.SubjectRepositoryPort;
-import com.acainfo.subject.domain.exception.SubjectNotFoundException;
 import com.acainfo.user.application.port.out.UserRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,8 +44,7 @@ public class SessionService implements
         DeleteSessionUseCase {
 
     private final SessionRepositoryPort sessionRepositoryPort;
-    private final GroupRepositoryPort groupRepositoryPort;
-    private final SubjectRepositoryPort subjectRepositoryPort;
+    private final CourseRepositoryPort courseRepositoryPort;
     private final ScheduleRepositoryPort scheduleRepositoryPort;
     private final UserRepositoryPort userRepositoryPort;
 
@@ -56,14 +53,14 @@ public class SessionService implements
     @Override
     @Transactional
     public Session create(CreateSessionCommand command) {
-        log.info("Creating session: type={}, groupId={}, date={}",
-                command.type(), command.groupId(), command.date());
+        log.info("Creating session: type={}, courseId={}, date={}",
+                command.type(), command.courseId(), command.date());
 
         // Resolve subject ID and get group info for teacher validation
         Long subjectId = resolveSubjectId(command);
         Long teacherId = resolveTeacherId(command);
 
-        // Check for teacher conflicts (only for EXTRA and SCHEDULING sessions)
+        // Check for teacher conflicts (only for EXTRA sessions)
         // REGULAR sessions are already validated at schedule level
         if (command.type() != com.acainfo.session.domain.model.SessionType.REGULAR && teacherId != null) {
             checkForTeacherConflicts(
@@ -79,7 +76,7 @@ public class SessionService implements
 
         Session session = Session.builder()
                 .subjectId(subjectId)
-                .groupId(command.groupId())
+                .courseId(command.courseId())
                 .scheduleId(command.scheduleId())
                 .classroom(command.classroom())
                 .date(command.date())
@@ -100,24 +97,14 @@ public class SessionService implements
 
     private Long resolveSubjectId(CreateSessionCommand command) {
         return switch (command.type()) {
-            case SCHEDULING -> {
-                if (command.subjectId() == null) {
-                    throw new InvalidSessionStateException(
-                            "SCHEDULING sessions require a subjectId"
-                    );
-                }
-                subjectRepositoryPort.findById(command.subjectId())
-                        .orElseThrow(() -> new SubjectNotFoundException(command.subjectId()));
-                yield command.subjectId();
-            }
             case EXTRA -> {
-                if (command.groupId() == null) {
+                if (command.courseId() == null) {
                     throw new InvalidSessionStateException(
-                            "EXTRA sessions require a groupId"
+                            "EXTRA sessions require a courseId"
                     );
                 }
-                SubjectGroup group = groupRepositoryPort.findById(command.groupId())
-                        .orElseThrow(() -> new GroupNotFoundException(command.groupId()));
+                Course group = courseRepositoryPort.findById(command.courseId())
+                        .orElseThrow(() -> new CourseNotFoundException(command.courseId()));
                 yield group.getSubjectId();
             }
             case REGULAR -> {
@@ -130,16 +117,9 @@ public class SessionService implements
                         .orElseThrow(() -> new InvalidSessionStateException(
                                 "Schedule not found: " + command.scheduleId()
                         ));
-                SubjectGroup group = groupRepositoryPort.findById(schedule.getGroupId())
-                        .orElseThrow(() -> new GroupNotFoundException(schedule.getGroupId()));
+                Course group = courseRepositoryPort.findById(schedule.getCourseId())
+                        .orElseThrow(() -> new CourseNotFoundException(schedule.getCourseId()));
                 yield group.getSubjectId();
-            }
-            case INTENSIVE -> {
-                // INTENSIVE sessions are created via the intensive module's bulk endpoint,
-                // not via the generic POST /api/sessions, so this branch should not be hit.
-                throw new InvalidSessionStateException(
-                        "INTENSIVE sessions must be created through POST /api/intensives/{id}/sessions"
-                );
             }
         };
     }
@@ -157,25 +137,19 @@ public class SessionService implements
     @Override
     @Transactional(readOnly = true)
     public Page<Session> findWithFilters(SessionFilters filters) {
-        log.debug("Finding sessions with filters: groupId={}, subjectId={}, status={}, dateFrom={}, dateTo={}",
-                filters.groupId(), filters.subjectId(), filters.status(),
+        log.debug("Finding sessions with filters: courseId={}, subjectId={}, status={}, dateFrom={}, dateTo={}",
+                filters.courseId(), filters.subjectId(), filters.status(),
                 filters.dateFrom(), filters.dateTo());
         return sessionRepositoryPort.findWithFilters(filters);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Session> findByGroupId(Long groupId) {
-        log.debug("Finding sessions by groupId: {}", groupId);
-        return sessionRepositoryPort.findByGroupId(groupId);
+    public List<Session> findByCourseId(Long courseId) {
+        log.debug("Finding sessions by courseId: {}", courseId);
+        return sessionRepositoryPort.findByCourseId(courseId);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<Session> findByIntensiveId(Long intensiveId) {
-        log.debug("Finding sessions by intensiveId: {}", intensiveId);
-        return sessionRepositoryPort.findByIntensiveId(intensiveId);
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -254,12 +228,11 @@ public class SessionService implements
      */
     private Long resolveTeacherId(CreateSessionCommand command) {
         return switch (command.type()) {
-            case SCHEDULING -> null; // SCHEDULING sessions don't have a specific teacher
             case EXTRA -> {
-                if (command.groupId() == null) {
+                if (command.courseId() == null) {
                     yield null;
                 }
-                SubjectGroup group = groupRepositoryPort.findById(command.groupId())
+                Course group = courseRepositoryPort.findById(command.courseId())
                         .orElse(null);
                 yield group != null ? group.getTeacherId() : null;
             }
@@ -272,11 +245,10 @@ public class SessionService implements
                 if (schedule == null) {
                     yield null;
                 }
-                SubjectGroup group = groupRepositoryPort.findById(schedule.getGroupId())
+                Course group = courseRepositoryPort.findById(schedule.getCourseId())
                         .orElse(null);
                 yield group != null ? group.getTeacherId() : null;
             }
-            case INTENSIVE -> null; // Resolved by IntensiveSessionService when creating in bulk
         };
     }
 

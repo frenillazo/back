@@ -19,7 +19,7 @@ import java.time.LocalTime;
 @Table(
     name = "schedules",
     indexes = {
-        @Index(name = "idx_schedule_group_id", columnList = "group_id"),
+        @Index(name = "idx_schedule_course_id", columnList = "course_id"),
         @Index(name = "idx_schedule_classroom", columnList = "classroom"),
         @Index(name = "idx_schedule_day_of_week", columnList = "day_of_week"),
         @Index(name = "idx_schedule_conflict_check", columnList = "classroom, day_of_week, start_time, end_time")
@@ -37,8 +37,8 @@ public class ScheduleJpaEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "group_id", nullable = false)
-    private Long groupId;
+    @Column(name = "course_id", nullable = false)
+    private Long courseId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "day_of_week", nullable = false, length = 10)

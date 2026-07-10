@@ -1,11 +1,14 @@
 package com.acainfo.subject.infrastructure.adapter.in.rest;
 
+import com.acainfo.security.userdetails.CustomUserDetails;
 import com.acainfo.subject.application.dto.CreateSubjectCommand;
+import com.acainfo.subject.application.dto.SubjectInterestSummary;
 import com.acainfo.subject.application.dto.SubjectFilters;
 import com.acainfo.subject.application.dto.UpdateSubjectCommand;
 import com.acainfo.subject.application.port.in.CreateSubjectUseCase;
 import com.acainfo.subject.application.port.in.DeleteSubjectUseCase;
 import com.acainfo.subject.application.port.in.GetSubjectUseCase;
+import com.acainfo.subject.application.port.in.SubjectInterestUseCase;
 import com.acainfo.subject.application.port.in.UpdateSubjectUseCase;
 import com.acainfo.subject.domain.model.Degree;
 import com.acainfo.subject.domain.model.Subject;
@@ -31,7 +34,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * REST Controller for subject management.
@@ -49,6 +55,7 @@ public class SubjectController {
     private final UpdateSubjectUseCase updateSubjectUseCase;
     private final GetSubjectUseCase getSubjectUseCase;
     private final DeleteSubjectUseCase deleteSubjectUseCase;
+    private final SubjectInterestUseCase subjectInterestUseCase;
     private final SubjectRestMapper subjectRestMapper;
 
     @PostMapping
@@ -306,5 +313,67 @@ public class SubjectController {
 
         log.info("Subject archived successfully: {}", subject.getCode());
         return ResponseEntity.ok(response);
+    }
+
+    // ==================== "Me interesa" (SubjectInterest) ====================
+
+    /**
+     * Mark the authenticated user's interest in a subject.
+     * POST /api/subjects/{id}/interest
+     */
+    @PostMapping("/{id}/interest")
+    @Operation(summary = "Mark interest", description = "Marks the authenticated user's interest in the subject (idempotent)")
+    public ResponseEntity<Void> markInterest(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails principal) {
+        subjectInterestUseCase.markInterest(id, principal.getUserId());
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    /**
+     * Remove the authenticated user's interest in a subject.
+     * DELETE /api/subjects/{id}/interest
+     */
+    @DeleteMapping("/{id}/interest")
+    @Operation(summary = "Remove interest", description = "Removes the authenticated user's interest in the subject (idempotent)")
+    public ResponseEntity<Void> removeInterest(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails principal) {
+        subjectInterestUseCase.removeInterest(id, principal.getUserId());
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Whether the authenticated user marked interest in a subject.
+     * GET /api/subjects/{id}/interest/me
+     */
+    @GetMapping("/{id}/interest/me")
+    @Operation(summary = "Check my interest", description = "Whether the authenticated user has marked interest in the subject")
+    public ResponseEntity<Boolean> hasInterest(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails principal) {
+        return ResponseEntity.ok(subjectInterestUseCase.hasInterest(id, principal.getUserId()));
+    }
+
+    /**
+     * Subject ids the authenticated user has marked interest in.
+     * GET /api/subjects/interest/mine
+     */
+    @GetMapping("/interest/mine")
+    @Operation(summary = "My interests", description = "Subject ids the authenticated user has marked interest in")
+    public ResponseEntity<List<Long>> myInterests(
+            @AuthenticationPrincipal CustomUserDetails principal) {
+        return ResponseEntity.ok(subjectInterestUseCase.getInterestSubjectIds(principal.getUserId()));
+    }
+
+    /**
+     * Aggregated demand per subject.
+     * GET /api/subjects/interest-summary (ADMIN)
+     */
+    @GetMapping("/interest-summary")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Interest summary", description = "Aggregated interest per subject, most demanded first (ADMIN only)")
+    public ResponseEntity<List<SubjectInterestSummary>> interestSummary() {
+        return ResponseEntity.ok(subjectInterestUseCase.getInterestSummary());
     }
 }

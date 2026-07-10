@@ -40,15 +40,15 @@ public class ReservationGeneratorService implements GenerateReservationsUseCase 
     @Transactional
     public List<SessionReservation> generate(GenerateReservationsCommand command) {
         log.info("Generating reservations for session {} from group {}",
-                command.sessionId(), command.groupId());
+                command.sessionId(), command.courseId());
 
         // Get all active enrollments for the group
         List<Enrollment> activeEnrollments = enrollmentRepositoryPort
-                .findByGroupIdAndStatus(command.groupId(), EnrollmentStatus.ACTIVE);
+                .findByCourseIdAndStatus(command.courseId(), EnrollmentStatus.ACTIVE);
 
         if (activeEnrollments.isEmpty()) {
             log.info("No active enrollments for group {}, no reservations generated",
-                    command.groupId());
+                    command.courseId());
             return List.of();
         }
 

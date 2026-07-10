@@ -1,7 +1,5 @@
 package com.acainfo.reservation.infrastructure.adapter.out.persistence.entity;
 
-import com.acainfo.reservation.domain.model.AttendanceStatus;
-import com.acainfo.reservation.domain.model.OnlineRequestStatus;
 import com.acainfo.reservation.domain.model.ReservationMode;
 import com.acainfo.reservation.domain.model.ReservationStatus;
 import jakarta.persistence.*;
@@ -25,8 +23,6 @@ import java.time.LocalDateTime;
         @Index(name = "idx_reservation_enrollment_id", columnList = "enrollment_id"),
         @Index(name = "idx_reservation_status", columnList = "status"),
         @Index(name = "idx_reservation_mode", columnList = "mode"),
-        @Index(name = "idx_reservation_online_request", columnList = "online_request_status"),
-        @Index(name = "idx_reservation_attendance", columnList = "attendance_status"),
         @Index(name = "idx_reservation_student_session", columnList = "student_id, session_id"),
         @Index(name = "idx_reservation_session_status_mode", columnList = "session_id, status, mode")
     },
@@ -58,8 +54,6 @@ public class SessionReservationJpaEntity {
     @Column(name = "enrollment_id", nullable = false)
     private Long enrollmentId;
 
-    // ==================== Reservation Fields ====================
-
     @Enumerated(EnumType.STRING)
     @Column(name = "mode", nullable = false, length = 20)
     private ReservationMode mode;
@@ -74,33 +68,6 @@ public class SessionReservationJpaEntity {
 
     @Column(name = "cancelled_at")
     private LocalDateTime cancelledAt;
-
-    // ==================== Online Request Fields ====================
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "online_request_status", length = 20)
-    private OnlineRequestStatus onlineRequestStatus;
-
-    @Column(name = "online_requested_at")
-    private LocalDateTime onlineRequestedAt;
-
-    @Column(name = "online_request_processed_at")
-    private LocalDateTime onlineRequestProcessedAt;
-
-    @Column(name = "online_request_processed_by_id")
-    private Long onlineRequestProcessedById;
-
-    // ==================== Attendance Fields ====================
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "attendance_status", length = 20)
-    private AttendanceStatus attendanceStatus;
-
-    @Column(name = "attendance_recorded_at")
-    private LocalDateTime attendanceRecordedAt;
-
-    @Column(name = "attendance_recorded_by_id")
-    private Long attendanceRecordedById;
 
     // ==================== Audit Fields ====================
 

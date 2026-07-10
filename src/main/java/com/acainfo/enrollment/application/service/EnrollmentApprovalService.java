@@ -9,9 +9,9 @@ import com.acainfo.enrollment.domain.exception.InvalidEnrollmentStateException;
 import com.acainfo.enrollment.domain.exception.UnauthorizedApprovalException;
 import com.acainfo.enrollment.domain.model.Enrollment;
 import com.acainfo.enrollment.domain.model.EnrollmentStatus;
-import com.acainfo.group.application.port.out.GroupRepositoryPort;
-import com.acainfo.group.domain.exception.GroupNotFoundException;
-import com.acainfo.group.domain.model.SubjectGroup;
+import com.acainfo.course.application.port.out.CourseRepositoryPort;
+import com.acainfo.course.domain.exception.CourseNotFoundException;
+import com.acainfo.course.domain.model.Course;
 import com.acainfo.user.application.port.in.GetUserProfileUseCase;
 import com.acainfo.user.domain.model.User;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ import java.time.LocalDateTime;
 public class EnrollmentApprovalService implements ApproveEnrollmentUseCase, RejectEnrollmentUseCase {
 
     private final EnrollmentRepositoryPort enrollmentRepositoryPort;
-    private final GroupRepositoryPort groupRepositoryPort;
+    private final CourseRepositoryPort courseRepositoryPort;
     private final GetUserProfileUseCase getUserProfileUseCase;
     private final AutoReservationPort autoReservationPort;
 
@@ -48,13 +48,14 @@ public class EnrollmentApprovalService implements ApproveEnrollmentUseCase, Reje
             );
         }
 
-        SubjectGroup group = groupRepositoryPort.findByIdForUpdate(enrollment.getGroupId())
-                .orElseThrow(() -> new GroupNotFoundException(enrollment.getGroupId()));
-        validateApproverAuthorization(approverUserId, group);
+        Course course = courseRepositoryPort.findByIdForUpdate(enrollment.getCourseId())
+                .orElseThrow(() -> new CourseNotFoundException(enrollment.getCourseId()));
+        validateApproverAuthorization(approverUserId, course);
 
-        // Check capacity to determine final status (group row is locked for the transaction)
-        long activeCount = enrollmentRepositoryPort.countActiveByGroupId(group.getId());
-        boolean hasAvailableSeats = activeCount < group.getMaxCapacity();
+        // Capacity semantics: null capacity = unlimited (virtual/dual) → always ACTIVE,
+        // never waiting list. With a capacity, check occupancy under the row lock.
+        boolean hasAvailableSeats = !course.hasCapacityLimit()
+                || enrollmentRepositoryPort.countActiveByCourseId(course.getId()) < course.getCapacity();
 
         if (hasAvailableSeats) {
             // Direct enrollment as ACTIVE
@@ -62,7 +63,7 @@ public class EnrollmentApprovalService implements ApproveEnrollmentUseCase, Reje
             log.info("Enrollment {} approved as ACTIVE (seats available)", enrollmentId);
         } else {
             // Add to waiting list
-            int position = enrollmentRepositoryPort.getNextWaitingListPosition(group.getId());
+            int position = enrollmentRepositoryPort.getNextWaitingListPosition(course.getId());
             enrollment.setStatus(EnrollmentStatus.WAITING_LIST);
             enrollment.setWaitingListPosition(position);
             log.info("Enrollment {} approved but added to waiting list at position {} (no seats)",
@@ -78,7 +79,7 @@ public class EnrollmentApprovalService implements ApproveEnrollmentUseCase, Reje
         if (savedEnrollment.isActive()) {
             autoReservationPort.generateForNewEnrollment(
                     savedEnrollment.getStudentId(),
-                    savedEnrollment.getGroupId(),
+                    savedEnrollment.getCourseId(),
                     savedEnrollment.getId()
             );
         }
@@ -99,7 +100,7 @@ public class EnrollmentApprovalService implements ApproveEnrollmentUseCase, Reje
             );
         }
 
-        SubjectGroup group = getGroupById(enrollment.getGroupId());
+        Course group = getGroupById(enrollment.getCourseId());
         validateApproverAuthorization(rejecterUserId, group);
 
         enrollment.setStatus(EnrollmentStatus.REJECTED);
@@ -116,25 +117,25 @@ public class EnrollmentApprovalService implements ApproveEnrollmentUseCase, Reje
                 .orElseThrow(() -> new EnrollmentNotFoundException(enrollmentId));
     }
 
-    private SubjectGroup getGroupById(Long groupId) {
-        return groupRepositoryPort.findById(groupId)
-                .orElseThrow(() -> new GroupNotFoundException(groupId));
+    private Course getGroupById(Long courseId) {
+        return courseRepositoryPort.findById(courseId)
+                .orElseThrow(() -> new CourseNotFoundException(courseId));
     }
 
     /**
-     * Validate that the approver is authorized to approve/reject enrollments for this group.
+     * Validate that the approver is authorized to approve/reject enrollments for this course.
      * Authorization is granted if:
      * - User is an admin, OR
-     * - User is the teacher assigned to the group
+     * - User is the teacher assigned to the course (teacher may be unassigned = null)
      */
-    private void validateApproverAuthorization(Long userId, SubjectGroup group) {
+    private void validateApproverAuthorization(Long userId, Course course) {
         User user = getUserProfileUseCase.getUserById(userId);
 
         boolean isAdmin = user.isAdmin();
-        boolean isGroupTeacher = group.getTeacherId().equals(userId);
+        boolean isCourseTeacher = course.getTeacherId() != null && course.getTeacherId().equals(userId);
 
-        if (!isAdmin && !isGroupTeacher) {
-            throw new UnauthorizedApprovalException(userId, group.getId());
+        if (!isAdmin && !isCourseTeacher) {
+            throw new UnauthorizedApprovalException(userId, course.getId());
         }
     }
 }

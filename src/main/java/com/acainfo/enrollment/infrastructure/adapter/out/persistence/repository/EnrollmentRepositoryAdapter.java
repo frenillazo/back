@@ -84,9 +84,9 @@ public class EnrollmentRepositoryAdapter implements EnrollmentRepositoryPort {
     }
 
     @Override
-    public List<Enrollment> findByGroupId(Long groupId) {
+    public List<Enrollment> findByCourseId(Long courseId) {
         return enrollmentPersistenceMapper.toDomainList(
-                jpaEnrollmentRepository.findByGroupId(groupId)
+                jpaEnrollmentRepository.findByCourseId(courseId)
         );
     }
 
@@ -105,43 +105,43 @@ public class EnrollmentRepositoryAdapter implements EnrollmentRepositoryPort {
     }
 
     @Override
-    public List<Enrollment> findByGroupIdAndStatus(Long groupId, EnrollmentStatus status) {
+    public List<Enrollment> findByCourseIdAndStatus(Long courseId, EnrollmentStatus status) {
         return enrollmentPersistenceMapper.toDomainList(
-                jpaEnrollmentRepository.findByGroupIdAndStatus(groupId, status)
+                jpaEnrollmentRepository.findByCourseIdAndStatus(courseId, status)
         );
     }
 
     @Override
-    public Optional<Enrollment> findByStudentIdAndGroupId(Long studentId, Long groupId) {
-        return jpaEnrollmentRepository.findByStudentIdAndGroupId(studentId, groupId)
+    public Optional<Enrollment> findByStudentIdAndCourseId(Long studentId, Long courseId) {
+        return jpaEnrollmentRepository.findByStudentIdAndCourseId(studentId, courseId)
                 .map(enrollmentPersistenceMapper::toDomain);
     }
 
     @Override
-    public boolean existsActiveOrWaitingEnrollment(Long studentId, Long groupId) {
-        return jpaEnrollmentRepository.existsByStudentIdAndGroupIdAndStatusIn(
+    public boolean existsActiveOrWaitingEnrollment(Long studentId, Long courseId) {
+        return jpaEnrollmentRepository.existsByStudentIdAndCourseIdAndStatusIn(
                 studentId,
-                groupId,
+                courseId,
                 List.of(EnrollmentStatus.ACTIVE, EnrollmentStatus.WAITING_LIST)
         );
     }
 
     @Override
-    public boolean existsActiveOrWaitingOrPendingEnrollment(Long studentId, Long groupId) {
-        return jpaEnrollmentRepository.existsByStudentIdAndGroupIdAndStatusIn(
+    public boolean existsActiveOrWaitingOrPendingEnrollment(Long studentId, Long courseId) {
+        return jpaEnrollmentRepository.existsByStudentIdAndCourseIdAndStatusIn(
                 studentId,
-                groupId,
+                courseId,
                 List.of(EnrollmentStatus.ACTIVE, EnrollmentStatus.WAITING_LIST, EnrollmentStatus.PENDING_APPROVAL)
         );
     }
 
     @Override
-    public List<Enrollment> findPendingApprovalByGroupIds(List<Long> groupIds) {
-        if (groupIds == null || groupIds.isEmpty()) {
+    public List<Enrollment> findPendingApprovalByCourseIds(List<Long> courseIds) {
+        if (courseIds == null || courseIds.isEmpty()) {
             return Collections.emptyList();
         }
         return enrollmentPersistenceMapper.toDomainList(
-                jpaEnrollmentRepository.findByGroupIdInAndStatus(groupIds, EnrollmentStatus.PENDING_APPROVAL)
+                jpaEnrollmentRepository.findByCourseIdInAndStatus(courseIds, EnrollmentStatus.PENDING_APPROVAL)
         );
     }
 
@@ -155,27 +155,27 @@ public class EnrollmentRepositoryAdapter implements EnrollmentRepositoryPort {
     }
 
     @Override
-    public long countActiveByGroupId(Long groupId) {
-        return jpaEnrollmentRepository.countByGroupIdAndStatus(groupId, EnrollmentStatus.ACTIVE);
+    public long countActiveByCourseId(Long courseId) {
+        return jpaEnrollmentRepository.countByCourseIdAndStatus(courseId, EnrollmentStatus.ACTIVE);
     }
 
     @Override
-    public List<Enrollment> findWaitingListByGroupId(Long groupId) {
+    public List<Enrollment> findWaitingListByCourseId(Long courseId) {
         return enrollmentPersistenceMapper.toDomainList(
-                jpaEnrollmentRepository.findByGroupIdAndStatusOrderByWaitingListPositionAsc(
-                        groupId, EnrollmentStatus.WAITING_LIST)
+                jpaEnrollmentRepository.findByCourseIdAndStatusOrderByWaitingListPositionAsc(
+                        courseId, EnrollmentStatus.WAITING_LIST)
         );
     }
 
     @Override
-    public int getNextWaitingListPosition(Long groupId) {
-        return jpaEnrollmentRepository.findNextWaitingListPosition(groupId);
+    public int getNextWaitingListPosition(Long courseId) {
+        return jpaEnrollmentRepository.findNextWaitingListPosition(courseId);
     }
 
     @Override
     @Transactional
-    public void decrementWaitingListPositionsAfter(Long groupId, int position) {
-        jpaEnrollmentRepository.decrementWaitingListPositionsAfter(groupId, position);
+    public void decrementWaitingListPositionsAfter(Long courseId, int position) {
+        jpaEnrollmentRepository.decrementWaitingListPositionsAfter(courseId, position);
     }
 
     @Override

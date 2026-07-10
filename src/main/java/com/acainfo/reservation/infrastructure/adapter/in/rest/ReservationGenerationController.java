@@ -30,18 +30,18 @@ public class ReservationGenerationController {
 
     /**
      * Generate reservations for a session from enrolled students.
-     * POST /api/sessions/{sessionId}/reservations/generate?groupId=1
+     * POST /api/sessions/{sessionId}/reservations/generate?courseId=1
      */
     @PostMapping("/generate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ReservationResponse>> generate(
             @PathVariable Long sessionId,
-            @RequestParam Long groupId
+            @RequestParam Long courseId
     ) {
-        log.info("REST: Generating reservations for session {} from group {}", sessionId, groupId);
+        log.info("REST: Generating reservations for session {} from group {}", sessionId, courseId);
 
         List<SessionReservation> reservations = generateReservationsUseCase.generate(
-                reservationRestMapper.toGenerateCommand(sessionId, groupId));
+                reservationRestMapper.toGenerateCommand(sessionId, courseId));
         List<ReservationResponse> responses = reservationRestMapper.toResponseList(reservations);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responses);

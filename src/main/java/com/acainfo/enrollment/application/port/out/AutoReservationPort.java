@@ -12,17 +12,17 @@ public interface AutoReservationPort {
      * Called when enrollment is approved or promoted from waiting list.
      *
      * @param studentId    Student's user ID
-     * @param groupId      Group ID to find future sessions
+     * @param courseId      Group ID to find future sessions
      * @param enrollmentId Enrollment ID for traceability
      */
-    void generateForNewEnrollment(Long studentId, Long groupId, Long enrollmentId);
+    void generateForNewEnrollment(Long studentId, Long courseId, Long enrollmentId);
 
     /**
      * Cancel all future confirmed reservations for a student in a group.
      * Called when enrollment is withdrawn.
      *
      * @param studentId Student's user ID
-     * @param groupId   Group ID to find future sessions
+     * @param courseId   Group ID to find future sessions
      */
-    void cancelFutureReservations(Long studentId, Long groupId);
+    void cancelFutureReservations(Long studentId, Long courseId);
 }

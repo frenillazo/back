@@ -57,7 +57,7 @@ public class ScheduleController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ScheduleResponse> createSchedule(@Valid @RequestBody CreateScheduleRequest request) {
         log.info("REST: Creating schedule for group: {}, day: {}, time: {}-{}, classroom: {}",
-                request.getGroupId(), request.getDayOfWeek(), request.getStartTime(),
+                request.getCourseId(), request.getDayOfWeek(), request.getStartTime(),
                 request.getEndTime(), request.getClassroom());
 
         Schedule createdSchedule = createScheduleUseCase.create(scheduleRestMapper.toCommand(request));
@@ -85,9 +85,9 @@ public class ScheduleController {
 
     /**
      * Get schedules with filters (pagination + sorting + filtering).
-     * GET /api/schedules?groupId=1&classroom=AULA_PORTAL1&dayOfWeek=MONDAY&page=0&size=10
+     * GET /api/schedules?courseId=1&classroom=AULA_PORTAL1&dayOfWeek=MONDAY&page=0&size=10
      *
-     * @param groupId Filter by group ID (optional)
+     * @param courseId Filter by group ID (optional)
      * @param classroom Filter by classroom (optional)
      * @param dayOfWeek Filter by day of week (optional)
      * @param page Page number (default 0)
@@ -98,7 +98,7 @@ public class ScheduleController {
      */
     @GetMapping
     public ResponseEntity<PageResponse<ScheduleResponse>> getSchedulesWithFilters(
-            @RequestParam(required = false) Long groupId,
+            @RequestParam(required = false) Long courseId,
             @RequestParam(required = false) Classroom classroom,
             @RequestParam(required = false) DayOfWeek dayOfWeek,
             @RequestParam(defaultValue = "0") int page,
@@ -106,11 +106,11 @@ public class ScheduleController {
             @RequestParam(defaultValue = "dayOfWeek") String sortBy,
             @RequestParam(defaultValue = "ASC") String sortDirection
     ) {
-        log.debug("REST: Getting schedules with filters - groupId: {}, classroom: {}, dayOfWeek: {}",
-                groupId, classroom, dayOfWeek);
+        log.debug("REST: Getting schedules with filters - courseId: {}, classroom: {}, dayOfWeek: {}",
+                courseId, classroom, dayOfWeek);
 
         ScheduleFilters filters = new ScheduleFilters(
-                groupId,
+                courseId,
                 classroom,
                 dayOfWeek,
                 page,
@@ -127,16 +127,16 @@ public class ScheduleController {
 
     /**
      * Get all schedules for a specific group.
-     * GET /api/schedules/group/{groupId}
+     * GET /api/schedules/group/{courseId}
      *
-     * @param groupId Group ID
+     * @param courseId Group ID
      * @return List of ScheduleResponse with 200 OK
      */
-    @GetMapping("/group/{groupId}")
-    public ResponseEntity<List<ScheduleResponse>> getSchedulesByGroup(@PathVariable Long groupId) {
-        log.debug("REST: Getting schedules for group: {}", groupId);
+    @GetMapping("/course/{courseId}")
+    public ResponseEntity<List<ScheduleResponse>> getSchedulesByGroup(@PathVariable Long courseId) {
+        log.debug("REST: Getting schedules for group: {}", courseId);
 
-        List<Schedule> schedules = getScheduleUseCase.findByGroupId(groupId);
+        List<Schedule> schedules = getScheduleUseCase.findByCourseId(courseId);
         List<ScheduleResponse> responses = schedules.stream()
                 .map(scheduleRestMapper::toResponse)
                 .toList();
@@ -186,9 +186,9 @@ public class ScheduleController {
     /**
      * Get enriched schedules with filters (pagination + sorting + filtering).
      * Includes group, subject, and teacher information.
-     * GET /api/schedules/enriched?groupId=1&classroom=AULA_PORTAL1&dayOfWeek=MONDAY&page=0&size=100
+     * GET /api/schedules/enriched?courseId=1&classroom=AULA_PORTAL1&dayOfWeek=MONDAY&page=0&size=100
      *
-     * @param groupId Filter by group ID (optional)
+     * @param courseId Filter by group ID (optional)
      * @param classroom Filter by classroom (optional)
      * @param dayOfWeek Filter by day of week (optional)
      * @param page Page number (default 0)
@@ -199,7 +199,7 @@ public class ScheduleController {
      */
     @GetMapping("/enriched")
     public ResponseEntity<PageResponse<ScheduleEnrichedResponse>> getEnrichedSchedulesWithFilters(
-            @RequestParam(required = false) Long groupId,
+            @RequestParam(required = false) Long courseId,
             @RequestParam(required = false) Classroom classroom,
             @RequestParam(required = false) DayOfWeek dayOfWeek,
             @RequestParam(defaultValue = "0") int page,
@@ -207,11 +207,11 @@ public class ScheduleController {
             @RequestParam(defaultValue = "dayOfWeek") String sortBy,
             @RequestParam(defaultValue = "ASC") String sortDirection
     ) {
-        log.debug("REST: Getting enriched schedules with filters - groupId: {}, classroom: {}, dayOfWeek: {}",
-                groupId, classroom, dayOfWeek);
+        log.debug("REST: Getting enriched schedules with filters - courseId: {}, classroom: {}, dayOfWeek: {}",
+                courseId, classroom, dayOfWeek);
 
         ScheduleFilters filters = new ScheduleFilters(
-                groupId,
+                courseId,
                 classroom,
                 dayOfWeek,
                 page,

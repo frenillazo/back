@@ -30,9 +30,9 @@ public class ScheduleSpecifications {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            // Filter by groupId
-            if (filters.groupId() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("groupId"), filters.groupId()));
+            // Filter by courseId
+            if (filters.courseId() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("courseId"), filters.courseId()));
             }
 
             // Filter by classroom
@@ -51,14 +51,14 @@ public class ScheduleSpecifications {
     }
 
     /**
-     * Specification to find schedules by groupId.
+     * Specification to find schedules by courseId.
      */
-    public static Specification<ScheduleJpaEntity> hasGroupId(Long groupId) {
+    public static Specification<ScheduleJpaEntity> hasCourseId(Long courseId) {
         return (root, query, criteriaBuilder) -> {
-            if (groupId == null) {
+            if (courseId == null) {
                 return criteriaBuilder.conjunction();
             }
-            return criteriaBuilder.equal(root.get("groupId"), groupId);
+            return criteriaBuilder.equal(root.get("courseId"), courseId);
         };
     }
 

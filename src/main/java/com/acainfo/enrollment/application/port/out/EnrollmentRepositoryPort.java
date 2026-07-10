@@ -50,10 +50,10 @@ public interface EnrollmentRepositoryPort {
     /**
      * Find all enrollments for a group.
      *
-     * @param groupId Group ID
+     * @param courseId Group ID
      * @return List of enrollments
      */
-    List<Enrollment> findByGroupId(Long groupId);
+    List<Enrollment> findByCourseId(Long courseId);
 
     /**
      * Find enrollments by student and status.
@@ -76,47 +76,47 @@ public interface EnrollmentRepositoryPort {
     /**
      * Find enrollments by group and status.
      *
-     * @param groupId Group ID
+     * @param courseId Group ID
      * @param status Enrollment status
      * @return List of enrollments
      */
-    List<Enrollment> findByGroupIdAndStatus(Long groupId, EnrollmentStatus status);
+    List<Enrollment> findByCourseIdAndStatus(Long courseId, EnrollmentStatus status);
 
     /**
      * Find a specific enrollment by student and group.
      *
      * @param studentId Student ID
-     * @param groupId Group ID
+     * @param courseId Group ID
      * @return Optional containing the enrollment if found
      */
-    Optional<Enrollment> findByStudentIdAndGroupId(Long studentId, Long groupId);
+    Optional<Enrollment> findByStudentIdAndCourseId(Long studentId, Long courseId);
 
     /**
      * Check if student is already enrolled (active or waiting) in a group.
      *
      * @param studentId Student ID
-     * @param groupId Group ID
+     * @param courseId Group ID
      * @return true if student is enrolled or on waiting list
      */
-    boolean existsActiveOrWaitingEnrollment(Long studentId, Long groupId);
+    boolean existsActiveOrWaitingEnrollment(Long studentId, Long courseId);
 
     /**
      * Check if student is already enrolled (active, waiting, or pending approval) in a group.
      *
      * @param studentId Student ID
-     * @param groupId Group ID
+     * @param courseId Group ID
      * @return true if student has any active enrollment request
      */
-    boolean existsActiveOrWaitingOrPendingEnrollment(Long studentId, Long groupId);
+    boolean existsActiveOrWaitingOrPendingEnrollment(Long studentId, Long courseId);
 
     /**
      * Find all pending approval enrollments for groups taught by a specific teacher.
      *
      * @param teacherId Teacher user ID
-     * @param groupIds List of group IDs taught by the teacher
+     * @param courseIds List of group IDs taught by the teacher
      * @return List of enrollments pending approval
      */
-    List<Enrollment> findPendingApprovalByGroupIds(List<Long> groupIds);
+    List<Enrollment> findPendingApprovalByCourseIds(List<Long> courseIds);
 
     /**
      * Find all expired pending enrollments (older than specified hours).
@@ -129,34 +129,34 @@ public interface EnrollmentRepositoryPort {
     /**
      * Count active enrollments for a group.
      *
-     * @param groupId Group ID
+     * @param courseId Group ID
      * @return Number of active enrollments
      */
-    long countActiveByGroupId(Long groupId);
+    long countActiveByCourseId(Long courseId);
 
     /**
      * Find waiting list for a group, ordered by position (FIFO).
      *
-     * @param groupId Group ID
+     * @param courseId Group ID
      * @return List of enrollments in waiting list order
      */
-    List<Enrollment> findWaitingListByGroupId(Long groupId);
+    List<Enrollment> findWaitingListByCourseId(Long courseId);
 
     /**
      * Get the next waiting list position for a group.
      *
-     * @param groupId Group ID
+     * @param courseId Group ID
      * @return Next position number
      */
-    int getNextWaitingListPosition(Long groupId);
+    int getNextWaitingListPosition(Long courseId);
 
     /**
      * Decrement waiting list positions after a student leaves.
      *
-     * @param groupId Group ID
+     * @param courseId Group ID
      * @param position Position of student who left
      */
-    void decrementWaitingListPositionsAfter(Long groupId, int position);
+    void decrementWaitingListPositionsAfter(Long courseId, int position);
 
     /**
      * Delete an enrollment by ID.

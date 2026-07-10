@@ -18,7 +18,7 @@ import java.time.LocalDate;
 public class GenerateSessionsRequest {
 
     @NotNull(message = "Group ID is required")
-    private Long groupId;
+    private Long courseId;
 
     @NotNull(message = "Start date is required")
     private LocalDate startDate;

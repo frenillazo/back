@@ -1,6 +1,6 @@
 package com.acainfo.schedule.infrastructure.adapter.in.rest.dto;
 
-import com.acainfo.group.domain.model.GroupStatus;
+import com.acainfo.course.domain.model.CourseStatus;
 import com.acainfo.schedule.domain.model.Classroom;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
@@ -24,7 +24,7 @@ public class ScheduleEnrichedResponse {
 
     // Schedule fields
     private Long id;
-    private Long groupId;
+    private Long courseId;
     private DayOfWeek dayOfWeek;
 
     @JsonFormat(pattern = "HH:mm")
@@ -44,8 +44,8 @@ public class ScheduleEnrichedResponse {
     private LocalDateTime updatedAt;
 
     // Enriched data from Group
-    private GroupStatus groupStatus;
-    private BigDecimal pricePerHour;
+    private CourseStatus courseStatus;
+    private BigDecimal pricePerMonth;
 
     // Enriched data from Subject
     private Long subjectId;

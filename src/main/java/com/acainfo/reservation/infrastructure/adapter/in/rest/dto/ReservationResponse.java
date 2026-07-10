@@ -1,7 +1,5 @@
 package com.acainfo.reservation.infrastructure.adapter.in.rest.dto;
 
-import com.acainfo.reservation.domain.model.AttendanceStatus;
-import com.acainfo.reservation.domain.model.OnlineRequestStatus;
 import com.acainfo.reservation.domain.model.ReservationMode;
 import com.acainfo.reservation.domain.model.ReservationStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -37,25 +35,6 @@ public class ReservationResponse {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime cancelledAt;
 
-    // Online request fields
-    private OnlineRequestStatus onlineRequestStatus;
-
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime onlineRequestedAt;
-
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime onlineRequestProcessedAt;
-
-    private Long onlineRequestProcessedById;
-
-    // Attendance fields
-    private AttendanceStatus attendanceStatus;
-
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime attendanceRecordedAt;
-
-    private Long attendanceRecordedById;
-
     // Audit fields
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
@@ -68,13 +47,5 @@ public class ReservationResponse {
     private Boolean isCancelled;
     private Boolean isInPerson;
     private Boolean isOnline;
-    private Boolean hasOnlineRequest;
-    private Boolean isOnlineRequestPending;
-    private Boolean isOnlineRequestApproved;
-    private Boolean isOnlineRequestRejected;
-    private Boolean hasAttendanceRecorded;
-    private Boolean wasPresent;
-    private Boolean wasAbsent;
     private Boolean canBeCancelled;
-    private Boolean canRequestOnline;
 }

@@ -1,6 +1,5 @@
 package com.acainfo.student.application.dto;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -19,10 +18,7 @@ public record StudentOverviewResponse(
         // Academic summary
         List<EnrollmentSummary> activeEnrollments,
         int waitingListCount,
-        List<UpcomingSessionSummary> upcomingSessions,
-
-        // Payment summary
-        PaymentSummary paymentStatus
+        List<UpcomingSessionSummary> upcomingSessions
 ) {
 
     /**
@@ -30,7 +26,7 @@ public record StudentOverviewResponse(
      */
     public record EnrollmentSummary(
             Long enrollmentId,
-            Long groupId,
+            Long courseId,
             String subjectName,
             String subjectCode,
             String teacherName,
@@ -43,7 +39,7 @@ public record StudentOverviewResponse(
      */
     public record UpcomingSessionSummary(
             Long sessionId,
-            Long groupId,
+            Long courseId,
             Long enrollmentId,
             String subjectName,
             String subjectCode,
@@ -53,18 +49,6 @@ public record StudentOverviewResponse(
             String classroom,
             String sessionStatus,
             boolean hasReservation
-    ) {
-    }
-
-    /**
-     * Summary of payment status.
-     */
-    public record PaymentSummary(
-            boolean canAccessResources,
-            boolean hasOverduePayments,
-            int pendingPaymentsCount,
-            BigDecimal totalPendingAmount,
-            LocalDate nextDueDate
     ) {
     }
 }

@@ -3,8 +3,8 @@ package com.acainfo.reservation.application.service;
 import com.acainfo.enrollment.application.port.out.EnrollmentRepositoryPort;
 import com.acainfo.enrollment.domain.model.Enrollment;
 import com.acainfo.enrollment.domain.model.EnrollmentStatus;
-import com.acainfo.group.application.port.out.GroupRepositoryPort;
-import com.acainfo.group.domain.model.SubjectGroup;
+import com.acainfo.course.application.port.out.CourseRepositoryPort;
+import com.acainfo.course.domain.model.Course;
 import com.acainfo.reservation.application.dto.CreateReservationCommand;
 import com.acainfo.reservation.application.dto.SwitchSessionCommand;
 import com.acainfo.reservation.application.port.out.ReservationRepositoryPort;
@@ -14,7 +14,6 @@ import com.acainfo.reservation.domain.exception.ReservationAlreadyExistsExceptio
 import com.acainfo.reservation.domain.exception.ReservationNotFoundException;
 import com.acainfo.reservation.domain.exception.SessionFullException;
 import com.acainfo.reservation.domain.exception.SubjectReservationAlreadyExistsException;
-import com.acainfo.reservation.domain.model.AttendanceStatus;
 import com.acainfo.reservation.domain.model.ReservationMode;
 import com.acainfo.reservation.domain.model.ReservationStatus;
 import com.acainfo.reservation.domain.model.SessionReservation;
@@ -78,7 +77,7 @@ class ReservationServiceTest {
     private EnrollmentRepositoryPort enrollmentRepositoryPort;
 
     @Mock
-    private GroupRepositoryPort groupRepositoryPort;
+    private CourseRepositoryPort courseRepositoryPort;
 
     @InjectMocks
     private ReservationService reservationService;
@@ -89,7 +88,7 @@ class ReservationServiceTest {
         return Session.builder()
                 .id(id)
                 .subjectId(subjectId)
-                .groupId(GROUP_ID)
+                .courseId(GROUP_ID)
                 .date(date)
                 .startTime(LocalTime.of(16, 0))
                 .endTime(LocalTime.of(18, 0))
@@ -107,14 +106,14 @@ class ReservationServiceTest {
         return Enrollment.builder()
                 .id(ENROLLMENT_ID)
                 .studentId(STUDENT_ID)
-                .groupId(GROUP_ID)
+                .courseId(GROUP_ID)
                 .status(status)
                 .enrolledAt(LocalDateTime.now().minusMonths(1))
                 .build();
     }
 
-    private SubjectGroup aGroup(Long subjectId) {
-        return SubjectGroup.builder()
+    private Course aGroup(Long subjectId) {
+        return Course.builder()
                 .id(GROUP_ID)
                 .subjectId(subjectId)
                 .build();
@@ -152,7 +151,7 @@ class ReservationServiceTest {
             when(reservationRepositoryPort.existsByStudentIdAndSessionId(STUDENT_ID, SESSION_ID)).thenReturn(false);
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID))
                     .thenReturn(Optional.of(anEnrollment(EnrollmentStatus.ACTIVE)));
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
             when(reservationRepositoryPort.existsConfirmedByStudentIdAndSubjectId(STUDENT_ID, SUBJECT_ID))
                     .thenReturn(false);
             when(reservationRepositoryPort.countInPersonReservations(SESSION_ID)).thenReturn(0L);
@@ -179,7 +178,7 @@ class ReservationServiceTest {
             when(reservationRepositoryPort.existsByStudentIdAndSessionId(STUDENT_ID, SESSION_ID)).thenReturn(false);
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID))
                     .thenReturn(Optional.of(anEnrollment(EnrollmentStatus.ACTIVE)));
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
             when(reservationRepositoryPort.existsConfirmedByStudentIdAndSubjectId(STUDENT_ID, SUBJECT_ID))
                     .thenReturn(false);
             stubSaveEchoesArgument();
@@ -199,7 +198,7 @@ class ReservationServiceTest {
             when(reservationRepositoryPort.existsByStudentIdAndSessionId(STUDENT_ID, SESSION_ID)).thenReturn(false);
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID))
                     .thenReturn(Optional.of(anEnrollment(EnrollmentStatus.ACTIVE)));
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
             when(reservationRepositoryPort.existsConfirmedByStudentIdAndSubjectId(STUDENT_ID, SUBJECT_ID))
                     .thenReturn(false);
             when(reservationRepositoryPort.countInPersonReservations(SESSION_ID))
@@ -219,7 +218,7 @@ class ReservationServiceTest {
             when(reservationRepositoryPort.existsByStudentIdAndSessionId(STUDENT_ID, SESSION_ID)).thenReturn(false);
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID))
                     .thenReturn(Optional.of(anEnrollment(EnrollmentStatus.ACTIVE)));
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
             when(reservationRepositoryPort.existsConfirmedByStudentIdAndSubjectId(STUDENT_ID, SUBJECT_ID))
                     .thenReturn(false);
             when(reservationRepositoryPort.countInPersonReservations(SESSION_ID))
@@ -274,11 +273,11 @@ class ReservationServiceTest {
             when(reservationRepositoryPort.existsByStudentIdAndSessionId(STUDENT_ID, SESSION_ID)).thenReturn(false);
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID))
                     .thenReturn(Optional.of(anEnrollment(EnrollmentStatus.ACTIVE)));
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.empty());
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> reservationService.create(command(ReservationMode.IN_PERSON)))
                     .isInstanceOf(InvalidReservationStateException.class)
-                    .hasMessageContaining("Group not found: " + GROUP_ID);
+                    .hasMessageContaining("Course not found: " + GROUP_ID);
 
             verify(reservationRepositoryPort, never()).save(any(SessionReservation.class));
         }
@@ -290,7 +289,7 @@ class ReservationServiceTest {
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID))
                     .thenReturn(Optional.of(anEnrollment(EnrollmentStatus.ACTIVE)));
             // Enrollment's group belongs to a DIFFERENT subject than the session
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(OTHER_SUBJECT_ID)));
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(OTHER_SUBJECT_ID)));
 
             assertThatThrownBy(() -> reservationService.create(command(ReservationMode.IN_PERSON)))
                     .isInstanceOf(CrossGroupReservationNotAllowedException.class)
@@ -307,7 +306,7 @@ class ReservationServiceTest {
             when(reservationRepositoryPort.existsByStudentIdAndSessionId(STUDENT_ID, SESSION_ID)).thenReturn(false);
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID))
                     .thenReturn(Optional.of(anEnrollment(EnrollmentStatus.ACTIVE)));
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
             when(reservationRepositoryPort.existsConfirmedByStudentIdAndSubjectId(STUDENT_ID, SUBJECT_ID))
                     .thenReturn(true);
 
@@ -326,7 +325,7 @@ class ReservationServiceTest {
             when(reservationRepositoryPort.existsByStudentIdAndSessionId(STUDENT_ID, SESSION_ID)).thenReturn(false);
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID))
                     .thenReturn(Optional.of(anEnrollment(EnrollmentStatus.WITHDRAWN)));
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
             when(reservationRepositoryPort.existsConfirmedByStudentIdAndSubjectId(STUDENT_ID, SUBJECT_ID))
                     .thenReturn(false);
             when(reservationRepositoryPort.countInPersonReservations(SESSION_ID)).thenReturn(0L);
@@ -347,7 +346,7 @@ class ReservationServiceTest {
             when(reservationRepositoryPort.existsByStudentIdAndSessionId(STUDENT_ID, SESSION_ID)).thenReturn(false);
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID))
                     .thenReturn(Optional.of(anEnrollment(EnrollmentStatus.ACTIVE)));
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
             when(reservationRepositoryPort.existsConfirmedByStudentIdAndSubjectId(STUDENT_ID, SUBJECT_ID))
                     .thenReturn(false);
             when(reservationRepositoryPort.countInPersonReservations(SESSION_ID)).thenReturn(0L);
@@ -357,28 +356,6 @@ class ReservationServiceTest {
 
             assertThat(result.getStatus()).isEqualTo(ReservationStatus.CONFIRMED);
             verify(reservationRepositoryPort).save(any(SessionReservation.class));
-        }
-
-        @Test
-        void shouldThrowInvalidReservationStateWhenEnrollmentIsForIntensive() {
-            // QUIRK: for intensive enrollments groupId is null, and the service blindly
-            // calls groupRepositoryPort.findById(null) -> "Group not found: null".
-            Enrollment intensiveEnrollment = Enrollment.builder()
-                    .id(ENROLLMENT_ID)
-                    .studentId(STUDENT_ID)
-                    .intensiveId(77L)
-                    .status(EnrollmentStatus.ACTIVE)
-                    .build();
-            when(sessionRepositoryPort.findById(SESSION_ID)).thenReturn(Optional.of(aFutureSession()));
-            when(reservationRepositoryPort.existsByStudentIdAndSessionId(STUDENT_ID, SESSION_ID)).thenReturn(false);
-            when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(intensiveEnrollment));
-            when(groupRepositoryPort.findById(null)).thenReturn(Optional.empty());
-
-            assertThatThrownBy(() -> reservationService.create(command(ReservationMode.IN_PERSON)))
-                    .isInstanceOf(InvalidReservationStateException.class)
-                    .hasMessageContaining("Group not found: null");
-
-            verify(reservationRepositoryPort, never()).save(any(SessionReservation.class));
         }
     }
 
@@ -436,18 +413,6 @@ class ReservationServiceTest {
             verify(reservationRepositoryPort, never()).save(any(SessionReservation.class));
         }
 
-        @Test
-        void shouldThrowInvalidReservationStateWhenAttendanceAlreadyRecorded() {
-            SessionReservation reservation = aReservation(ReservationStatus.CONFIRMED, ReservationMode.IN_PERSON);
-            reservation.setAttendanceStatus(AttendanceStatus.PRESENT);
-            when(reservationRepositoryPort.findById(RESERVATION_ID)).thenReturn(Optional.of(reservation));
-
-            assertThatThrownBy(() -> reservationService.cancel(RESERVATION_ID, STUDENT_ID))
-                    .isInstanceOf(InvalidReservationStateException.class)
-                    .hasMessageContaining("Cannot cancel reservation " + RESERVATION_ID);
-
-            verify(reservationRepositoryPort, never()).save(any(SessionReservation.class));
-        }
     }
 
     // ==================== switchSession() ====================
@@ -471,7 +436,7 @@ class ReservationServiceTest {
                     .thenReturn(false);
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID))
                     .thenReturn(Optional.of(anEnrollment(EnrollmentStatus.ACTIVE)));
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
             when(reservationRepositoryPort.countInPersonReservations(NEW_SESSION_ID)).thenReturn(0L);
             stubSaveEchoesArgument();
 
@@ -510,7 +475,7 @@ class ReservationServiceTest {
                     .thenReturn(false);
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID))
                     .thenReturn(Optional.of(anEnrollment(EnrollmentStatus.ACTIVE)));
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
             stubSaveEchoesArgument();
 
             reservationService.switchSession(command);
@@ -528,7 +493,7 @@ class ReservationServiceTest {
                     .thenReturn(false);
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID))
                     .thenReturn(Optional.of(anEnrollment(EnrollmentStatus.ACTIVE)));
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
             stubSaveEchoesArgument();
 
             SessionReservation result = reservationService.switchSession(command);
@@ -551,7 +516,7 @@ class ReservationServiceTest {
                     .thenReturn(false);
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID))
                     .thenReturn(Optional.of(anEnrollment(EnrollmentStatus.ACTIVE)));
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
             when(reservationRepositoryPort.countInPersonReservations(NEW_SESSION_ID)).thenReturn(0L);
             stubSaveEchoesArgument();
 
@@ -641,7 +606,7 @@ class ReservationServiceTest {
                     .thenReturn(false);
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID))
                     .thenReturn(Optional.of(anEnrollment(EnrollmentStatus.ACTIVE)));
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
 
             assertThatThrownBy(() -> reservationService.switchSession(command))
                     .isInstanceOf(CrossGroupReservationNotAllowedException.class)
@@ -659,7 +624,7 @@ class ReservationServiceTest {
                     .thenReturn(false);
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID))
                     .thenReturn(Optional.of(anEnrollment(EnrollmentStatus.ACTIVE)));
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(aGroup(SUBJECT_ID)));
             when(reservationRepositoryPort.countInPersonReservations(NEW_SESSION_ID))
                     .thenReturn((long) MAX_IN_PERSON_CAPACITY);
 

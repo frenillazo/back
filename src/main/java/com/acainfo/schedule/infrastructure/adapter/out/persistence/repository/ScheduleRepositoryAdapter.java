@@ -60,9 +60,9 @@ public class ScheduleRepositoryAdapter implements ScheduleRepositoryPort {
     }
 
     @Override
-    public List<Schedule> findByGroupId(Long groupId) {
+    public List<Schedule> findByCourseId(Long courseId) {
         return schedulePersistenceMapper.toDomainList(
-                jpaScheduleRepository.findByGroupId(groupId)
+                jpaScheduleRepository.findByCourseId(courseId)
         );
     }
 

@@ -4,8 +4,8 @@ import com.acainfo.enrollment.application.port.in.GetEnrollmentUseCase;
 import com.acainfo.enrollment.domain.model.Enrollment;
 import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.EnrollmentResponse;
 import com.acainfo.enrollment.infrastructure.mapper.EnrollmentRestMapper;
-import com.acainfo.group.application.port.in.GetGroupUseCase;
-import com.acainfo.group.domain.model.SubjectGroup;
+import com.acainfo.course.application.port.in.GetCourseUseCase;
+import com.acainfo.course.domain.model.Course;
 import com.acainfo.schedule.application.port.in.GetScheduleUseCase;
 import com.acainfo.schedule.domain.model.Schedule;
 import com.acainfo.subject.application.port.in.GetSubjectUseCase;
@@ -38,7 +38,7 @@ public class EnrollmentResponseEnricher {
 
     private final EnrollmentRestMapper enrollmentRestMapper;
     private final GetEnrollmentUseCase getEnrollmentUseCase;
-    private final GetGroupUseCase getGroupUseCase;
+    private final GetCourseUseCase getCourseUseCase;
     private final GetSubjectUseCase getSubjectUseCase;
     private final GetUserProfileUseCase getUserProfileUseCase;
     private final GetScheduleUseCase getScheduleUseCase;
@@ -61,13 +61,13 @@ public class EnrollmentResponseEnricher {
      */
     public EnrollmentResponse enrich(Enrollment enrollment) {
         // Fetch related entities
-        SubjectGroup group = getGroupUseCase.getById(enrollment.getGroupId());
+        Course group = getCourseUseCase.getById(enrollment.getCourseId());
         Subject subject = getSubjectUseCase.getById(group.getSubjectId());
         User student = getUserProfileUseCase.getUserById(enrollment.getStudentId());
         User teacher = getUserProfileUseCase.getUserById(group.getTeacherId());
 
         // Get schedules for this group
-        List<Schedule> schedules = getScheduleUseCase.findByGroupId(group.getId());
+        List<Schedule> schedules = getScheduleUseCase.findByCourseId(group.getId());
         String scheduleSummary = buildScheduleSummary(schedules);
 
         // Get approver name if exists
@@ -77,7 +77,7 @@ public class EnrollmentResponseEnricher {
             approvedByUserName = approver.getFullName();
         }
 
-        int activeCount = (int) getEnrollmentUseCase.countActiveByGroupId(group.getId());
+        int activeCount = (int) getEnrollmentUseCase.countActiveByCourseId(group.getId());
         return enrollmentRestMapper.toEnrichedResponse(
                 enrollment,
                 student.getFullName(),
@@ -88,7 +88,7 @@ public class EnrollmentResponseEnricher {
                 group.getName(),
                 teacher.getFullName(),
                 scheduleSummary,
-                group.getMaxCapacity(),
+                group.getCapacity(),
                 activeCount,
                 approvedByUserName
         );
@@ -107,8 +107,8 @@ public class EnrollmentResponseEnricher {
         }
 
         // Collect unique IDs
-        Set<Long> groupIds = enrollments.stream()
-                .map(Enrollment::getGroupId)
+        Set<Long> courseIds = enrollments.stream()
+                .map(Enrollment::getCourseId)
                 .collect(Collectors.toSet());
 
         Set<Long> studentIds = enrollments.stream()
@@ -116,16 +116,16 @@ public class EnrollmentResponseEnricher {
                 .collect(Collectors.toSet());
 
         // Fetch groups and collect subject/teacher IDs
-        Map<Long, SubjectGroup> groupsById = groupIds.stream()
-                .map(getGroupUseCase::getById)
-                .collect(Collectors.toMap(SubjectGroup::getId, Function.identity()));
+        Map<Long, Course> groupsById = courseIds.stream()
+                .map(getCourseUseCase::getById)
+                .collect(Collectors.toMap(Course::getId, Function.identity()));
 
         Set<Long> subjectIds = groupsById.values().stream()
-                .map(SubjectGroup::getSubjectId)
+                .map(Course::getSubjectId)
                 .collect(Collectors.toSet());
 
         Set<Long> teacherIds = groupsById.values().stream()
-                .map(SubjectGroup::getTeacherId)
+                .map(Course::getTeacherId)
                 .collect(Collectors.toSet());
 
         // Fetch subjects
@@ -148,26 +148,26 @@ public class EnrollmentResponseEnricher {
                 .collect(Collectors.toMap(User::getId, Function.identity()));
 
         // Fetch schedules for all groups
-        Map<Long, List<Schedule>> schedulesByGroupId = groupIds.stream()
+        Map<Long, List<Schedule>> schedulesByCourseId = courseIds.stream()
                 .collect(Collectors.toMap(
                         Function.identity(),
-                        getScheduleUseCase::findByGroupId
+                        getScheduleUseCase::findByCourseId
                 ));
 
         // Build enriched responses
         return enrollments.stream()
                 .map(enrollment -> {
-                    SubjectGroup group = groupsById.get(enrollment.getGroupId());
+                    Course group = groupsById.get(enrollment.getCourseId());
                     Subject subject = subjectsById.get(group.getSubjectId());
                     User student = usersById.get(enrollment.getStudentId());
                     User teacher = usersById.get(group.getTeacherId());
                     String approvedByUserName = enrollment.getApprovedByUserId() != null
                             ? usersById.get(enrollment.getApprovedByUserId()).getFullName()
                             : null;
-                    List<Schedule> schedules = schedulesByGroupId.getOrDefault(group.getId(), List.of());
+                    List<Schedule> schedules = schedulesByCourseId.getOrDefault(group.getId(), List.of());
                     String scheduleSummary = buildScheduleSummary(schedules);
 
-                    int activeCount = (int) getEnrollmentUseCase.countActiveByGroupId(group.getId());
+                    int activeCount = (int) getEnrollmentUseCase.countActiveByCourseId(group.getId());
                     return enrollmentRestMapper.toEnrichedResponse(
                             enrollment,
                             student.getFullName(),
@@ -178,7 +178,7 @@ public class EnrollmentResponseEnricher {
                             group.getName(),
                             teacher.getFullName(),
                             scheduleSummary,
-                            group.getMaxCapacity(),
+                            group.getCapacity(),
                             activeCount,
                             approvedByUserName
                     );

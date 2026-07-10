@@ -57,8 +57,8 @@ public class SessionController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<SessionResponse> createSession(@Valid @RequestBody CreateSessionRequest request) {
-        log.info("REST: Creating session - type={}, groupId={}, date={}",
-                request.getType(), request.getGroupId(), request.getDate());
+        log.info("REST: Creating session - type={}, courseId={}, date={}",
+                request.getType(), request.getCourseId(), request.getDate());
 
         Session createdSession = createSessionUseCase.create(sessionRestMapper.toCommand(request));
         SessionResponse response = sessionResponseEnricher.enrich(createdSession);
@@ -84,14 +84,14 @@ public class SessionController {
 
     /**
      * Get sessions with filters (pagination + sorting + filtering).
-     * GET /api/sessions?subjectId=1&groupId=2&type=REGULAR&status=SCHEDULED&...
+     * GET /api/sessions?subjectId=1&courseId=2&type=REGULAR&status=SCHEDULED&...
      * Any authenticated user can query any sessions.
      */
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<PageResponse<SessionResponse>> getSessionsWithFilters(
             @RequestParam(required = false) Long subjectId,
-            @RequestParam(required = false) Long groupId,
+            @RequestParam(required = false) Long courseId,
             @RequestParam(required = false) Long scheduleId,
             @RequestParam(required = false) SessionType type,
             @RequestParam(required = false) SessionStatus status,
@@ -103,11 +103,11 @@ public class SessionController {
             @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "ASC") String sortDirection
     ) {
-        log.debug("REST: Getting sessions with filters - groupId={}, status={}, dateFrom={}, dateTo={}",
-                groupId, status, dateFrom, dateTo);
+        log.debug("REST: Getting sessions with filters - courseId={}, status={}, dateFrom={}, dateTo={}",
+                courseId, status, dateFrom, dateTo);
 
         SessionFilters filters = new SessionFilters(
-                subjectId, groupId, null, scheduleId, type, status, mode,
+                subjectId, courseId, null, scheduleId, type, status, mode,
                 dateFrom, dateTo, page, size, sortBy, sortDirection
         );
 
@@ -119,34 +119,20 @@ public class SessionController {
 
     /**
      * Get sessions by group ID.
-     * GET /api/sessions/group/{groupId}
+     * GET /api/sessions/group/{courseId}
      * Any authenticated user can view sessions for any group.
      */
-    @GetMapping("/group/{groupId}")
+    @GetMapping("/course/{courseId}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<SessionResponse>> getSessionsByGroup(@PathVariable Long groupId) {
-        log.debug("REST: Getting sessions for group: {}", groupId);
+    public ResponseEntity<List<SessionResponse>> getSessionsByGroup(@PathVariable Long courseId) {
+        log.debug("REST: Getting sessions for group: {}", courseId);
 
-        List<Session> sessions = getSessionUseCase.findByGroupId(groupId);
+        List<Session> sessions = getSessionUseCase.findByCourseId(courseId);
         List<SessionResponse> responses = sessionResponseEnricher.enrichList(sessions);
 
         return ResponseEntity.ok(responses);
     }
 
-    /**
-     * Get sessions by intensive ID.
-     * GET /api/sessions/intensive/{intensiveId}
-     */
-    @GetMapping("/intensive/{intensiveId}")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<SessionResponse>> getSessionsByIntensive(@PathVariable Long intensiveId) {
-        log.debug("REST: Getting sessions for intensive: {}", intensiveId);
-
-        List<Session> sessions = getSessionUseCase.findByIntensiveId(intensiveId);
-        List<SessionResponse> responses = sessionResponseEnricher.enrichList(sessions);
-
-        return ResponseEntity.ok(responses);
-    }
 
     /**
      * Get sessions by subject ID.

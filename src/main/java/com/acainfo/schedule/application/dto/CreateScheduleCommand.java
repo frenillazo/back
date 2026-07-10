@@ -10,7 +10,7 @@ import java.time.LocalTime;
  * Encapsulates the data required to create a new schedule.
  */
 public record CreateScheduleCommand(
-        Long groupId,
+        Long courseId,
         DayOfWeek dayOfWeek,
         LocalTime startTime,
         LocalTime endTime,

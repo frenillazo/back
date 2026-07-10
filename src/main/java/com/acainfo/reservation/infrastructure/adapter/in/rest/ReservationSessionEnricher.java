@@ -1,7 +1,7 @@
 package com.acainfo.reservation.infrastructure.adapter.in.rest;
 
-import com.acainfo.group.application.port.in.GetGroupUseCase;
-import com.acainfo.group.domain.model.SubjectGroup;
+import com.acainfo.course.application.port.in.GetCourseUseCase;
+import com.acainfo.course.domain.model.Course;
 import com.acainfo.reservation.infrastructure.adapter.in.rest.dto.EnrichedReservationResponse;
 import com.acainfo.reservation.infrastructure.adapter.in.rest.dto.ReservationResponse;
 import com.acainfo.session.application.port.out.SessionRepositoryPort;
@@ -29,7 +29,7 @@ public class ReservationSessionEnricher {
 
     private final SessionRepositoryPort sessionRepositoryPort;
     private final GetSubjectUseCase getSubjectUseCase;
-    private final GetGroupUseCase getGroupUseCase;
+    private final GetCourseUseCase getCourseUseCase;
     private final GetUserProfileUseCase getUserProfileUseCase;
 
     /**
@@ -56,8 +56,8 @@ public class ReservationSessionEnricher {
                 .map(Session::getSubjectId)
                 .collect(Collectors.toSet());
 
-        Set<Long> groupIds = sessionsById.values().stream()
-                .map(Session::getGroupId)
+        Set<Long> courseIds = sessionsById.values().stream()
+                .map(Session::getCourseId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
@@ -67,13 +67,13 @@ public class ReservationSessionEnricher {
                 .collect(Collectors.toMap(Subject::getId, Function.identity()));
 
         // Batch-fetch groups
-        Map<Long, SubjectGroup> groupsById = groupIds.stream()
-                .map(getGroupUseCase::getById)
-                .collect(Collectors.toMap(SubjectGroup::getId, Function.identity()));
+        Map<Long, Course> groupsById = courseIds.stream()
+                .map(getCourseUseCase::getById)
+                .collect(Collectors.toMap(Course::getId, Function.identity()));
 
         // Batch-fetch teachers from groups
         Set<Long> teacherIds = groupsById.values().stream()
-                .map(SubjectGroup::getTeacherId)
+                .map(Course::getTeacherId)
                 .collect(Collectors.toSet());
 
         Map<Long, User> teachersById = teacherIds.stream()
@@ -99,8 +99,8 @@ public class ReservationSessionEnricher {
                             enriched.setSubjectCode(subject.getCode());
                         }
 
-                        if (session.getGroupId() != null) {
-                            SubjectGroup group = groupsById.get(session.getGroupId());
+                        if (session.getCourseId() != null) {
+                            Course group = groupsById.get(session.getCourseId());
                             if (group != null) {
                                 User teacher = teachersById.get(group.getTeacherId());
                                 if (teacher != null) {

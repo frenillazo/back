@@ -7,7 +7,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * MapStruct mapper for Reservation REST layer conversions.
@@ -31,38 +30,10 @@ public interface ReservationRestMapper {
     }
 
     /**
-     * Create RequestOnlineAttendanceCommand from reservationId and studentId.
+     * Create GenerateReservationsCommand from sessionId and courseId.
      */
-    default RequestOnlineAttendanceCommand toRequestOnlineCommand(Long reservationId, Long studentId) {
-        return new RequestOnlineAttendanceCommand(reservationId, studentId);
-    }
-
-    /**
-     * Create ProcessOnlineRequestCommand from reservationId, teacherId and request.
-     */
-    default ProcessOnlineRequestCommand toProcessCommand(Long reservationId, Long teacherId, ProcessOnlineRequestRequest request) {
-        return new ProcessOnlineRequestCommand(reservationId, teacherId, request.getApproved());
-    }
-
-    /**
-     * Create RecordAttendanceCommand from reservationId, recordedById and request.
-     */
-    default RecordAttendanceCommand toRecordCommand(Long reservationId, Long recordedById, RecordAttendanceRequest request) {
-        return new RecordAttendanceCommand(reservationId, request.getStatus(), recordedById);
-    }
-
-    /**
-     * Create BulkRecordAttendanceCommand from sessionId, recordedById and request.
-     */
-    default BulkRecordAttendanceCommand toBulkRecordCommand(Long sessionId, Long recordedById, BulkRecordAttendanceRequest request) {
-        return new BulkRecordAttendanceCommand(sessionId, request.getAttendanceMap(), recordedById);
-    }
-
-    /**
-     * Create GenerateReservationsCommand from sessionId and groupId.
-     */
-    default GenerateReservationsCommand toGenerateCommand(Long sessionId, Long groupId) {
-        return new GenerateReservationsCommand(sessionId, groupId);
+    default GenerateReservationsCommand toGenerateCommand(Long sessionId, Long courseId) {
+        return new GenerateReservationsCommand(sessionId, courseId);
     }
 
     // ==================== Domain to Response ====================
@@ -74,15 +45,7 @@ public interface ReservationRestMapper {
     @Mapping(target = "isCancelled", expression = "java(reservation.isCancelled())")
     @Mapping(target = "isInPerson", expression = "java(reservation.isInPerson())")
     @Mapping(target = "isOnline", expression = "java(reservation.isOnline())")
-    @Mapping(target = "hasOnlineRequest", expression = "java(reservation.hasOnlineRequest())")
-    @Mapping(target = "isOnlineRequestPending", expression = "java(reservation.isOnlineRequestPending())")
-    @Mapping(target = "isOnlineRequestApproved", expression = "java(reservation.isOnlineRequestApproved())")
-    @Mapping(target = "isOnlineRequestRejected", expression = "java(reservation.isOnlineRequestRejected())")
-    @Mapping(target = "hasAttendanceRecorded", expression = "java(reservation.hasAttendanceRecorded())")
-    @Mapping(target = "wasPresent", expression = "java(reservation.wasPresent())")
-    @Mapping(target = "wasAbsent", expression = "java(reservation.wasAbsent())")
     @Mapping(target = "canBeCancelled", expression = "java(reservation.canBeCancelled())")
-    @Mapping(target = "canRequestOnline", expression = "java(reservation.canRequestOnline())")
     @Mapping(target = "studentName", ignore = true)
     @Mapping(target = "studentEmail", ignore = true)
     ReservationResponse toResponse(SessionReservation reservation);

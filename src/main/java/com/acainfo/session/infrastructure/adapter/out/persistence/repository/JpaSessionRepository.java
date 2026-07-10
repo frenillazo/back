@@ -22,12 +22,8 @@ public interface JpaSessionRepository extends
     /**
      * Find all sessions for a specific group.
      */
-    List<SessionJpaEntity> findByGroupId(Long groupId);
+    List<SessionJpaEntity> findByCourseId(Long courseId);
 
-    /**
-     * Find all sessions for a specific intensive course.
-     */
-    List<SessionJpaEntity> findByIntensiveId(Long intensiveId);
 
     /**
      * Find all sessions for a specific subject.
@@ -49,7 +45,7 @@ public interface JpaSessionRepository extends
      * Find sessions for a group on a specific date.
      * Used for conflict detection.
      */
-    List<SessionJpaEntity> findByGroupIdAndDate(Long groupId, LocalDate date);
+    List<SessionJpaEntity> findByCourseIdAndDate(Long courseId, LocalDate date);
 
     /**
      * Delete all sessions generated from a specific schedule.
@@ -59,11 +55,11 @@ public interface JpaSessionRepository extends
 
     /**
      * Find sessions by teacher ID and date.
-     * Joins through the subject_groups table to get sessions where the group's teacher matches.
+     * Joins through the courses table to get sessions where the group's teacher matches.
      * Only returns non-cancelled sessions.
      */
     @Query("SELECT s FROM SessionJpaEntity s " +
-           "JOIN SubjectGroupJpaEntity g ON s.groupId = g.id " +
+           "JOIN CourseJpaEntity g ON s.courseId = g.id " +
            "WHERE g.teacherId = :teacherId AND s.date = :date " +
            "AND s.status NOT IN ('CANCELLED')")
     List<SessionJpaEntity> findByTeacherIdAndDate(

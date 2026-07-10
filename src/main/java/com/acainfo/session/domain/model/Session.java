@@ -10,14 +10,12 @@ import java.time.LocalTime;
 
 /**
  * Session domain entity (anemic model with Lombok).
- * Represents a scheduled class session for a subject group.
+ * Represents a scheduled class session of a course.
  *
  * <p>Session types and their field requirements:</p>
  * <ul>
- *   <li>REGULAR: Has scheduleId (derived from Schedule), groupId derived from schedule</li>
- *   <li>EXTRA: Has groupId (required), no scheduleId - additional sessions for groups</li>
- *   <li>SCHEDULING: Has subjectId only, no groupId - meetings to agree on schedules before group creation</li>
- *   <li>INTENSIVE: Has intensiveId (required), no groupId, no scheduleId - sessions of an intensive course</li>
+ *   <li>REGULAR: Has scheduleId (derived from Schedule), courseId derived from schedule</li>
+ *   <li>EXTRA: Has courseId (required), no scheduleId - additional ad-hoc sessions</li>
  * </ul>
  */
 @Getter
@@ -32,37 +30,26 @@ public class Session {
     private Long id;
 
     /**
-     * Reference to the subject. Always present for all session types.
-     * For REGULAR/EXTRA: derived from the group's subject.
-     * For SCHEDULING: the subject for which schedules are being discussed.
+     * Reference to the subject. Always present (derived from the course's subject).
      */
     private Long subjectId;
 
     /**
-     * Reference to the group. Nullable.
-     * - REGULAR: derived from the schedule's groupId
-     * - EXTRA: required (the group receiving the extra session)
-     * - SCHEDULING: null (no group exists yet)
+     * Reference to the course. Always present.
      */
-    private Long groupId;
+    private Long courseId;
 
     /**
      * Reference to the schedule. Nullable.
      * Only present for REGULAR sessions (generated from a Schedule).
-     * EXTRA, SCHEDULING and INTENSIVE sessions have no associated schedule.
+     * EXTRA sessions have no associated schedule.
      */
     private Long scheduleId;
 
     /**
-     * Reference to the intensive course this session belongs to. Nullable.
-     * Only present for INTENSIVE sessions (groupId stays null in that case).
-     */
-    private Long intensiveId;
-
-    /**
      * Classroom where the session takes place.
      * - REGULAR: inherited from the referenced schedule
-     * - EXTRA/SCHEDULING: manually set by administrator
+     * - EXTRA: manually set by administrator
      */
     private Classroom classroom;
 
@@ -114,14 +101,6 @@ public class Session {
         return type == SessionType.EXTRA;
     }
 
-    public boolean isSchedulingType() {
-        return type == SessionType.SCHEDULING;
-    }
-
-    public boolean isIntensive() {
-        return type == SessionType.INTENSIVE;
-    }
-
     // ==================== Mode Query Methods ====================
 
     public boolean isInPerson() {
@@ -143,24 +122,9 @@ public class Session {
     }
 
     /**
-     * Check if this session belongs to a group.
-     * SCHEDULING sessions don't belong to any group.
-     */
-    public boolean hasGroup() {
-        return groupId != null;
-    }
-
-    /**
      * Check if this session was generated from a schedule.
      */
     public boolean hasSchedule() {
         return scheduleId != null;
-    }
-
-    /**
-     * Check if this session belongs to an intensive course.
-     */
-    public boolean hasIntensive() {
-        return intensiveId != null;
     }
 }

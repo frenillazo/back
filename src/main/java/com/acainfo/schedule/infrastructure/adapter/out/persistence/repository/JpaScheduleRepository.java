@@ -22,14 +22,14 @@ public interface JpaScheduleRepository extends
     /**
      * Find all schedules for a specific group.
      */
-    List<ScheduleJpaEntity> findByGroupId(Long groupId);
+    List<ScheduleJpaEntity> findByCourseId(Long courseId);
 
     /**
      * Find schedules by teacher ID and day of week.
-     * Joins through the subject_groups table to get schedules where the group's teacher matches.
+     * Joins through the courses table to get schedules where the group's teacher matches.
      */
     @Query("SELECT s FROM ScheduleJpaEntity s " +
-           "JOIN SubjectGroupJpaEntity g ON s.groupId = g.id " +
+           "JOIN CourseJpaEntity g ON s.courseId = g.id " +
            "WHERE g.teacherId = :teacherId AND s.dayOfWeek = :dayOfWeek")
     List<ScheduleJpaEntity> findByTeacherIdAndDayOfWeek(
             @Param("teacherId") Long teacherId,

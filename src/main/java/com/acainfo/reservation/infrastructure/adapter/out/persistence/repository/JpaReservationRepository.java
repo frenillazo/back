@@ -1,6 +1,5 @@
 package com.acainfo.reservation.infrastructure.adapter.out.persistence.repository;
 
-import com.acainfo.reservation.domain.model.OnlineRequestStatus;
 import com.acainfo.reservation.domain.model.ReservationMode;
 import com.acainfo.reservation.domain.model.ReservationStatus;
 import com.acainfo.reservation.infrastructure.adapter.out.persistence.entity.SessionReservationJpaEntity;
@@ -42,10 +41,6 @@ public interface JpaReservationRepository extends
      */
     List<SessionReservationJpaEntity> findBySessionIdAndStatus(Long sessionId, ReservationStatus status);
 
-    /**
-     * Find reservations by online request status.
-     */
-    List<SessionReservationJpaEntity> findByOnlineRequestStatus(OnlineRequestStatus status);
 
     /**
      * Check if a reservation exists for student and session.
@@ -57,25 +52,7 @@ public interface JpaReservationRepository extends
      */
     long countBySessionIdAndStatusAndMode(Long sessionId, ReservationStatus status, ReservationMode mode);
 
-    /**
-     * Find reservations without attendance recorded for a session.
-     */
-    List<SessionReservationJpaEntity> findBySessionIdAndAttendanceStatusIsNull(Long sessionId);
 
-    /**
-     * Find pending online requests for sessions taught by a specific teacher.
-     * Joins with session table to find sessions where the group's teacher matches.
-     */
-    @Query("""
-        SELECT r FROM SessionReservationJpaEntity r
-        JOIN SessionJpaEntity s ON r.sessionId = s.id
-        JOIN SubjectGroupJpaEntity g ON s.groupId = g.id
-        WHERE r.onlineRequestStatus = 'PENDING'
-        AND g.teacherId = :teacherId
-        AND r.status = 'CONFIRMED'
-        ORDER BY r.onlineRequestedAt ASC
-        """)
-    List<SessionReservationJpaEntity> findPendingOnlineRequestsByTeacherId(@Param("teacherId") Long teacherId);
 
     /**
      * Find reservations by enrollment.

@@ -1,6 +1,6 @@
 package com.acainfo.subject.application.service;
 
-import com.acainfo.group.application.port.out.GroupRepositoryPort;
+import com.acainfo.course.application.port.out.CourseRepositoryPort;
 import com.acainfo.subject.application.dto.CreateSubjectCommand;
 import com.acainfo.subject.application.dto.SubjectFilters;
 import com.acainfo.subject.application.dto.UpdateSubjectCommand;
@@ -35,7 +35,7 @@ public class SubjectService implements
         DeleteSubjectUseCase {
 
     private final SubjectRepositoryPort subjectRepositoryPort;
-    private final GroupRepositoryPort groupRepositoryPort;
+    private final CourseRepositoryPort courseRepositoryPort;
 
     // Business rules constants
     private static final String CODE_PATTERN = "^[A-Z]{3}\\d{3}$";
@@ -159,7 +159,7 @@ public class SubjectService implements
         Subject subject = getById(id);
 
         // Check if subject has active groups (OPEN or CLOSED)
-        long activeGroupsCount = groupRepositoryPort.countActiveGroupsBySubjectId(id);
+        long activeGroupsCount = courseRepositoryPort.countActiveGroupsBySubjectId(id);
         if (activeGroupsCount > 0) {
             throw new SubjectHasActiveGroupsException(id, activeGroupsCount);
         }

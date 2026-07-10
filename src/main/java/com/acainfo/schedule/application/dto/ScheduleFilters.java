@@ -9,7 +9,7 @@ import java.time.DayOfWeek;
  * Used by repository ports to build dynamic queries.
  */
 public record ScheduleFilters(
-        Long groupId,
+        Long courseId,
         Classroom classroom,
         DayOfWeek dayOfWeek,
         Integer page,

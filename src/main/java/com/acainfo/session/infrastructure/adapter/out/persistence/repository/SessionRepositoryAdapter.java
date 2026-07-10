@@ -67,18 +67,12 @@ public class SessionRepositoryAdapter implements SessionRepositoryPort {
     }
 
     @Override
-    public List<Session> findByGroupId(Long groupId) {
+    public List<Session> findByCourseId(Long courseId) {
         return sessionPersistenceMapper.toDomainList(
-                jpaSessionRepository.findByGroupId(groupId)
+                jpaSessionRepository.findByCourseId(courseId)
         );
     }
 
-    @Override
-    public List<Session> findByIntensiveId(Long intensiveId) {
-        return sessionPersistenceMapper.toDomainList(
-                jpaSessionRepository.findByIntensiveId(intensiveId)
-        );
-    }
 
     @Override
     public List<Session> findBySubjectId(Long subjectId) {
@@ -110,8 +104,8 @@ public class SessionRepositoryAdapter implements SessionRepositoryPort {
     }
 
     @Override
-    public boolean existsConflictingSession(Long groupId, LocalDate date, Long excludeSessionId) {
-        List<SessionJpaEntity> sessionsOnDate = jpaSessionRepository.findByGroupIdAndDate(groupId, date);
+    public boolean existsConflictingSession(Long courseId, LocalDate date, Long excludeSessionId) {
+        List<SessionJpaEntity> sessionsOnDate = jpaSessionRepository.findByCourseIdAndDate(courseId, date);
 
         // If excludeSessionId is provided, filter it out
         if (excludeSessionId != null) {
@@ -124,12 +118,12 @@ public class SessionRepositoryAdapter implements SessionRepositoryPort {
     }
 
     @Override
-    public List<Session> findUpcomingByGroupIds(List<Long> groupIds, LocalDate fromDate, int limit) {
-        if (groupIds == null || groupIds.isEmpty()) {
+    public List<Session> findUpcomingByCourseIds(List<Long> courseIds, LocalDate fromDate, int limit) {
+        if (courseIds == null || courseIds.isEmpty()) {
             return List.of();
         }
 
-        SessionFilters filters = SessionFilters.upcomingForGroups(groupIds, fromDate, limit);
+        SessionFilters filters = SessionFilters.upcomingForCourses(courseIds, fromDate, limit);
         Specification<SessionJpaEntity> spec = SessionSpecifications.withFilters(filters);
 
         PageRequest pageRequest = PageRequest.of(0, limit, Sort.by("date", "startTime").ascending());

@@ -21,7 +21,7 @@ import java.time.LocalTime;
 public class CreateScheduleRequest {
 
     @NotNull(message = "Group ID is required")
-    private Long groupId;
+    private Long courseId;
 
     @NotNull(message = "Day of week is required")
     private DayOfWeek dayOfWeek;

@@ -1,7 +1,7 @@
 package com.acainfo.schedule.application.service;
 
-import com.acainfo.group.application.port.out.GroupRepositoryPort;
-import com.acainfo.group.domain.exception.GroupNotFoundException;
+import com.acainfo.course.application.port.out.CourseRepositoryPort;
+import com.acainfo.course.domain.exception.CourseNotFoundException;
 import com.acainfo.schedule.application.dto.CreateScheduleCommand;
 import com.acainfo.schedule.application.dto.ScheduleFilters;
 import com.acainfo.schedule.application.dto.UpdateScheduleCommand;
@@ -16,7 +16,7 @@ import com.acainfo.schedule.domain.exception.ScheduleNotFoundException;
 import com.acainfo.schedule.domain.exception.TeacherScheduleConflictException;
 import com.acainfo.session.application.port.out.SessionRepositoryPort;
 import com.acainfo.user.application.port.out.UserRepositoryPort;
-import com.acainfo.group.domain.model.SubjectGroup;
+import com.acainfo.course.domain.model.Course;
 import com.acainfo.schedule.domain.model.Classroom;
 import com.acainfo.schedule.domain.model.Schedule;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +44,7 @@ public class ScheduleService implements
         DeleteScheduleUseCase {
 
     private final ScheduleRepositoryPort scheduleRepositoryPort;
-    private final GroupRepositoryPort groupRepositoryPort;
+    private final CourseRepositoryPort courseRepositoryPort;
     private final UserRepositoryPort userRepositoryPort;
     private final SessionRepositoryPort sessionRepositoryPort;
 
@@ -52,11 +52,11 @@ public class ScheduleService implements
     @Transactional
     public Schedule create(CreateScheduleCommand command) {
         log.info("Creating schedule for group: {}, day: {}, time: {}-{}, classroom: {}",
-                command.groupId(), command.dayOfWeek(), command.startTime(), command.endTime(), command.classroom());
+                command.courseId(), command.dayOfWeek(), command.startTime(), command.endTime(), command.classroom());
 
         // Validate group exists and get group data
-        SubjectGroup group = groupRepositoryPort.findById(command.groupId())
-                .orElseThrow(() -> new GroupNotFoundException(command.groupId()));
+        Course group = courseRepositoryPort.findById(command.courseId())
+                .orElseThrow(() -> new CourseNotFoundException(command.courseId()));
 
         // Validate time range
         validateTimeRange(command.startTime(), command.endTime());
@@ -83,7 +83,7 @@ public class ScheduleService implements
 
         // Create schedule
         Schedule schedule = Schedule.builder()
-                .groupId(command.groupId())
+                .courseId(command.courseId())
                 .dayOfWeek(command.dayOfWeek())
                 .startTime(command.startTime())
                 .endTime(command.endTime())
@@ -104,8 +104,8 @@ public class ScheduleService implements
         Schedule schedule = getById(id);
 
         // Get group data for teacher conflict validation
-        SubjectGroup group = groupRepositoryPort.findById(schedule.getGroupId())
-                .orElseThrow(() -> new GroupNotFoundException(schedule.getGroupId()));
+        Course group = courseRepositoryPort.findById(schedule.getCourseId())
+                .orElseThrow(() -> new CourseNotFoundException(schedule.getCourseId()));
 
         // Determine final values (use existing if not provided)
         DayOfWeek finalDayOfWeek = command.dayOfWeek() != null ? command.dayOfWeek() : schedule.getDayOfWeek();
@@ -161,16 +161,16 @@ public class ScheduleService implements
     @Override
     @Transactional(readOnly = true)
     public Page<Schedule> findWithFilters(ScheduleFilters filters) {
-        log.debug("Finding schedules with filters: groupId={}, classroom={}, dayOfWeek={}",
-                filters.groupId(), filters.classroom(), filters.dayOfWeek());
+        log.debug("Finding schedules with filters: courseId={}, classroom={}, dayOfWeek={}",
+                filters.courseId(), filters.classroom(), filters.dayOfWeek());
         return scheduleRepositoryPort.findWithFilters(filters);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Schedule> findByGroupId(Long groupId) {
-        log.debug("Finding schedules for group: {}", groupId);
-        return scheduleRepositoryPort.findByGroupId(groupId);
+    public List<Schedule> findByCourseId(Long courseId) {
+        log.debug("Finding schedules for group: {}", courseId);
+        return scheduleRepositoryPort.findByCourseId(courseId);
     }
 
     @Override
@@ -303,7 +303,7 @@ public class ScheduleService implements
             boolean existingScheduleIsOnline = existing.isOnline();
 
             // Get the subject ID of the existing schedule's group
-            SubjectGroup existingGroup = groupRepositoryPort.findById(existing.getGroupId())
+            Course existingGroup = courseRepositoryPort.findById(existing.getCourseId())
                     .orElse(null);
             if (existingGroup == null) {
                 continue; // Skip if group not found (shouldn't happen)

@@ -3,18 +3,14 @@ package com.acainfo.student.application.service;
 import com.acainfo.enrollment.application.port.out.EnrollmentRepositoryPort;
 import com.acainfo.enrollment.domain.model.Enrollment;
 import com.acainfo.enrollment.domain.model.EnrollmentStatus;
-import com.acainfo.group.application.port.out.GroupRepositoryPort;
-import com.acainfo.group.domain.model.SubjectGroup;
-import com.acainfo.payment.application.port.out.PaymentRepositoryPort;
-import com.acainfo.payment.domain.model.Payment;
-import com.acainfo.payment.domain.model.PaymentStatus;
+import com.acainfo.course.application.port.out.CourseRepositoryPort;
+import com.acainfo.course.domain.model.Course;
 import com.acainfo.reservation.application.port.out.ReservationRepositoryPort;
 import com.acainfo.reservation.domain.model.SessionReservation;
 import com.acainfo.session.application.port.out.SessionRepositoryPort;
 import com.acainfo.session.domain.model.Session;
 import com.acainfo.student.application.dto.StudentOverviewResponse;
 import com.acainfo.student.application.dto.StudentOverviewResponse.EnrollmentSummary;
-import com.acainfo.student.application.dto.StudentOverviewResponse.PaymentSummary;
 import com.acainfo.student.application.dto.StudentOverviewResponse.UpcomingSessionSummary;
 import com.acainfo.student.application.port.in.GetStudentOverviewUseCase;
 import com.acainfo.subject.application.port.out.SubjectRepositoryPort;
@@ -27,9 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,11 +44,10 @@ public class StudentOverviewService implements GetStudentOverviewUseCase {
 
     private final UserRepositoryPort userRepository;
     private final EnrollmentRepositoryPort enrollmentRepository;
-    private final GroupRepositoryPort groupRepository;
+    private final CourseRepositoryPort courseRepository;
     private final SubjectRepositoryPort subjectRepository;
     private final SessionRepositoryPort sessionRepository;
     private final ReservationRepositoryPort reservationRepository;
-    private final PaymentRepositoryPort paymentRepository;
 
     /**
      * Get overview for a student.
@@ -86,17 +79,13 @@ public class StudentOverviewService implements GetStudentOverviewUseCase {
         List<UpcomingSessionSummary> upcomingSessions = buildUpcomingSessionsSummaries(
                 studentId, activeEnrollments, upcomingSessionsLimit);
 
-        // 6. Build payment summary
-        PaymentSummary paymentSummary = buildPaymentSummary(studentId);
-
         return new StudentOverviewResponse(
                 user.getId(),
                 user.getFullName(),
                 user.getEmail(),
                 enrollmentSummaries,
                 waitingList.size(),
-                upcomingSessions,
-                paymentSummary
+                upcomingSessions
         );
     }
 
@@ -114,17 +103,17 @@ public class StudentOverviewService implements GetStudentOverviewUseCase {
         }
 
         // Collect all group IDs
-        List<Long> groupIds = enrollments.stream()
-                .map(Enrollment::getGroupId)
+        List<Long> courseIds = enrollments.stream()
+                .map(Enrollment::getCourseId)
                 .toList();
 
         // Batch load groups
-        Map<Long, SubjectGroup> groupsById = groupRepository.findByIds(groupIds).stream()
-                .collect(Collectors.toMap(SubjectGroup::getId, Function.identity()));
+        Map<Long, Course> coursesById = courseRepository.findByIds(courseIds).stream()
+                .collect(Collectors.toMap(Course::getId, Function.identity()));
 
         // Collect all subject IDs from groups
-        Set<Long> subjectIds = groupsById.values().stream()
-                .map(SubjectGroup::getSubjectId)
+        Set<Long> subjectIds = coursesById.values().stream()
+                .map(Course::getSubjectId)
                 .collect(Collectors.toSet());
 
         // Batch load subjects
@@ -132,8 +121,9 @@ public class StudentOverviewService implements GetStudentOverviewUseCase {
                 .collect(Collectors.toMap(Subject::getId, Function.identity()));
 
         // Collect all teacher IDs from groups
-        Set<Long> teacherIds = groupsById.values().stream()
-                .map(SubjectGroup::getTeacherId)
+        Set<Long> teacherIds = coursesById.values().stream()
+                .map(Course::getTeacherId)
+                .filter(id -> id != null)
                 .collect(Collectors.toSet());
 
         // Batch load teachers
@@ -145,13 +135,13 @@ public class StudentOverviewService implements GetStudentOverviewUseCase {
         // Build summaries
         return enrollments.stream()
                 .map(enrollment -> {
-                    SubjectGroup group = groupsById.get(enrollment.getGroupId());
-                    Subject subject = group != null ? subjectsById.get(group.getSubjectId()) : null;
-                    User teacher = group != null ? teachersById.get(group.getTeacherId()) : null;
+                    Course course = coursesById.get(enrollment.getCourseId());
+                    Subject subject = course != null ? subjectsById.get(course.getSubjectId()) : null;
+                    User teacher = course != null ? teachersById.get(course.getTeacherId()) : null;
 
                     return new EnrollmentSummary(
                             enrollment.getId(),
-                            enrollment.getGroupId(),
+                            enrollment.getCourseId(),
                             subject != null ? subject.getName() : "Unknown",
                             subject != null ? subject.getCode() : null,
                             teacher != null ? teacher.getFullName() : "Unknown",
@@ -171,28 +161,28 @@ public class StudentOverviewService implements GetStudentOverviewUseCase {
         }
 
         // Get group IDs from enrollments
-        List<Long> groupIds = activeEnrollments.stream()
-                .map(Enrollment::getGroupId)
+        List<Long> courseIds = activeEnrollments.stream()
+                .map(Enrollment::getCourseId)
                 .toList();
 
         // Get upcoming sessions for all groups
         List<Session> upcomingSessions = sessionRepository
-                .findUpcomingByGroupIds(groupIds, LocalDate.now(), limit);
+                .findUpcomingByCourseIds(courseIds, LocalDate.now(), limit);
 
         if (upcomingSessions.isEmpty()) {
             return List.of();
         }
 
         // Batch load groups
-        Set<Long> sessionGroupIds = upcomingSessions.stream()
-                .map(Session::getGroupId)
+        Set<Long> sessionCourseIds = upcomingSessions.stream()
+                .map(Session::getCourseId)
                 .collect(Collectors.toSet());
-        Map<Long, SubjectGroup> groupsById = groupRepository.findByIds(sessionGroupIds.stream().toList()).stream()
-                .collect(Collectors.toMap(SubjectGroup::getId, Function.identity()));
+        Map<Long, Course> coursesById = courseRepository.findByIds(sessionCourseIds.stream().toList()).stream()
+                .collect(Collectors.toMap(Course::getId, Function.identity()));
 
         // Batch load subjects
-        Set<Long> subjectIds = groupsById.values().stream()
-                .map(SubjectGroup::getSubjectId)
+        Set<Long> subjectIds = coursesById.values().stream()
+                .map(Course::getSubjectId)
                 .collect(Collectors.toSet());
         Map<Long, Subject> subjectsById = subjectRepository.findByIds(subjectIds.stream().toList()).stream()
                 .collect(Collectors.toMap(Subject::getId, Function.identity()));
@@ -204,20 +194,20 @@ public class StudentOverviewService implements GetStudentOverviewUseCase {
                 .map(SessionReservation::getSessionId)
                 .collect(Collectors.toSet());
 
-        // Build enrollment lookup by groupId for enriching with enrollmentId
-        Map<Long, Long> groupIdToEnrollmentId = activeEnrollments.stream()
-                .collect(Collectors.toMap(Enrollment::getGroupId, Enrollment::getId, (a, b) -> a));
+        // Build enrollment lookup by courseId for enriching with enrollmentId
+        Map<Long, Long> courseIdToEnrollmentId = activeEnrollments.stream()
+                .collect(Collectors.toMap(Enrollment::getCourseId, Enrollment::getId, (a, b) -> a));
 
         // Build summaries
         return upcomingSessions.stream()
                 .map(session -> {
-                    SubjectGroup group = groupsById.get(session.getGroupId());
-                    Subject subject = group != null ? subjectsById.get(group.getSubjectId()) : null;
+                    Course course = coursesById.get(session.getCourseId());
+                    Subject subject = course != null ? subjectsById.get(course.getSubjectId()) : null;
 
                     return new UpcomingSessionSummary(
                             session.getId(),
-                            session.getGroupId(),
-                            groupIdToEnrollmentId.get(session.getGroupId()),
+                            session.getCourseId(),
+                            courseIdToEnrollmentId.get(session.getCourseId()),
                             subject != null ? subject.getName() : "Unknown",
                             subject != null ? subject.getCode() : null,
                             session.getDate(),
@@ -231,36 +221,4 @@ public class StudentOverviewService implements GetStudentOverviewUseCase {
                 .toList();
     }
 
-    private PaymentSummary buildPaymentSummary(Long studentId) {
-        // Get pending payments
-        List<Payment> pendingPayments = paymentRepository
-                .findByStudentIdAndStatus(studentId, PaymentStatus.PENDING);
-
-        // Check for overdue
-        boolean hasOverdue = paymentRepository.hasOverduePayments(studentId, LocalDate.now());
-
-        // Calculate totals
-        int pendingCount = pendingPayments.size();
-        BigDecimal totalPending = pendingPayments.stream()
-                .map(Payment::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        // Find next due date
-        LocalDate nextDueDate = pendingPayments.stream()
-                .map(Payment::getDueDate)
-                .filter(d -> d != null)
-                .min(Comparator.naturalOrder())
-                .orElse(null);
-
-        // Can access resources = no overdue payments
-        boolean canAccess = !hasOverdue;
-
-        return new PaymentSummary(
-                canAccess,
-                hasOverdue,
-                pendingCount,
-                totalPending,
-                nextDueDate
-        );
-    }
 }

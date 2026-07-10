@@ -50,15 +50,11 @@ public interface SessionRepositoryPort {
     /**
      * Find all sessions for a specific group.
      *
-     * @param groupId Group ID
+     * @param courseId Group ID
      * @return List of sessions for the group
      */
-    List<Session> findByGroupId(Long groupId);
+    List<Session> findByCourseId(Long courseId);
 
-    /**
-     * Find all sessions for a given intensive course.
-     */
-    List<Session> findByIntensiveId(Long intensiveId);
 
     /**
      * Find all sessions for a specific subject.
@@ -105,28 +101,28 @@ public interface SessionRepositoryPort {
      * Check if there are any sessions for a group on a specific date and time range.
      * Used for conflict detection.
      *
-     * @param groupId Group ID
+     * @param courseId Group ID
      * @param date Session date
      * @param excludeSessionId Session ID to exclude from check (for updates)
      * @return true if there's a conflicting session
      */
-    boolean existsConflictingSession(Long groupId, LocalDate date, Long excludeSessionId);
+    boolean existsConflictingSession(Long courseId, LocalDate date, Long excludeSessionId);
 
     /**
      * Find upcoming scheduled sessions for multiple groups.
      * Used for student dashboard to show next sessions across all enrolled groups.
      *
-     * @param groupIds List of group IDs
+     * @param courseIds List of group IDs
      * @param fromDate Start date (inclusive)
      * @param limit Maximum number of sessions to return
      * @return List of upcoming sessions sorted by date ascending
      */
-    List<Session> findUpcomingByGroupIds(List<Long> groupIds, LocalDate fromDate, int limit);
+    List<Session> findUpcomingByCourseIds(List<Long> courseIds, LocalDate fromDate, int limit);
 
     /**
      * Find sessions by teacher ID and date.
      * Used for teacher conflict validation when creating sessions.
-     * Includes all session types (REGULAR, EXTRA, SCHEDULING) that are not cancelled.
+     * Includes all session types (REGULAR, EXTRA) that are not cancelled.
      *
      * @param teacherId Teacher ID
      * @param date Session date

@@ -1,7 +1,7 @@
 package com.acainfo.session.infrastructure.adapter.in.rest;
 
-import com.acainfo.group.application.port.in.GetGroupUseCase;
-import com.acainfo.group.domain.model.SubjectGroup;
+import com.acainfo.course.application.port.in.GetCourseUseCase;
+import com.acainfo.course.domain.model.Course;
 import com.acainfo.session.domain.model.Session;
 import com.acainfo.session.infrastructure.adapter.in.rest.dto.SessionResponse;
 import com.acainfo.session.infrastructure.mapper.SessionRestMapper;
@@ -33,7 +33,7 @@ public class SessionResponseEnricher {
 
     private final SessionRestMapper sessionRestMapper;
     private final GetSubjectUseCase getSubjectUseCase;
-    private final GetGroupUseCase getGroupUseCase;
+    private final GetCourseUseCase getCourseUseCase;
     private final GetUserProfileUseCase getUserProfileUseCase;
 
     /**
@@ -45,13 +45,13 @@ public class SessionResponseEnricher {
     public SessionResponse enrich(Session session) {
         Subject subject = getSubjectUseCase.getById(session.getSubjectId());
 
-        String groupName = null;
+        String courseName = null;
         String teacherName = null;
 
-        // Sessions may not have a group (e.g., SCHEDULING type sessions)
-        if (session.getGroupId() != null) {
-            SubjectGroup group = getGroupUseCase.getById(session.getGroupId());
-            groupName = group.getName();
+        // Defensive: tolerate sessions without a resolvable course
+        if (session.getCourseId() != null) {
+            Course group = getCourseUseCase.getById(session.getCourseId());
+            courseName = group.getName();
             User teacher = getUserProfileUseCase.getUserById(group.getTeacherId());
             teacherName = teacher.getFullName();
         }
@@ -60,7 +60,7 @@ public class SessionResponseEnricher {
                 session,
                 subject.getName(),
                 subject.getCode(),
-                groupName,
+                courseName,
                 teacherName
         );
     }
@@ -82,8 +82,8 @@ public class SessionResponseEnricher {
                 .map(Session::getSubjectId)
                 .collect(Collectors.toSet());
 
-        Set<Long> groupIds = sessions.stream()
-                .map(Session::getGroupId)
+        Set<Long> courseIds = sessions.stream()
+                .map(Session::getCourseId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
@@ -93,13 +93,13 @@ public class SessionResponseEnricher {
                 .collect(Collectors.toMap(Subject::getId, Function.identity()));
 
         // Fetch groups (only for sessions that have a group)
-        Map<Long, SubjectGroup> groupsById = groupIds.stream()
-                .map(getGroupUseCase::getById)
-                .collect(Collectors.toMap(SubjectGroup::getId, Function.identity()));
+        Map<Long, Course> groupsById = courseIds.stream()
+                .map(getCourseUseCase::getById)
+                .collect(Collectors.toMap(Course::getId, Function.identity()));
 
         // Collect teacher IDs from groups
         Set<Long> teacherIds = groupsById.values().stream()
-                .map(SubjectGroup::getTeacherId)
+                .map(Course::getTeacherId)
                 .collect(Collectors.toSet());
 
         // Fetch teachers
@@ -112,13 +112,13 @@ public class SessionResponseEnricher {
                 .map(session -> {
                     Subject subject = subjectsById.get(session.getSubjectId());
 
-                    String groupName = null;
+                    String courseName = null;
                     String teacherName = null;
 
-                    if (session.getGroupId() != null) {
-                        SubjectGroup group = groupsById.get(session.getGroupId());
+                    if (session.getCourseId() != null) {
+                        Course group = groupsById.get(session.getCourseId());
                         if (group != null) {
-                            groupName = group.getName();
+                            courseName = group.getName();
                             User teacher = teachersById.get(group.getTeacherId());
                             if (teacher != null) {
                                 teacherName = teacher.getFullName();
@@ -130,7 +130,7 @@ public class SessionResponseEnricher {
                             session,
                             subject.getName(),
                             subject.getCode(),
-                            groupName,
+                            courseName,
                             teacherName
                     );
                 })

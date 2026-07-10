@@ -20,10 +20,10 @@ public interface EnrollStudentUseCase {
      * Enroll a student in a group.
      * If the group is full, the student is added to the waiting list.
      *
-     * @param command Enrollment data (studentId, groupId)
+     * @param command Enrollment data (studentId, courseId)
      * @return The created enrollment (ACTIVE or WAITING_LIST)
      * @throws com.acainfo.enrollment.domain.exception.AlreadyEnrolledException if student already enrolled
-     * @throws com.acainfo.group.domain.exception.GroupNotFoundException if group not found
+     * @throws com.acainfo.course.domain.exception.CourseNotFoundException if group not found
      * @throws com.acainfo.user.domain.exception.UserNotFoundException if student not found
      */
     Enrollment enroll(EnrollStudentCommand command);

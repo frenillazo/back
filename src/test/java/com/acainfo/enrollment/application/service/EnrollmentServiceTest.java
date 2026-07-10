@@ -1,19 +1,19 @@
 package com.acainfo.enrollment.application.service;
 
-import com.acainfo.enrollment.application.dto.ChangeGroupCommand;
+import com.acainfo.enrollment.application.dto.ChangeCourseCommand;
 import com.acainfo.enrollment.application.dto.EnrollStudentCommand;
 import com.acainfo.enrollment.application.port.out.AutoReservationPort;
 import com.acainfo.enrollment.application.port.out.EnrollmentRepositoryPort;
 import com.acainfo.enrollment.domain.exception.AlreadyEnrolledException;
 import com.acainfo.enrollment.domain.exception.EnrollmentNotFoundException;
-import com.acainfo.enrollment.domain.exception.GroupFullException;
+import com.acainfo.enrollment.domain.exception.CourseFullException;
 import com.acainfo.enrollment.domain.exception.InvalidEnrollmentStateException;
 import com.acainfo.enrollment.domain.model.Enrollment;
 import com.acainfo.enrollment.domain.model.EnrollmentStatus;
-import com.acainfo.group.application.port.out.GroupRepositoryPort;
-import com.acainfo.group.domain.exception.GroupNotFoundException;
-import com.acainfo.group.domain.model.GroupStatus;
-import com.acainfo.group.domain.model.SubjectGroup;
+import com.acainfo.course.application.port.out.CourseRepositoryPort;
+import com.acainfo.course.domain.exception.CourseNotFoundException;
+import com.acainfo.course.domain.model.CourseStatus;
+import com.acainfo.course.domain.model.Course;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +23,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -58,7 +57,7 @@ class EnrollmentServiceTest {
     private EnrollmentRepositoryPort enrollmentRepositoryPort;
 
     @Mock
-    private GroupRepositoryPort groupRepositoryPort;
+    private CourseRepositoryPort courseRepositoryPort;
 
     @Mock
     private WaitingListService waitingListService;
@@ -69,21 +68,20 @@ class EnrollmentServiceTest {
     @InjectMocks
     private EnrollmentService enrollmentService;
 
-    private SubjectGroup.SubjectGroupBuilder openGroupBuilder() {
-        return SubjectGroup.builder()
+    private Course.CourseBuilder openGroupBuilder() {
+        return Course.builder()
                 .id(GROUP_ID)
                 .name("Algebra grupo 1 25-26")
                 .subjectId(5L)
                 .teacherId(7L)
-                .status(GroupStatus.OPEN);
+                .status(CourseStatus.OPEN);
     }
 
     private Enrollment.EnrollmentBuilder enrollmentBuilder(EnrollmentStatus status) {
         return Enrollment.builder()
                 .id(ENROLLMENT_ID)
                 .studentId(STUDENT_ID)
-                .groupId(GROUP_ID)
-                .pricePerHour(new BigDecimal("15.00"))
+                .courseId(GROUP_ID)
                 .status(status)
                 .enrolledAt(LocalDateTime.now().minusDays(3));
     }
@@ -94,11 +92,10 @@ class EnrollmentServiceTest {
     class Enroll {
 
         @Test
-        void shouldCreatePendingApprovalEnrollmentWithGroupPriceWhenEnrolling() {
-            SubjectGroup group = openGroupBuilder()
-                    .pricePerHour(new BigDecimal("18.50"))
-                    .build();
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(group));
+        void shouldCreatePendingApprovalEnrollmentWhenEnrolling() {
+            // Unified course model: enrollments no longer copy any price from the course.
+            Course group = openGroupBuilder().build();
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(group));
             when(enrollmentRepositoryPort.existsActiveOrWaitingOrPendingEnrollment(STUDENT_ID, GROUP_ID))
                     .thenReturn(false);
             when(enrollmentRepositoryPort.save(any(Enrollment.class)))
@@ -113,49 +110,30 @@ class EnrollmentServiceTest {
             Enrollment saved = captor.getValue();
 
             assertThat(saved.getStudentId()).isEqualTo(STUDENT_ID);
-            assertThat(saved.getGroupId()).isEqualTo(GROUP_ID);
+            assertThat(saved.getCourseId()).isEqualTo(GROUP_ID);
             assertThat(saved.getStatus()).isEqualTo(EnrollmentStatus.PENDING_APPROVAL);
-            assertThat(saved.getPricePerHour()).isEqualByComparingTo("18.50");
             assertThat(saved.getEnrolledAt()).isNotNull()
                     .isAfterOrEqualTo(before)
                     .isBeforeOrEqualTo(after);
             assertThat(saved.getWaitingListPosition()).isNull();
-            assertThat(saved.getIntensiveId()).isNull();
             assertThat(result).isSameAs(saved);
         }
 
         @Test
-        void shouldUseDefaultPricePerHourWhenGroupHasNoCustomPrice() {
-            SubjectGroup group = openGroupBuilder()
-                    .pricePerHour(null)
-                    .build();
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(group));
-            when(enrollmentRepositoryPort.existsActiveOrWaitingOrPendingEnrollment(STUDENT_ID, GROUP_ID))
-                    .thenReturn(false);
-            when(enrollmentRepositoryPort.save(any(Enrollment.class)))
-                    .thenAnswer(invocation -> invocation.getArgument(0));
-
-            Enrollment result = enrollmentService.enroll(new EnrollStudentCommand(STUDENT_ID, GROUP_ID));
-
-            assertThat(result.getPricePerHour())
-                    .isEqualByComparingTo(SubjectGroup.DEFAULT_PRICE_PER_HOUR);
-        }
-
-        @Test
-        void shouldThrowGroupNotFoundExceptionWhenEnrollingInNonExistentGroup() {
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.empty());
+        void shouldThrowCourseNotFoundExceptionWhenEnrollingInNonExistentGroup() {
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> enrollmentService.enroll(new EnrollStudentCommand(STUDENT_ID, GROUP_ID)))
-                    .isInstanceOf(GroupNotFoundException.class)
-                    .hasMessageContaining("Group not found with ID: " + GROUP_ID);
+                    .isInstanceOf(CourseNotFoundException.class)
+                    .hasMessageContaining("Course not found with ID: " + GROUP_ID);
 
             verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));
         }
 
         @Test
         void shouldThrowAlreadyEnrolledExceptionWhenStudentAlreadyHasActiveWaitingOrPendingEnrollment() {
-            SubjectGroup group = openGroupBuilder().build();
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(group));
+            Course group = openGroupBuilder().build();
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(group));
             when(enrollmentRepositoryPort.existsActiveOrWaitingOrPendingEnrollment(STUDENT_ID, GROUP_ID))
                     .thenReturn(true);
 
@@ -170,11 +148,10 @@ class EnrollmentServiceTest {
         void shouldStillCreateEnrollmentWhenGroupIsNotOpen() {
             // CURRENT behavior: enroll() never checks the group status, so a CLOSED
             // (or CANCELLED) group still accepts enrollment requests. Captured as-is.
-            SubjectGroup closedGroup = openGroupBuilder()
-                    .status(GroupStatus.CLOSED)
-                    .pricePerHour(new BigDecimal("20.00"))
+            Course closedGroup = openGroupBuilder()
+                    .status(CourseStatus.CLOSED)
                     .build();
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(closedGroup));
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(closedGroup));
             when(enrollmentRepositoryPort.existsActiveOrWaitingOrPendingEnrollment(STUDENT_ID, GROUP_ID))
                     .thenReturn(false);
             when(enrollmentRepositoryPort.save(any(Enrollment.class)))
@@ -183,7 +160,6 @@ class EnrollmentServiceTest {
             Enrollment result = enrollmentService.enroll(new EnrollStudentCommand(STUDENT_ID, GROUP_ID));
 
             assertThat(result.getStatus()).isEqualTo(EnrollmentStatus.PENDING_APPROVAL);
-            assertThat(result.getPricePerHour()).isEqualByComparingTo("20.00");
             verify(enrollmentRepositoryPort).save(any(Enrollment.class));
         }
     }
@@ -297,7 +273,7 @@ class EnrollmentServiceTest {
         }
     }
 
-    // ==================== changeGroup ====================
+    // ==================== changeCourse ====================
 
     @Nested
     class ChangeGroup {
@@ -305,20 +281,20 @@ class EnrollmentServiceTest {
         @Test
         void shouldChangeGroupAndPromoteNextFromOldGroupWhenTargetGroupHasCapacity() {
             Enrollment active = enrollmentBuilder(EnrollmentStatus.ACTIVE).build();
-            SubjectGroup newGroup = openGroupBuilder()
+            Course newGroup = openGroupBuilder()
                     .id(NEW_GROUP_ID)
-                    .capacity(null) // default capacity = 24
+                    .capacity(24)
                     .build();
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(active));
-            when(groupRepositoryPort.findById(NEW_GROUP_ID)).thenReturn(Optional.of(newGroup));
-            when(enrollmentRepositoryPort.countActiveByGroupId(NEW_GROUP_ID)).thenReturn(23L);
+            when(courseRepositoryPort.findById(NEW_GROUP_ID)).thenReturn(Optional.of(newGroup));
+            when(enrollmentRepositoryPort.countActiveByCourseId(NEW_GROUP_ID)).thenReturn(23L);
             when(enrollmentRepositoryPort.save(any(Enrollment.class)))
                     .thenAnswer(invocation -> invocation.getArgument(0));
 
-            Enrollment result = enrollmentService.changeGroup(
-                    new ChangeGroupCommand(ENROLLMENT_ID, NEW_GROUP_ID));
+            Enrollment result = enrollmentService.changeCourse(
+                    new ChangeCourseCommand(ENROLLMENT_ID, NEW_GROUP_ID));
 
-            assertThat(result.getGroupId()).isEqualTo(NEW_GROUP_ID);
+            assertThat(result.getCourseId()).isEqualTo(NEW_GROUP_ID);
             assertThat(result.getStatus()).isEqualTo(EnrollmentStatus.ACTIVE);
             verify(enrollmentRepositoryPort).save(active);
             // Promotion happens on the OLD group's waiting list (a seat was freed there)
@@ -326,43 +302,46 @@ class EnrollmentServiceTest {
         }
 
         @Test
-        void shouldThrowGroupFullExceptionWhenTargetGroupIsAtCustomCapacity() {
+        void shouldThrowCourseFullExceptionWhenTargetGroupIsAtCustomCapacity() {
             Enrollment active = enrollmentBuilder(EnrollmentStatus.ACTIVE).build();
-            SubjectGroup newGroup = openGroupBuilder()
+            Course newGroup = openGroupBuilder()
                     .id(NEW_GROUP_ID)
                     .capacity(10)
                     .build();
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(active));
-            when(groupRepositoryPort.findById(NEW_GROUP_ID)).thenReturn(Optional.of(newGroup));
-            when(enrollmentRepositoryPort.countActiveByGroupId(NEW_GROUP_ID)).thenReturn(10L);
+            when(courseRepositoryPort.findById(NEW_GROUP_ID)).thenReturn(Optional.of(newGroup));
+            when(enrollmentRepositoryPort.countActiveByCourseId(NEW_GROUP_ID)).thenReturn(10L);
 
-            assertThatThrownBy(() -> enrollmentService.changeGroup(
-                    new ChangeGroupCommand(ENROLLMENT_ID, NEW_GROUP_ID)))
-                    .isInstanceOf(GroupFullException.class)
-                    .hasMessageContaining("Group " + NEW_GROUP_ID + " is full");
+            assertThatThrownBy(() -> enrollmentService.changeCourse(
+                    new ChangeCourseCommand(ENROLLMENT_ID, NEW_GROUP_ID)))
+                    .isInstanceOf(CourseFullException.class)
+                    .hasMessageContaining("Course " + NEW_GROUP_ID + " is full");
 
-            assertThat(active.getGroupId()).isEqualTo(GROUP_ID);
+            assertThat(active.getCourseId()).isEqualTo(GROUP_ID);
             verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));
             verifyNoInteractions(waitingListService);
         }
 
         @Test
-        void shouldThrowGroupFullExceptionWhenTargetGroupIsAtDefaultCapacity() {
+        void shouldChangeCourseWithoutCapacityCheckWhenTargetCourseHasNullCapacity() {
+            // Unified course model: capacity == null means unlimited (virtual/dual),
+            // so occupancy is never queried and the change always succeeds.
             Enrollment active = enrollmentBuilder(EnrollmentStatus.ACTIVE).build();
-            SubjectGroup newGroup = openGroupBuilder()
+            Course newGroup = openGroupBuilder()
                     .id(NEW_GROUP_ID)
-                    .capacity(null) // default capacity = 24
+                    .capacity(null)
                     .build();
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(active));
-            when(groupRepositoryPort.findById(NEW_GROUP_ID)).thenReturn(Optional.of(newGroup));
-            when(enrollmentRepositoryPort.countActiveByGroupId(NEW_GROUP_ID))
-                    .thenReturn((long) SubjectGroup.DEFAULT_MAX_CAPACITY);
+            when(courseRepositoryPort.findById(NEW_GROUP_ID)).thenReturn(Optional.of(newGroup));
+            when(enrollmentRepositoryPort.save(any(Enrollment.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
 
-            assertThatThrownBy(() -> enrollmentService.changeGroup(
-                    new ChangeGroupCommand(ENROLLMENT_ID, NEW_GROUP_ID)))
-                    .isInstanceOf(GroupFullException.class);
+            Enrollment result = enrollmentService.changeCourse(
+                    new ChangeCourseCommand(ENROLLMENT_ID, NEW_GROUP_ID));
 
-            verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));
+            assertThat(result.getCourseId()).isEqualTo(NEW_GROUP_ID);
+            verify(enrollmentRepositoryPort, never()).countActiveByCourseId(anyLong());
+            verify(waitingListService).promoteNextFromWaitingList(GROUP_ID);
         }
 
         @Test
@@ -372,26 +351,26 @@ class EnrollmentServiceTest {
                     .build();
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(waiting));
 
-            assertThatThrownBy(() -> enrollmentService.changeGroup(
-                    new ChangeGroupCommand(ENROLLMENT_ID, NEW_GROUP_ID)))
+            assertThatThrownBy(() -> enrollmentService.changeCourse(
+                    new ChangeCourseCommand(ENROLLMENT_ID, NEW_GROUP_ID)))
                     .isInstanceOf(InvalidEnrollmentStateException.class)
                     .hasMessageContaining("Only ACTIVE enrollments can change group")
                     .hasMessageContaining("WAITING_LIST");
 
-            verify(groupRepositoryPort, never()).findById(anyLong());
+            verify(courseRepositoryPort, never()).findById(anyLong());
             verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));
         }
 
         @Test
-        void shouldThrowGroupNotFoundExceptionWhenTargetGroupDoesNotExist() {
+        void shouldThrowCourseNotFoundExceptionWhenTargetGroupDoesNotExist() {
             Enrollment active = enrollmentBuilder(EnrollmentStatus.ACTIVE).build();
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(active));
-            when(groupRepositoryPort.findById(NEW_GROUP_ID)).thenReturn(Optional.empty());
+            when(courseRepositoryPort.findById(NEW_GROUP_ID)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> enrollmentService.changeGroup(
-                    new ChangeGroupCommand(ENROLLMENT_ID, NEW_GROUP_ID)))
-                    .isInstanceOf(GroupNotFoundException.class)
-                    .hasMessageContaining("Group not found with ID: " + NEW_GROUP_ID);
+            assertThatThrownBy(() -> enrollmentService.changeCourse(
+                    new ChangeCourseCommand(ENROLLMENT_ID, NEW_GROUP_ID)))
+                    .isInstanceOf(CourseNotFoundException.class)
+                    .hasMessageContaining("Course not found with ID: " + NEW_GROUP_ID);
 
             verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));
             verifyNoInteractions(waitingListService);
@@ -401,11 +380,11 @@ class EnrollmentServiceTest {
         void shouldThrowEnrollmentNotFoundExceptionWhenChangingGroupOfNonExistentEnrollment() {
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> enrollmentService.changeGroup(
-                    new ChangeGroupCommand(ENROLLMENT_ID, NEW_GROUP_ID)))
+            assertThatThrownBy(() -> enrollmentService.changeCourse(
+                    new ChangeCourseCommand(ENROLLMENT_ID, NEW_GROUP_ID)))
                     .isInstanceOf(EnrollmentNotFoundException.class);
 
-            verifyNoInteractions(groupRepositoryPort);
+            verifyNoInteractions(courseRepositoryPort);
             verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));
         }
     }

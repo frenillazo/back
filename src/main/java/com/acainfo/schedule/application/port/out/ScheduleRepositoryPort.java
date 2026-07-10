@@ -42,10 +42,10 @@ public interface ScheduleRepositoryPort {
     /**
      * Find all schedules for a specific group.
      *
-     * @param groupId Group ID
+     * @param courseId Group ID
      * @return List of schedules for the group
      */
-    List<Schedule> findByGroupId(Long groupId);
+    List<Schedule> findByCourseId(Long courseId);
 
     /**
      * Delete a schedule by ID.

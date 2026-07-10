@@ -5,6 +5,6 @@ package com.acainfo.enrollment.application.dto;
  */
 public record EnrollStudentCommand(
         Long studentId,
-        Long groupId
+        Long courseId
 ) {
 }

@@ -1,6 +1,6 @@
 package com.acainfo.schedule.infrastructure.mapper;
 
-import com.acainfo.group.domain.model.SubjectGroup;
+import com.acainfo.course.domain.model.Course;
 import com.acainfo.schedule.application.dto.CreateScheduleCommand;
 import com.acainfo.schedule.application.dto.UpdateScheduleCommand;
 import com.acainfo.schedule.domain.model.Schedule;
@@ -47,14 +47,14 @@ public interface ScheduleRestMapper {
      */
     default ScheduleEnrichedResponse toEnrichedResponse(
             Schedule schedule,
-            SubjectGroup group,
+            Course group,
             String subjectName,
             String subjectCode,
             String teacherName
     ) {
         return ScheduleEnrichedResponse.builder()
                 .id(schedule.getId())
-                .groupId(schedule.getGroupId())
+                .courseId(schedule.getCourseId())
                 .dayOfWeek(schedule.getDayOfWeek())
                 .startTime(schedule.getStartTime())
                 .endTime(schedule.getEndTime())
@@ -63,8 +63,8 @@ public interface ScheduleRestMapper {
                 .durationMinutes(schedule.getDurationMinutes())
                 .createdAt(schedule.getCreatedAt())
                 .updatedAt(schedule.getUpdatedAt())
-                .groupStatus(group.getStatus())
-                .pricePerHour(group.getEffectivePricePerHour())
+                .courseStatus(group.getStatus())
+                .pricePerMonth(group.getPricePerMonth())
                 .subjectId(group.getSubjectId())
                 .subjectName(subjectName)
                 .subjectCode(subjectCode)

@@ -22,7 +22,7 @@ public interface GenerateReservationsUseCase {
     /**
      * Generate reservations for all enrolled students when a session is created.
      *
-     * @param command Generation data (sessionId, groupId)
+     * @param command Generation data (sessionId, courseId)
      * @return List of created reservations
      */
     List<SessionReservation> generate(GenerateReservationsCommand command);

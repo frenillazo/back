@@ -15,10 +15,10 @@ public interface WaitingListUseCase {
     /**
      * Get the waiting list for a group, ordered by position (FIFO).
      *
-     * @param groupId Group ID
+     * @param courseId Group ID
      * @return List of enrollments in waiting list, ordered by position
      */
-    List<Enrollment> getWaitingListByGroupId(Long groupId);
+    List<Enrollment> getWaitingListByCourseId(Long courseId);
 
     /**
      * Get all waiting list positions for a student across all groups.
@@ -42,8 +42,8 @@ public interface WaitingListUseCase {
      * Promote the next student from waiting list to active enrollment.
      * Called automatically when a seat becomes available.
      *
-     * @param groupId Group ID
+     * @param courseId Group ID
      * @return The promoted enrollment, or null if waiting list is empty
      */
-    Enrollment promoteNextFromWaitingList(Long groupId);
+    Enrollment promoteNextFromWaitingList(Long courseId);
 }

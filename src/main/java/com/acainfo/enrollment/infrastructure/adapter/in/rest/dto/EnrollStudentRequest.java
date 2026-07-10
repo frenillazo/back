@@ -18,5 +18,5 @@ public class EnrollStudentRequest {
     private Long studentId;
 
     @NotNull(message = "Group ID is required")
-    private Long groupId;
+    private Long courseId;
 }

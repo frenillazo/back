@@ -2,7 +2,7 @@ package com.acainfo.reservation.application.service;
 
 import com.acainfo.enrollment.application.port.out.EnrollmentRepositoryPort;
 import com.acainfo.enrollment.domain.model.Enrollment;
-import com.acainfo.group.application.port.out.GroupRepositoryPort;
+import com.acainfo.course.application.port.out.CourseRepositoryPort;
 import com.acainfo.reservation.application.dto.CreateReservationCommand;
 import com.acainfo.reservation.application.dto.SwitchSessionCommand;
 import com.acainfo.reservation.application.port.in.CancelReservationUseCase;
@@ -45,7 +45,7 @@ public class ReservationService implements
     private final ReservationRepositoryPort reservationRepositoryPort;
     private final SessionRepositoryPort sessionRepositoryPort;
     private final EnrollmentRepositoryPort enrollmentRepositoryPort;
-    private final GroupRepositoryPort groupRepositoryPort;
+    private final CourseRepositoryPort courseRepositoryPort;
 
     // ==================== CreateReservationUseCase ====================
 
@@ -205,9 +205,9 @@ public class ReservationService implements
     }
 
     private Long getSubjectIdFromEnrollment(Enrollment enrollment) {
-        return groupRepositoryPort.findById(enrollment.getGroupId())
+        return courseRepositoryPort.findById(enrollment.getCourseId())
                 .orElseThrow(() -> new InvalidReservationStateException(
-                        "Group not found: " + enrollment.getGroupId()))
+                        "Course not found: " + enrollment.getCourseId()))
                 .getSubjectId();
     }
 

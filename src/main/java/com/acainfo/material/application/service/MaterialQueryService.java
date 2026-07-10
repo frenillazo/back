@@ -8,8 +8,7 @@ import com.acainfo.material.domain.model.Material;
 import com.acainfo.enrollment.application.port.out.EnrollmentRepositoryPort;
 import com.acainfo.enrollment.domain.model.Enrollment;
 import com.acainfo.enrollment.domain.model.EnrollmentStatus;
-import com.acainfo.group.application.port.in.GetGroupUseCase;
-import com.acainfo.payment.application.port.in.CheckPaymentStatusUseCase;
+import com.acainfo.course.application.port.in.GetCourseUseCase;
 import com.acainfo.shared.application.dto.PageResponse;
 import com.acainfo.user.application.port.out.UserRepositoryPort;
 import com.acainfo.user.domain.model.User;
@@ -36,8 +35,7 @@ public class MaterialQueryService implements GetMaterialUseCase {
     private final MaterialRepositoryPort materialRepository;
     private final UserRepositoryPort userRepository;
     private final EnrollmentRepositoryPort enrollmentRepository;
-    private final GetGroupUseCase getGroupUseCase;
-    private final CheckPaymentStatusUseCase checkPaymentStatus;
+    private final GetCourseUseCase getCourseUseCase;
 
     @Override
     public Material getById(Long id) {
@@ -86,16 +84,13 @@ public class MaterialQueryService implements GetMaterialUseCase {
             return false;
         }
 
-        // Students need active enrollment and payments up to date
+        // Students need an ACTIVE enrollment in a course of the material's subject
         if (user.isStudent()) {
-            boolean hasActiveEnrollment = enrollmentRepository
+            return enrollmentRepository
                     .findByStudentIdAndStatus(userId, EnrollmentStatus.ACTIVE)
                     .stream()
-                    .anyMatch(e -> true); // Simplified - should check subject
-
-            boolean paymentsOk = checkPaymentStatus.canAccessResources(userId);
-
-            return hasActiveEnrollment && paymentsOk;
+                    .anyMatch(e -> material.getSubjectId()
+                            .equals(getCourseUseCase.getById(e.getCourseId()).getSubjectId()));
         }
 
         return false;
@@ -115,7 +110,7 @@ public class MaterialQueryService implements GetMaterialUseCase {
 
         // Get subject IDs from groups
         List<Long> subjectIds = activeEnrollments.stream()
-                .map(enrollment -> getGroupUseCase.getById(enrollment.getGroupId()).getSubjectId())
+                .map(enrollment -> getCourseUseCase.getById(enrollment.getCourseId()).getSubjectId())
                 .distinct()
                 .toList();
 

@@ -2,7 +2,6 @@ package com.acainfo.reservation.infrastructure.adapter.out.persistence.repositor
 
 import com.acainfo.reservation.application.dto.ReservationFilters;
 import com.acainfo.reservation.application.port.out.ReservationRepositoryPort;
-import com.acainfo.reservation.domain.model.OnlineRequestStatus;
 import com.acainfo.reservation.domain.model.ReservationMode;
 import com.acainfo.reservation.domain.model.ReservationStatus;
 import com.acainfo.reservation.domain.model.SessionReservation;
@@ -95,19 +94,7 @@ public class ReservationRepositoryAdapter implements ReservationRepositoryPort {
         );
     }
 
-    @Override
-    public List<SessionReservation> findPendingOnlineRequestsByTeacherId(Long teacherId) {
-        return reservationPersistenceMapper.toDomainList(
-                jpaReservationRepository.findPendingOnlineRequestsByTeacherId(teacherId)
-        );
-    }
 
-    @Override
-    public List<SessionReservation> findByOnlineRequestStatus(OnlineRequestStatus status) {
-        return reservationPersistenceMapper.toDomainList(
-                jpaReservationRepository.findByOnlineRequestStatus(status)
-        );
-    }
 
     @Override
     public boolean existsByStudentIdAndSessionId(Long studentId, Long sessionId) {
@@ -124,12 +111,6 @@ public class ReservationRepositoryAdapter implements ReservationRepositoryPort {
         return jpaReservationRepository.countBySessionIdAndStatusAndMode(sessionId, status, mode);
     }
 
-    @Override
-    public List<SessionReservation> findBySessionIdAndAttendanceStatusIsNull(Long sessionId) {
-        return reservationPersistenceMapper.toDomainList(
-                jpaReservationRepository.findBySessionIdAndAttendanceStatusIsNull(sessionId)
-        );
-    }
 
     @Override
     public void delete(Long id) {

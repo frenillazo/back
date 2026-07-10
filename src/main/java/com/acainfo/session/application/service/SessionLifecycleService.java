@@ -105,7 +105,7 @@ public class SessionLifecycleService implements SessionLifecycleUseCase {
         // Create new session with the new date/time
         Session newSession = Session.builder()
                 .subjectId(originalSession.getSubjectId())
-                .groupId(originalSession.getGroupId())
+                .courseId(originalSession.getCourseId())
                 .scheduleId(originalSession.getScheduleId())
                 .classroom(command.newClassroom() != null ? command.newClassroom() : originalSession.getClassroom())
                 .date(command.newDate())

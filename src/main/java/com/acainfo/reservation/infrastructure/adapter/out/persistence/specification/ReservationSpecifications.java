@@ -1,8 +1,6 @@
 package com.acainfo.reservation.infrastructure.adapter.out.persistence.specification;
 
 import com.acainfo.reservation.application.dto.ReservationFilters;
-import com.acainfo.reservation.domain.model.AttendanceStatus;
-import com.acainfo.reservation.domain.model.OnlineRequestStatus;
 import com.acainfo.reservation.domain.model.ReservationMode;
 import com.acainfo.reservation.domain.model.ReservationStatus;
 import com.acainfo.reservation.infrastructure.adapter.out.persistence.entity.SessionReservationJpaEntity;
@@ -56,25 +54,6 @@ public class ReservationSpecifications {
             // Filter by mode
             if (filters.mode() != null) {
                 predicates.add(criteriaBuilder.equal(root.get("mode"), filters.mode()));
-            }
-
-            // Filter by online request status
-            if (filters.onlineRequestStatus() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("onlineRequestStatus"), filters.onlineRequestStatus()));
-            }
-
-            // Filter by attendance status
-            if (filters.attendanceStatus() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("attendanceStatus"), filters.attendanceStatus()));
-            }
-
-            // Filter by hasAttendanceRecorded
-            if (filters.hasAttendanceRecorded() != null) {
-                if (filters.hasAttendanceRecorded()) {
-                    predicates.add(criteriaBuilder.isNotNull(root.get("attendanceStatus")));
-                } else {
-                    predicates.add(criteriaBuilder.isNull(root.get("attendanceStatus")));
-                }
             }
 
             // Combine all predicates with AND
@@ -131,30 +110,6 @@ public class ReservationSpecifications {
     }
 
     /**
-     * Specification to find reservations by online request status.
-     */
-    public static Specification<SessionReservationJpaEntity> hasOnlineRequestStatus(OnlineRequestStatus status) {
-        return (root, query, criteriaBuilder) -> {
-            if (status == null) {
-                return criteriaBuilder.conjunction();
-            }
-            return criteriaBuilder.equal(root.get("onlineRequestStatus"), status);
-        };
-    }
-
-    /**
-     * Specification to find reservations by attendance status.
-     */
-    public static Specification<SessionReservationJpaEntity> hasAttendanceStatus(AttendanceStatus status) {
-        return (root, query, criteriaBuilder) -> {
-            if (status == null) {
-                return criteriaBuilder.conjunction();
-            }
-            return criteriaBuilder.equal(root.get("attendanceStatus"), status);
-        };
-    }
-
-    /**
      * Specification to find confirmed reservations.
      */
     public static Specification<SessionReservationJpaEntity> isConfirmed() {
@@ -173,28 +128,5 @@ public class ReservationSpecifications {
      */
     public static Specification<SessionReservationJpaEntity> isOnline() {
         return hasMode(ReservationMode.ONLINE);
-    }
-
-    /**
-     * Specification to find reservations with pending online requests.
-     */
-    public static Specification<SessionReservationJpaEntity> hasPendingOnlineRequest() {
-        return hasOnlineRequestStatus(OnlineRequestStatus.PENDING);
-    }
-
-    /**
-     * Specification to find reservations without attendance recorded.
-     */
-    public static Specification<SessionReservationJpaEntity> attendanceNotRecorded() {
-        return (root, query, criteriaBuilder) ->
-                criteriaBuilder.isNull(root.get("attendanceStatus"));
-    }
-
-    /**
-     * Specification to find reservations with attendance recorded.
-     */
-    public static Specification<SessionReservationJpaEntity> attendanceRecorded() {
-        return (root, query, criteriaBuilder) ->
-                criteriaBuilder.isNotNull(root.get("attendanceStatus"));
     }
 }

@@ -1,5 +1,6 @@
 package com.acainfo.material.application.service;
 
+import com.acainfo.course.application.port.out.CourseRepositoryPort;
 import com.acainfo.material.application.dto.MaterialDownload;
 import com.acainfo.material.application.port.in.DownloadMaterialUseCase;
 import com.acainfo.material.application.port.in.PreviewMaterialUseCase;
@@ -10,7 +11,6 @@ import com.acainfo.material.domain.exception.MaterialNotFoundException;
 import com.acainfo.material.domain.model.Material;
 import com.acainfo.enrollment.application.port.out.EnrollmentRepositoryPort;
 import com.acainfo.enrollment.domain.model.EnrollmentStatus;
-import com.acainfo.payment.application.port.in.CheckPaymentStatusUseCase;
 import com.acainfo.user.application.port.out.UserRepositoryPort;
 import com.acainfo.user.domain.model.User;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +27,7 @@ import java.io.InputStream;
  * <p>Access rules:</p>
  * <ul>
  *   <li>Admins and teachers can always download</li>
- *   <li>Students need active enrollment in a group of the subject</li>
- *   <li>Students need payments up to date (no overdue payments)</li>
+ *   <li>Students need an ACTIVE enrollment in a course of the material's subject</li>
  * </ul>
  */
 @Slf4j
@@ -41,7 +40,7 @@ public class MaterialDownloadService implements DownloadMaterialUseCase, Preview
     private final FileStoragePort fileStorage;
     private final UserRepositoryPort userRepository;
     private final EnrollmentRepositoryPort enrollmentRepository;
-    private final CheckPaymentStatusUseCase checkPaymentStatus;
+    private final CourseRepositoryPort courseRepository;
 
     @Override
     public MaterialDownload download(Long materialId, Long userId) {
@@ -118,40 +117,22 @@ public class MaterialDownloadService implements DownloadMaterialUseCase, Preview
             return false;
         }
 
-        // Students need active enrollment in a group of the subject + payments up to date
+        // Students need an ACTIVE enrollment in a course of the material's subject
         if (user.isStudent()) {
-            return hasActiveEnrollmentInSubject(userId, material.getSubjectId())
-                    && hasPaymentsUpToDate(userId);
+            return hasActiveEnrollmentInSubject(userId, material.getSubjectId());
         }
 
         return false;
     }
 
     /**
-     * Check if student has active enrollment in any group of the subject.
+     * Check if student has an ACTIVE enrollment in any course of the subject.
      */
     private boolean hasActiveEnrollmentInSubject(Long studentId, Long subjectId) {
-        // Get all active enrollments for student
         return enrollmentRepository.findByStudentIdAndStatus(studentId, EnrollmentStatus.ACTIVE)
                 .stream()
-                .anyMatch(enrollment -> isEnrollmentForSubject(enrollment.getGroupId(), subjectId));
-    }
-
-    /**
-     * Check if a group belongs to a subject.
-     * This is a simplified check - in a real implementation we'd query the group.
-     */
-    private boolean isEnrollmentForSubject(Long groupId, Long subjectId) {
-        // TODO: This should query GroupRepositoryPort to check if group belongs to subject
-        // For now, we assume enrollment gives access to all materials
-        // This will be refined when we have proper cross-module queries
-        return true;
-    }
-
-    /**
-     * Check if student has payments up to date (no overdue).
-     */
-    private boolean hasPaymentsUpToDate(Long studentId) {
-        return checkPaymentStatus.canAccessResources(studentId);
+                .anyMatch(enrollment -> courseRepository.findById(enrollment.getCourseId())
+                        .map(course -> subjectId.equals(course.getSubjectId()))
+                        .orElse(false));
     }
 }

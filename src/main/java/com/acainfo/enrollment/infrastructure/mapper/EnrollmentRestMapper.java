@@ -1,9 +1,9 @@
 package com.acainfo.enrollment.infrastructure.mapper;
 
-import com.acainfo.enrollment.application.dto.ChangeGroupCommand;
+import com.acainfo.enrollment.application.dto.ChangeCourseCommand;
 import com.acainfo.enrollment.application.dto.EnrollStudentCommand;
 import com.acainfo.enrollment.domain.model.Enrollment;
-import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.ChangeGroupRequest;
+import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.ChangeCourseRequest;
 import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.EnrollStudentRequest;
 import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.EnrollmentResponse;
 import org.mapstruct.Mapper;
@@ -24,18 +24,18 @@ public interface EnrollmentRestMapper {
     EnrollStudentCommand toCommand(EnrollStudentRequest request);
 
     /**
-     * Convert ChangeGroupRequest (REST) to ChangeGroupCommand (Application).
+     * Convert ChangeCourseRequest (REST) to ChangeCourseCommand (Application).
      * Note: enrollmentId is passed separately in the controller.
      */
     @Mapping(target = "enrollmentId", ignore = true)
-    @Mapping(target = "newGroupId", source = "newGroupId")
-    ChangeGroupCommand toCommand(ChangeGroupRequest request);
+    @Mapping(target = "newCourseId", source = "newCourseId")
+    ChangeCourseCommand toCommand(ChangeCourseRequest request);
 
     /**
-     * Create ChangeGroupCommand with enrollmentId and request.
+     * Create ChangeCourseCommand with enrollmentId and request.
      */
-    default ChangeGroupCommand toCommand(Long enrollmentId, ChangeGroupRequest request) {
-        return new ChangeGroupCommand(enrollmentId, request.getNewGroupId());
+    default ChangeCourseCommand toCommand(Long enrollmentId, ChangeCourseRequest request) {
+        return new ChangeCourseCommand(enrollmentId, request.getNewCourseId());
     }
 
     /**
@@ -47,10 +47,10 @@ public interface EnrollmentRestMapper {
     @Mapping(target = "subjectId", ignore = true)
     @Mapping(target = "subjectName", ignore = true)
     @Mapping(target = "subjectCode", ignore = true)
-    @Mapping(target = "groupName", ignore = true)
+    @Mapping(target = "courseName", ignore = true)
     @Mapping(target = "teacherName", ignore = true)
     @Mapping(target = "scheduleSummary", ignore = true)
-    @Mapping(target = "groupCapacity", ignore = true)
+    @Mapping(target = "courseCapacity", ignore = true)
     @Mapping(target = "currentEnrollmentCount", ignore = true)
     @Mapping(target = "approvedByUserName", ignore = true)
     @Mapping(target = "isActive", expression = "java(enrollment.isActive())")
@@ -83,15 +83,15 @@ public interface EnrollmentRestMapper {
     @Mapping(target = "subjectId", source = "subjectId")
     @Mapping(target = "subjectName", source = "subjectName")
     @Mapping(target = "subjectCode", source = "subjectCode")
-    @Mapping(target = "groupName", source = "groupName")
+    @Mapping(target = "courseName", source = "courseName")
     @Mapping(target = "teacherName", source = "teacherName")
     @Mapping(target = "scheduleSummary", source = "scheduleSummary")
-    @Mapping(target = "groupCapacity", source = "groupCapacity")
+    @Mapping(target = "courseCapacity", source = "courseCapacity")
     @Mapping(target = "currentEnrollmentCount", source = "currentEnrollmentCount")
     @Mapping(target = "approvedByUserName", source = "approvedByUserName")
     @Mapping(target = "id", source = "enrollment.id")
     @Mapping(target = "studentId", source = "enrollment.studentId")
-    @Mapping(target = "groupId", source = "enrollment.groupId")
+    @Mapping(target = "courseId", source = "enrollment.courseId")
     @Mapping(target = "status", source = "enrollment.status")
     @Mapping(target = "waitingListPosition", source = "enrollment.waitingListPosition")
     @Mapping(target = "enrolledAt", source = "enrollment.enrolledAt")
@@ -121,10 +121,10 @@ public interface EnrollmentRestMapper {
             Long subjectId,
             String subjectName,
             String subjectCode,
-            String groupName,
+            String courseName,
             String teacherName,
             String scheduleSummary,
-            Integer groupCapacity,
+            Integer courseCapacity,
             Integer currentEnrollmentCount,
             String approvedByUserName
     );

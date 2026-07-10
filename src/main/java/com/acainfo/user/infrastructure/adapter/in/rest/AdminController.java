@@ -6,7 +6,6 @@ import com.acainfo.user.application.port.in.ActivateUsersUseCase;
 import com.acainfo.user.application.port.in.DeactivateUsersUseCase;
 import com.acainfo.user.application.port.in.GetUserProfileUseCase;
 import com.acainfo.user.application.port.in.ManageUserRolesUseCase;
-import com.acainfo.user.application.port.in.ProcessOverduePaymentsUseCase;
 import com.acainfo.user.domain.model.RoleType;
 import com.acainfo.user.domain.model.User;
 import com.acainfo.user.domain.model.UserStatus;
@@ -55,7 +54,6 @@ public class AdminController {
     private final ManageUserRolesUseCase manageUserRolesUseCase;
     private final DeactivateUsersUseCase deactivateUsersUseCase;
     private final ActivateUsersUseCase activateUsersUseCase;
-    private final ProcessOverduePaymentsUseCase processOverduePaymentsUseCase;
     private final UserRepositoryPort userRepositoryPort;
     private final UserRestMapper userRestMapper;
 
@@ -356,31 +354,5 @@ public class AdminController {
         ActivationResult result = activateUsersUseCase.activateUsers(request.userIds());
 
         return ResponseEntity.ok(result);
-    }
-
-    @PostMapping("/trigger-status-check")
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(
-            summary = "Trigger status check job",
-            description = "Manually triggers the overdue payments check job (ADMIN only)"
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Job triggered successfully",
-                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Access denied - ADMIN role required",
-                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
-            )
-    })
-    public ResponseEntity<MessageResponse> triggerStatusCheck() {
-        log.info("Manual trigger of status check job");
-
-        processOverduePaymentsUseCase.processOverduePayments();
-
-        return ResponseEntity.ok(MessageResponse.of("Job ejecutado correctamente"));
     }
 }

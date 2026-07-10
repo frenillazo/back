@@ -21,7 +21,7 @@ import java.time.LocalTime;
 public class Schedule {
 
     private Long id;
-    private Long groupId;
+    private Long courseId;
     private DayOfWeek dayOfWeek;
     private LocalTime startTime;
     private LocalTime endTime;

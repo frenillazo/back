@@ -32,15 +32,11 @@ public interface GetSessionUseCase {
     /**
      * Get all sessions for a specific group.
      *
-     * @param groupId Group ID
+     * @param courseId Group ID
      * @return List of sessions for the group
      */
-    List<Session> findByGroupId(Long groupId);
+    List<Session> findByCourseId(Long courseId);
 
-    /**
-     * Get all sessions for a specific intensive course.
-     */
-    List<Session> findByIntensiveId(Long intensiveId);
 
     /**
      * Get all sessions for a specific subject.

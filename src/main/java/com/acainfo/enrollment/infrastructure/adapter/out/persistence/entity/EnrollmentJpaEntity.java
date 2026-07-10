@@ -7,7 +7,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -19,12 +18,11 @@ import java.time.LocalDateTime;
     name = "enrollments",
     indexes = {
         @Index(name = "idx_enrollment_student_id", columnList = "student_id"),
-        @Index(name = "idx_enrollment_group_id", columnList = "group_id"),
-        @Index(name = "idx_enrollment_intensive_id", columnList = "intensive_id"),
+        @Index(name = "idx_enrollment_course_id", columnList = "course_id"),
         @Index(name = "idx_enrollment_status", columnList = "status"),
-        @Index(name = "idx_enrollment_student_group", columnList = "student_id, group_id"),
-        @Index(name = "idx_enrollment_group_status", columnList = "group_id, status"),
-        @Index(name = "idx_enrollment_waiting_list", columnList = "group_id, status, waiting_list_position")
+        @Index(name = "idx_enrollment_student_group", columnList = "student_id, course_id"),
+        @Index(name = "idx_enrollment_group_status", columnList = "course_id, status"),
+        @Index(name = "idx_enrollment_waiting_list", columnList = "course_id, status, waiting_list_position")
     }
     // Note: Unique constraint for active enrollments is managed via partial index in PostgreSQL
     // See: uk_enrollment_student_group_active_states (only applies to PENDING_APPROVAL, ACTIVE, WAITING_LIST)
@@ -44,16 +42,10 @@ public class EnrollmentJpaEntity {
     @Column(name = "student_id", nullable = false)
     private Long studentId;
 
-    // group_id is nullable: enrollments now point either to a regular group OR
+    // course_id is nullable: enrollments now point either to a regular group OR
     // to an intensive course (CHECK constraint at the DB level enforces XOR).
-    @Column(name = "group_id")
-    private Long groupId;
-
-    @Column(name = "intensive_id")
-    private Long intensiveId;
-
-    @Column(name = "price_per_hour", nullable = false, precision = 10, scale = 2)
-    private BigDecimal pricePerHour;
+    @Column(name = "course_id")
+    private Long courseId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)

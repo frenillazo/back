@@ -23,14 +23,12 @@ import java.time.LocalTime;
     name = "sessions",
     indexes = {
         @Index(name = "idx_session_subject_id", columnList = "subject_id"),
-        @Index(name = "idx_session_group_id", columnList = "group_id"),
-        @Index(name = "idx_session_intensive_id", columnList = "intensive_id"),
+        @Index(name = "idx_session_course_id", columnList = "course_id"),
         @Index(name = "idx_session_schedule_id", columnList = "schedule_id"),
         @Index(name = "idx_session_date", columnList = "date"),
         @Index(name = "idx_session_status", columnList = "status"),
         @Index(name = "idx_session_type", columnList = "type"),
-        @Index(name = "idx_session_group_date", columnList = "group_id, date"),
-        @Index(name = "idx_session_intensive_date", columnList = "intensive_id, date"),
+        @Index(name = "idx_session_group_date", columnList = "course_id, date"),
         @Index(name = "idx_session_schedule_date", columnList = "schedule_id, date")
     }
 )
@@ -49,14 +47,12 @@ public class SessionJpaEntity {
     @Column(name = "subject_id", nullable = false)
     private Long subjectId;
 
-    @Column(name = "group_id")
-    private Long groupId;  // Nullable for SCHEDULING and INTENSIVE sessions
+    @Column(name = "course_id", nullable = false)
+    private Long courseId;
 
-    @Column(name = "intensive_id")
-    private Long intensiveId;  // Set only for INTENSIVE sessions
 
     @Column(name = "schedule_id")
-    private Long scheduleId;  // Nullable for EXTRA, SCHEDULING and INTENSIVE sessions
+    private Long scheduleId;  // Nullable: only REGULAR sessions come from a schedule
 
     @Enumerated(EnumType.STRING)
     @Column(name = "classroom", nullable = false, length = 20)

@@ -1,9 +1,9 @@
 package com.acainfo.enrollment.application.service;
 
-import com.acainfo.enrollment.application.dto.ChangeGroupCommand;
+import com.acainfo.enrollment.application.dto.ChangeCourseCommand;
 import com.acainfo.enrollment.application.dto.EnrollStudentCommand;
 import com.acainfo.enrollment.application.dto.EnrollmentFilters;
-import com.acainfo.enrollment.application.port.in.ChangeGroupUseCase;
+import com.acainfo.enrollment.application.port.in.ChangeCourseUseCase;
 import com.acainfo.enrollment.application.port.in.EnrollStudentUseCase;
 import com.acainfo.enrollment.application.port.in.GetEnrollmentUseCase;
 import com.acainfo.enrollment.application.port.in.WithdrawEnrollmentUseCase;
@@ -11,20 +11,19 @@ import com.acainfo.enrollment.application.port.out.AutoReservationPort;
 import com.acainfo.enrollment.application.port.out.EnrollmentRepositoryPort;
 import com.acainfo.enrollment.domain.exception.AlreadyEnrolledException;
 import com.acainfo.enrollment.domain.exception.EnrollmentNotFoundException;
-import com.acainfo.enrollment.domain.exception.GroupFullException;
+import com.acainfo.enrollment.domain.exception.CourseFullException;
 import com.acainfo.enrollment.domain.exception.InvalidEnrollmentStateException;
 import com.acainfo.enrollment.domain.model.Enrollment;
 import com.acainfo.enrollment.domain.model.EnrollmentStatus;
-import com.acainfo.group.application.port.out.GroupRepositoryPort;
-import com.acainfo.group.domain.exception.GroupNotFoundException;
-import com.acainfo.group.domain.model.SubjectGroup;
+import com.acainfo.course.application.port.out.CourseRepositoryPort;
+import com.acainfo.course.domain.exception.CourseNotFoundException;
+import com.acainfo.course.domain.model.Course;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -38,11 +37,11 @@ import java.util.List;
 public class EnrollmentService implements
         EnrollStudentUseCase,
         WithdrawEnrollmentUseCase,
-        ChangeGroupUseCase,
+        ChangeCourseUseCase,
         GetEnrollmentUseCase {
 
     private final EnrollmentRepositoryPort enrollmentRepositoryPort;
-    private final GroupRepositoryPort groupRepositoryPort;
+    private final CourseRepositoryPort courseRepositoryPort;
     private final WaitingListService waitingListService;
     private final AutoReservationPort autoReservationPort;
 
@@ -51,31 +50,27 @@ public class EnrollmentService implements
     @Override
     @Transactional
     public Enrollment enroll(EnrollStudentCommand command) {
-        log.info("Enrolling student {} in group {} (pending approval)", command.studentId(), command.groupId());
+        log.info("Enrolling student {} in group {} (pending approval)", command.studentId(), command.courseId());
 
         // Validate group exists
-        SubjectGroup group = groupRepositoryPort.findById(command.groupId())
-                .orElseThrow(() -> new GroupNotFoundException(command.groupId()));
+        Course group = courseRepositoryPort.findById(command.courseId())
+                .orElseThrow(() -> new CourseNotFoundException(command.courseId()));
 
         // Check if already enrolled (active, waiting, or pending)
-        if (enrollmentRepositoryPort.existsActiveOrWaitingOrPendingEnrollment(command.studentId(), command.groupId())) {
-            throw new AlreadyEnrolledException(command.studentId(), command.groupId());
+        if (enrollmentRepositoryPort.existsActiveOrWaitingOrPendingEnrollment(command.studentId(), command.courseId())) {
+            throw new AlreadyEnrolledException(command.studentId(), command.courseId());
         }
-
-        // Get the price per hour from the group (uses default if not set)
-        BigDecimal pricePerHour = group.getEffectivePricePerHour();
 
         // Create enrollment as PENDING_APPROVAL - teacher must approve
         Enrollment enrollment = Enrollment.builder()
                 .studentId(command.studentId())
-                .groupId(command.groupId())
-                .pricePerHour(pricePerHour)
+                .courseId(command.courseId())
                 .status(EnrollmentStatus.PENDING_APPROVAL)
                 .enrolledAt(LocalDateTime.now())
                 .build();
 
-        log.info("Student {} enrollment request created for group {} at {}€/hour (pending teacher approval)",
-                command.studentId(), command.groupId(), pricePerHour);
+        log.info("Student {} enrollment request created for course {} (pending approval)",
+                command.studentId(), command.courseId());
 
         return enrollmentRepositoryPort.save(enrollment);
     }
@@ -97,7 +92,7 @@ public class EnrollmentService implements
 
         boolean wasActive = enrollment.isActive();
         Integer oldPosition = enrollment.getWaitingListPosition();
-        Long groupId = enrollment.getGroupId();
+        Long courseId = enrollment.getCourseId();
 
         // Update enrollment status
         enrollment.setStatus(EnrollmentStatus.WITHDRAWN);
@@ -108,29 +103,29 @@ public class EnrollmentService implements
 
         // Cancel future reservations for the withdrawn student
         if (wasActive) {
-            autoReservationPort.cancelFutureReservations(enrollment.getStudentId(), groupId);
+            autoReservationPort.cancelFutureReservations(enrollment.getStudentId(), courseId);
         }
 
         // If was on waiting list, adjust positions
         if (oldPosition != null) {
-            enrollmentRepositoryPort.decrementWaitingListPositionsAfter(groupId, oldPosition);
+            enrollmentRepositoryPort.decrementWaitingListPositionsAfter(courseId, oldPosition);
         }
 
         // If was active, promote next from waiting list (which will auto-generate their reservations)
         if (wasActive) {
-            waitingListService.promoteNextFromWaitingList(groupId);
+            waitingListService.promoteNextFromWaitingList(courseId);
         }
 
         log.info("Enrollment {} withdrawn successfully", enrollmentId);
         return savedEnrollment;
     }
 
-    // ==================== ChangeGroupUseCase ====================
+    // ==================== ChangeCourseUseCase ====================
 
     @Override
     @Transactional
-    public Enrollment changeGroup(ChangeGroupCommand command) {
-        log.info("Changing enrollment {} to group {}", command.enrollmentId(), command.newGroupId());
+    public Enrollment changeCourse(ChangeCourseCommand command) {
+        log.info("Changing enrollment {} to group {}", command.enrollmentId(), command.newCourseId());
 
         Enrollment enrollment = getById(command.enrollmentId());
 
@@ -141,26 +136,28 @@ public class EnrollmentService implements
         }
 
         // Validate new group exists
-        SubjectGroup newGroup = groupRepositoryPort.findById(command.newGroupId())
-                .orElseThrow(() -> new GroupNotFoundException(command.newGroupId()));
+        Course newGroup = courseRepositoryPort.findById(command.newCourseId())
+                .orElseThrow(() -> new CourseNotFoundException(command.newCourseId()));
 
-        // Check capacity in new group
-        long activeCount = enrollmentRepositoryPort.countActiveByGroupId(command.newGroupId());
-        if (activeCount >= newGroup.getMaxCapacity()) {
-            throw new GroupFullException(command.newGroupId());
+        // Check capacity in new course (null capacity = unlimited)
+        if (newGroup.hasCapacityLimit()) {
+            long activeCount = enrollmentRepositoryPort.countActiveByCourseId(command.newCourseId());
+            if (activeCount >= newGroup.getCapacity()) {
+                throw new CourseFullException(command.newCourseId());
+            }
         }
 
-        Long oldGroupId = enrollment.getGroupId();
+        Long oldCourseId = enrollment.getCourseId();
 
         // Update enrollment
-        enrollment.setGroupId(command.newGroupId());
+        enrollment.setCourseId(command.newCourseId());
         Enrollment savedEnrollment = enrollmentRepositoryPort.save(enrollment);
 
         // Promote next from old group's waiting list
-        waitingListService.promoteNextFromWaitingList(oldGroupId);
+        waitingListService.promoteNextFromWaitingList(oldCourseId);
 
         log.info("Enrollment {} changed from group {} to group {}",
-                command.enrollmentId(), oldGroupId, command.newGroupId());
+                command.enrollmentId(), oldCourseId, command.newCourseId());
 
         return savedEnrollment;
     }
@@ -178,8 +175,8 @@ public class EnrollmentService implements
     @Override
     @Transactional(readOnly = true)
     public Page<Enrollment> findWithFilters(EnrollmentFilters filters) {
-        log.debug("Finding enrollments with filters: studentId={}, groupId={}, status={}",
-                filters.studentId(), filters.groupId(), filters.status());
+        log.debug("Finding enrollments with filters: studentId={}, courseId={}, status={}",
+                filters.studentId(), filters.courseId(), filters.status());
         return enrollmentRepositoryPort.findWithFilters(filters);
     }
 
@@ -202,15 +199,15 @@ public class EnrollmentService implements
 
     @Override
     @Transactional(readOnly = true)
-    public List<Enrollment> findActiveByGroupId(Long groupId) {
-        log.debug("Finding active enrollments for group: {}", groupId);
-        return enrollmentRepositoryPort.findByGroupIdAndStatus(groupId, EnrollmentStatus.ACTIVE);
+    public List<Enrollment> findActiveByCourseId(Long courseId) {
+        log.debug("Finding active enrollments for group: {}", courseId);
+        return enrollmentRepositoryPort.findByCourseIdAndStatus(courseId, EnrollmentStatus.ACTIVE);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public long countActiveByGroupId(Long groupId) {
-        log.debug("Counting active enrollments for group: {}", groupId);
-        return enrollmentRepositoryPort.countActiveByGroupId(groupId);
+    public long countActiveByCourseId(Long courseId) {
+        log.debug("Counting active enrollments for group: {}", courseId);
+        return enrollmentRepositoryPort.countActiveByCourseId(courseId);
     }
 }

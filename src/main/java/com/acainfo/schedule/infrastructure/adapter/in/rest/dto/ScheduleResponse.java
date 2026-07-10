@@ -21,7 +21,7 @@ import java.time.LocalTime;
 public class ScheduleResponse {
 
     private Long id;
-    private Long groupId;
+    private Long courseId;
     private DayOfWeek dayOfWeek;
 
     @JsonFormat(pattern = "HH:mm")

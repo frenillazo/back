@@ -32,8 +32,8 @@ public interface GetScheduleUseCase {
     /**
      * Get all schedules for a specific group.
      *
-     * @param groupId Group ID
+     * @param courseId Group ID
      * @return List of schedules for the group
      */
-    List<Schedule> findByGroupId(Long groupId);
+    List<Schedule> findByCourseId(Long courseId);
 }

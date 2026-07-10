@@ -2,14 +2,14 @@ package com.acainfo.enrollment.infrastructure.adapter.in.rest;
 
 import com.acainfo.enrollment.application.dto.EnrollmentFilters;
 import com.acainfo.enrollment.application.port.in.ApproveEnrollmentUseCase;
-import com.acainfo.enrollment.application.port.in.ChangeGroupUseCase;
+import com.acainfo.enrollment.application.port.in.ChangeCourseUseCase;
 import com.acainfo.enrollment.application.port.in.EnrollStudentUseCase;
 import com.acainfo.enrollment.application.port.in.GetEnrollmentUseCase;
 import com.acainfo.enrollment.application.port.in.RejectEnrollmentUseCase;
 import com.acainfo.enrollment.application.port.in.WithdrawEnrollmentUseCase;
 import com.acainfo.enrollment.domain.model.Enrollment;
 import com.acainfo.enrollment.domain.model.EnrollmentStatus;
-import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.ChangeGroupRequest;
+import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.ChangeCourseRequest;
 import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.EnrollStudentRequest;
 import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.EnrollmentResponse;
 import com.acainfo.enrollment.infrastructure.adapter.in.rest.dto.RejectEnrollmentRequest;
@@ -49,7 +49,7 @@ public class EnrollmentController {
 
     private final EnrollStudentUseCase enrollStudentUseCase;
     private final WithdrawEnrollmentUseCase withdrawEnrollmentUseCase;
-    private final ChangeGroupUseCase changeGroupUseCase;
+    private final ChangeCourseUseCase changeCourseUseCase;
     private final GetEnrollmentUseCase getEnrollmentUseCase;
     private final ApproveEnrollmentUseCase approveEnrollmentUseCase;
     private final RejectEnrollmentUseCase rejectEnrollmentUseCase;
@@ -63,7 +63,7 @@ public class EnrollmentController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT')")
     public ResponseEntity<EnrollmentResponse> enroll(@Valid @RequestBody EnrollStudentRequest request) {
-        log.info("REST: Enrolling student {} in group {}", request.getStudentId(), request.getGroupId());
+        log.info("REST: Enrolling student {} in group {}", request.getStudentId(), request.getCourseId());
 
         Enrollment enrollment = enrollStudentUseCase.enroll(enrollmentRestMapper.toCommand(request));
         EnrollmentResponse response = enrollmentResponseEnricher.enrich(enrollment);
@@ -100,7 +100,7 @@ public class EnrollmentController {
 
     /**
      * Get enrollments with filters (pagination + sorting + filtering).
-     * GET /api/enrollments?studentId=1&studentEmail=...&groupId=2&status=ACTIVE&...
+     * GET /api/enrollments?studentId=1&studentEmail=...&courseId=2&status=ACTIVE&...
      * Students can only see their own enrollments; admins/teachers can see any.
      */
     @GetMapping
@@ -108,7 +108,7 @@ public class EnrollmentController {
     public ResponseEntity<PageResponse<EnrollmentResponse>> getEnrollmentsWithFilters(
             @RequestParam(required = false) Long studentId,
             @RequestParam(required = false) String studentEmail,
-            @RequestParam(required = false) Long groupId,
+            @RequestParam(required = false) Long courseId,
             @RequestParam(required = false) EnrollmentStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -123,11 +123,11 @@ public class EnrollmentController {
             log.debug("Student {} querying own enrollments only", effectiveStudentId);
         }
 
-        log.debug("REST: Getting enrollments with filters - studentId={}, studentEmail={}, groupId={}, status={}",
-                effectiveStudentId, studentEmail, groupId, status);
+        log.debug("REST: Getting enrollments with filters - studentId={}, studentEmail={}, courseId={}, status={}",
+                effectiveStudentId, studentEmail, courseId, status);
 
         EnrollmentFilters filters = new EnrollmentFilters(
-                effectiveStudentId, studentEmail, groupId, status, page, size, sortBy, sortDirection
+                effectiveStudentId, studentEmail, courseId, status, page, size, sortBy, sortDirection
         );
 
         Page<Enrollment> enrollmentsPage = getEnrollmentUseCase.findWithFilters(filters);
@@ -155,15 +155,15 @@ public class EnrollmentController {
 
     /**
      * Get active enrollments for a group.
-     * GET /api/enrollments/group/{groupId}
+     * GET /api/enrollments/group/{courseId}
      * Only admins and teachers can see all enrollments in a group.
      */
-    @GetMapping("/group/{groupId}")
+    @GetMapping("/course/{courseId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
-    public ResponseEntity<List<EnrollmentResponse>> getActiveEnrollmentsByGroup(@PathVariable Long groupId) {
-        log.debug("REST: Getting active enrollments for group: {}", groupId);
+    public ResponseEntity<List<EnrollmentResponse>> getActiveEnrollmentsByGroup(@PathVariable Long courseId) {
+        log.debug("REST: Getting active enrollments for group: {}", courseId);
 
-        List<Enrollment> enrollments = getEnrollmentUseCase.findActiveByGroupId(groupId);
+        List<Enrollment> enrollments = getEnrollmentUseCase.findActiveByCourseId(courseId);
         List<EnrollmentResponse> responses = enrollmentResponseEnricher.enrichList(enrollments);
 
         return ResponseEntity.ok(responses);
@@ -203,14 +203,14 @@ public class EnrollmentController {
      * PUT /api/enrollments/{id}/change-group
      * Students can only change their own enrollments; admins can change any.
      */
-    @PutMapping("/{id}/change-group")
+    @PutMapping("/{id}/change-course")
     @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT')")
-    public ResponseEntity<EnrollmentResponse> changeGroup(
+    public ResponseEntity<EnrollmentResponse> changeCourse(
             @PathVariable Long id,
-            @Valid @RequestBody ChangeGroupRequest request,
+            @Valid @RequestBody ChangeCourseRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        log.info("REST: Changing group for enrollment {} to group {}", id, request.getNewGroupId());
+        log.info("REST: Changing group for enrollment {} to group {}", id, request.getNewCourseId());
 
         // Get enrollment first to verify ownership
         Enrollment existingEnrollment = getEnrollmentUseCase.getById(id);
@@ -222,7 +222,7 @@ public class EnrollmentController {
             throw new org.springframework.security.access.AccessDeniedException("No tienes permiso para cambiar el grupo de esta inscripción");
         }
 
-        Enrollment enrollment = changeGroupUseCase.changeGroup(enrollmentRestMapper.toCommand(id, request));
+        Enrollment enrollment = changeCourseUseCase.changeCourse(enrollmentRestMapper.toCommand(id, request));
         EnrollmentResponse response = enrollmentResponseEnricher.enrich(enrollment);
 
         return ResponseEntity.ok(response);

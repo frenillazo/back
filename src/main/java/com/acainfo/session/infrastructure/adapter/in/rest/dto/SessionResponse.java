@@ -27,14 +27,14 @@ public class SessionResponse {
 
     private Long id;
     private Long subjectId;
-    private Long groupId;
+    private Long courseId;
     private Long scheduleId;
     private Classroom classroom;
 
     // Enriched data from related entities
     private String subjectName;
     private String subjectCode;
-    private String groupName;
+    private String courseName;
     private String teacherName;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -70,7 +70,5 @@ public class SessionResponse {
     private Boolean isPostponed;
     private Boolean isRegular;
     private Boolean isExtra;
-    private Boolean isSchedulingType;
-    private Boolean hasGroup;
     private Boolean hasSchedule;
 }

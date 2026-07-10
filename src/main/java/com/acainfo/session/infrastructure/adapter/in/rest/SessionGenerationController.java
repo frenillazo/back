@@ -49,7 +49,7 @@ public class SessionGenerationController {
             @Valid @RequestBody GenerateSessionsRequest request
     ) {
         log.info("REST: Generating sessions for group: {}, from: {}, to: {}",
-                request.getGroupId(), request.getStartDate(), request.getEndDate());
+                request.getCourseId(), request.getStartDate(), request.getEndDate());
 
         List<Session> generatedSessions = generateSessionsUseCase.generate(
                 sessionRestMapper.toCommand(request)
@@ -71,7 +71,7 @@ public class SessionGenerationController {
             @Valid @RequestBody GenerateSessionsRequest request
     ) {
         log.info("REST: Previewing session generation for group: {}, from: {}, to: {}",
-                request.getGroupId(), request.getStartDate(), request.getEndDate());
+                request.getCourseId(), request.getStartDate(), request.getEndDate());
 
         List<Session> previewSessions = generateSessionsUseCase.preview(
                 sessionRestMapper.toCommand(request)

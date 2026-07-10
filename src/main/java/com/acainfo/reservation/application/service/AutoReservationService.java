@@ -43,15 +43,15 @@ public class AutoReservationService implements AutoReservationPort {
     @Override
     @Async
     @Transactional
-    public void generateForNewEnrollment(Long studentId, Long groupId, Long enrollmentId) {
+    public void generateForNewEnrollment(Long studentId, Long courseId, Long enrollmentId) {
         log.info("Auto-generating reservations for student {} in group {} (enrollment {})",
-                studentId, groupId, enrollmentId);
+                studentId, courseId, enrollmentId);
 
         List<Session> futureSessions = sessionRepositoryPort
-                .findUpcomingByGroupIds(List.of(groupId), LocalDate.now(), 999);
+                .findUpcomingByCourseIds(List.of(courseId), LocalDate.now(), 999);
 
         if (futureSessions.isEmpty()) {
-            log.info("No future sessions for group {}, no reservations generated", groupId);
+            log.info("No future sessions for group {}, no reservations generated", courseId);
             return;
         }
 
@@ -96,16 +96,16 @@ public class AutoReservationService implements AutoReservationPort {
         }
 
         log.info("Auto-generated {} reservations for student {} in group {}",
-                created, studentId, groupId);
+                created, studentId, courseId);
     }
 
     @Override
     @Transactional
-    public void cancelFutureReservations(Long studentId, Long groupId) {
-        log.info("Cancelling future reservations for student {} in group {}", studentId, groupId);
+    public void cancelFutureReservations(Long studentId, Long courseId) {
+        log.info("Cancelling future reservations for student {} in group {}", studentId, courseId);
 
         List<Session> futureSessions = sessionRepositoryPort
-                .findUpcomingByGroupIds(List.of(groupId), LocalDate.now(), 999);
+                .findUpcomingByCourseIds(List.of(courseId), LocalDate.now(), 999);
 
         int cancelled = 0;
         LocalDateTime now = LocalDateTime.now();
@@ -122,6 +122,6 @@ public class AutoReservationService implements AutoReservationPort {
         }
 
         log.info("Cancelled {} future reservations for student {} in group {}",
-                cancelled, studentId, groupId);
+                cancelled, studentId, courseId);
     }
 }

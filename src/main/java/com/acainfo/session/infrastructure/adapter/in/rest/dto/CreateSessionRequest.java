@@ -15,9 +15,8 @@ import java.time.LocalTime;
  *
  * <p>Field requirements by session type:</p>
  * <ul>
- *   <li>REGULAR: scheduleId required, groupId optional (derived from schedule)</li>
- *   <li>EXTRA: groupId required</li>
- *   <li>SCHEDULING: subjectId required</li>
+ *   <li>REGULAR: scheduleId required, courseId optional (derived from schedule)</li>
+ *   <li>EXTRA: courseId required</li>
  * </ul>
  */
 @Getter
@@ -31,9 +30,9 @@ public class CreateSessionRequest {
     @NotNull(message = "Session type is required")
     private SessionType type;
 
-    private Long subjectId;   // Required for SCHEDULING
+    private Long subjectId;   // Optional: derived from the course
 
-    private Long groupId;     // Required for EXTRA, optional for REGULAR
+    private Long courseId;     // Required for EXTRA, optional for REGULAR
 
     private Long scheduleId;  // Required for REGULAR
 

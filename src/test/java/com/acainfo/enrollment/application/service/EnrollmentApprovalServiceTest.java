@@ -7,10 +7,10 @@ import com.acainfo.enrollment.domain.exception.InvalidEnrollmentStateException;
 import com.acainfo.enrollment.domain.exception.UnauthorizedApprovalException;
 import com.acainfo.enrollment.domain.model.Enrollment;
 import com.acainfo.enrollment.domain.model.EnrollmentStatus;
-import com.acainfo.group.application.port.out.GroupRepositoryPort;
-import com.acainfo.group.domain.exception.GroupNotFoundException;
-import com.acainfo.group.domain.model.GroupStatus;
-import com.acainfo.group.domain.model.SubjectGroup;
+import com.acainfo.course.application.port.out.CourseRepositoryPort;
+import com.acainfo.course.domain.exception.CourseNotFoundException;
+import com.acainfo.course.domain.model.CourseStatus;
+import com.acainfo.course.domain.model.Course;
 import com.acainfo.user.application.port.in.GetUserProfileUseCase;
 import com.acainfo.user.domain.model.Role;
 import com.acainfo.user.domain.model.RoleType;
@@ -61,7 +61,7 @@ class EnrollmentApprovalServiceTest {
     private EnrollmentRepositoryPort enrollmentRepositoryPort;
 
     @Mock
-    private GroupRepositoryPort groupRepositoryPort;
+    private CourseRepositoryPort courseRepositoryPort;
 
     @Mock
     private GetUserProfileUseCase getUserProfileUseCase;
@@ -78,7 +78,7 @@ class EnrollmentApprovalServiceTest {
         return Enrollment.builder()
                 .id(ENROLLMENT_ID)
                 .studentId(STUDENT_ID)
-                .groupId(GROUP_ID)
+                .courseId(GROUP_ID)
                 .status(EnrollmentStatus.PENDING_APPROVAL)
                 .build();
     }
@@ -87,18 +87,18 @@ class EnrollmentApprovalServiceTest {
         return Enrollment.builder()
                 .id(ENROLLMENT_ID)
                 .studentId(STUDENT_ID)
-                .groupId(GROUP_ID)
+                .courseId(GROUP_ID)
                 .status(status)
                 .build();
     }
 
-    private SubjectGroup groupWithCapacity(Integer capacity) {
-        return SubjectGroup.builder()
+    private Course groupWithCapacity(Integer capacity) {
+        return Course.builder()
                 .id(GROUP_ID)
                 .name("Algebra grupo 1 25-26")
                 .subjectId(7L)
                 .teacherId(TEACHER_ID)
-                .status(GroupStatus.OPEN)
+                .status(CourseStatus.OPEN)
                 .capacity(capacity)
                 .build();
     }
@@ -133,9 +133,9 @@ class EnrollmentApprovalServiceTest {
         void shouldApproveAsActiveWhenSeatsAvailable() {
             Enrollment enrollment = pendingEnrollment();
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(enrollment));
-            when(groupRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(2)));
+            when(courseRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(2)));
             when(getUserProfileUseCase.getUserById(ADMIN_ID)).thenReturn(admin());
-            when(enrollmentRepositoryPort.countActiveByGroupId(GROUP_ID)).thenReturn(0L);
+            when(enrollmentRepositoryPort.countActiveByCourseId(GROUP_ID)).thenReturn(0L);
             stubSaveReturnsArgument();
 
             Enrollment result = service.approve(ENROLLMENT_ID, ADMIN_ID);
@@ -156,9 +156,9 @@ class EnrollmentApprovalServiceTest {
         void shouldTriggerAutoReservationsWhenApprovedAsActive() {
             Enrollment enrollment = pendingEnrollment();
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(enrollment));
-            when(groupRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(24)));
+            when(courseRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(24)));
             when(getUserProfileUseCase.getUserById(ADMIN_ID)).thenReturn(admin());
-            when(enrollmentRepositoryPort.countActiveByGroupId(GROUP_ID)).thenReturn(10L);
+            when(enrollmentRepositoryPort.countActiveByCourseId(GROUP_ID)).thenReturn(10L);
             stubSaveReturnsArgument();
 
             service.approve(ENROLLMENT_ID, ADMIN_ID);
@@ -171,9 +171,9 @@ class EnrollmentApprovalServiceTest {
             // Boundary: activeCount (1) < maxCapacity (2) -> last seat goes to this student
             Enrollment enrollment = pendingEnrollment();
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(enrollment));
-            when(groupRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(2)));
+            when(courseRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(2)));
             when(getUserProfileUseCase.getUserById(ADMIN_ID)).thenReturn(admin());
-            when(enrollmentRepositoryPort.countActiveByGroupId(GROUP_ID)).thenReturn(1L);
+            when(enrollmentRepositoryPort.countActiveByCourseId(GROUP_ID)).thenReturn(1L);
             stubSaveReturnsArgument();
 
             Enrollment result = service.approve(ENROLLMENT_ID, ADMIN_ID);
@@ -187,9 +187,9 @@ class EnrollmentApprovalServiceTest {
             // Boundary: activeCount (2) == maxCapacity (2) -> no seat
             Enrollment enrollment = pendingEnrollment();
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(enrollment));
-            when(groupRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(2)));
+            when(courseRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(2)));
             when(getUserProfileUseCase.getUserById(ADMIN_ID)).thenReturn(admin());
-            when(enrollmentRepositoryPort.countActiveByGroupId(GROUP_ID)).thenReturn(2L);
+            when(enrollmentRepositoryPort.countActiveByCourseId(GROUP_ID)).thenReturn(2L);
             when(enrollmentRepositoryPort.getNextWaitingListPosition(GROUP_ID)).thenReturn(3);
             stubSaveReturnsArgument();
 
@@ -206,44 +206,46 @@ class EnrollmentApprovalServiceTest {
         }
 
         @Test
-        void shouldUseDefaultCapacity24WhenGroupCapacityIsNull() {
-            // capacity == null -> SubjectGroup.getMaxCapacity() falls back to 24
+        void shouldApproveAsActiveWithoutCapacityCheckWhenCapacityIsNull() {
+            // Unified course model: capacity == null -> unlimited (virtual/dual).
+            // The approval is ALWAYS ACTIVE: occupancy is never queried and the
+            // waiting list position counter is never consulted, no matter how many
+            // students (24, 100, N...) are already enrolled.
             Enrollment enrollment = pendingEnrollment();
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(enrollment));
-            when(groupRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(null)));
+            when(courseRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(null)));
             when(getUserProfileUseCase.getUserById(ADMIN_ID)).thenReturn(admin());
-            when(enrollmentRepositoryPort.countActiveByGroupId(GROUP_ID)).thenReturn(23L);
             stubSaveReturnsArgument();
 
             Enrollment result = service.approve(ENROLLMENT_ID, ADMIN_ID);
 
             assertThat(result.getStatus()).isEqualTo(EnrollmentStatus.ACTIVE);
+            assertThat(result.getWaitingListPosition()).isNull();
+            verify(enrollmentRepositoryPort, never()).countActiveByCourseId(anyLong());
+            verify(enrollmentRepositoryPort, never()).getNextWaitingListPosition(anyLong());
         }
 
         @Test
-        void shouldWaitlistWhenNullCapacityGroupReachesDefaultCapacity() {
+        void shouldTriggerAutoReservationsWhenApprovedOnNullCapacityCourse() {
+            // Null-capacity approvals are ACTIVE, so they also trigger auto-reservations.
             Enrollment enrollment = pendingEnrollment();
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(enrollment));
-            when(groupRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(null)));
+            when(courseRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(null)));
             when(getUserProfileUseCase.getUserById(ADMIN_ID)).thenReturn(admin());
-            when(enrollmentRepositoryPort.countActiveByGroupId(GROUP_ID)).thenReturn(24L);
-            when(enrollmentRepositoryPort.getNextWaitingListPosition(GROUP_ID)).thenReturn(1);
             stubSaveReturnsArgument();
 
-            Enrollment result = service.approve(ENROLLMENT_ID, ADMIN_ID);
+            service.approve(ENROLLMENT_ID, ADMIN_ID);
 
-            assertThat(result.getStatus()).isEqualTo(EnrollmentStatus.WAITING_LIST);
-            assertThat(result.getWaitingListPosition()).isEqualTo(1);
-            verifyNoInteractions(autoReservationPort);
+            verify(autoReservationPort).generateForNewEnrollment(STUDENT_ID, GROUP_ID, ENROLLMENT_ID);
         }
 
         @Test
         void shouldAllowGroupTeacherToApprove() {
             Enrollment enrollment = pendingEnrollment();
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(enrollment));
-            when(groupRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(24)));
+            when(courseRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(24)));
             when(getUserProfileUseCase.getUserById(TEACHER_ID)).thenReturn(groupTeacher());
-            when(enrollmentRepositoryPort.countActiveByGroupId(GROUP_ID)).thenReturn(0L);
+            when(enrollmentRepositoryPort.countActiveByCourseId(GROUP_ID)).thenReturn(0L);
             stubSaveReturnsArgument();
 
             Enrollment result = service.approve(ENROLLMENT_ID, TEACHER_ID);
@@ -259,9 +261,9 @@ class EnrollmentApprovalServiceTest {
             Enrollment enrollment = pendingEnrollment();
             User studentWithTeacherId = userWithRole(TEACHER_ID, "student@acainfo.com", RoleType.STUDENT);
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(enrollment));
-            when(groupRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(24)));
+            when(courseRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(24)));
             when(getUserProfileUseCase.getUserById(TEACHER_ID)).thenReturn(studentWithTeacherId);
-            when(enrollmentRepositoryPort.countActiveByGroupId(GROUP_ID)).thenReturn(0L);
+            when(enrollmentRepositoryPort.countActiveByCourseId(GROUP_ID)).thenReturn(0L);
             stubSaveReturnsArgument();
 
             Enrollment result = service.approve(ENROLLMENT_ID, TEACHER_ID);
@@ -275,7 +277,7 @@ class EnrollmentApprovalServiceTest {
             Enrollment enrollment = pendingEnrollment();
             User otherTeacher = userWithRole(OTHER_TEACHER_ID, "other@acainfo.com", RoleType.TEACHER);
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(enrollment));
-            when(groupRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(24)));
+            when(courseRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(24)));
             when(getUserProfileUseCase.getUserById(OTHER_TEACHER_ID)).thenReturn(otherTeacher);
 
             assertThatThrownBy(() -> service.approve(ENROLLMENT_ID, OTHER_TEACHER_ID))
@@ -284,9 +286,43 @@ class EnrollmentApprovalServiceTest {
                     .hasMessageContaining("group " + GROUP_ID);
 
             assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.PENDING_APPROVAL);
-            verify(enrollmentRepositoryPort, never()).countActiveByGroupId(anyLong());
+            verify(enrollmentRepositoryPort, never()).countActiveByCourseId(anyLong());
             verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));
             verifyNoInteractions(autoReservationPort);
+        }
+
+        @Test
+        void shouldThrowUnauthorizedWhenCourseHasNoTeacherAndApproverIsNotAdmin() {
+            // teacherId can be null (course without assigned teacher): only an admin
+            // may approve; a non-admin user is rejected regardless of their id/role.
+            Enrollment enrollment = pendingEnrollment();
+            Course teacherlessCourse = groupWithCapacity(24).toBuilder().teacherId(null).build();
+            when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(enrollment));
+            when(courseRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(teacherlessCourse));
+            when(getUserProfileUseCase.getUserById(TEACHER_ID)).thenReturn(groupTeacher());
+
+            assertThatThrownBy(() -> service.approve(ENROLLMENT_ID, TEACHER_ID))
+                    .isInstanceOf(UnauthorizedApprovalException.class);
+
+            assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.PENDING_APPROVAL);
+            verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));
+            verifyNoInteractions(autoReservationPort);
+        }
+
+        @Test
+        void shouldAllowAdminToApproveWhenCourseHasNoTeacher() {
+            Enrollment enrollment = pendingEnrollment();
+            Course teacherlessCourse = groupWithCapacity(24).toBuilder().teacherId(null).build();
+            when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(enrollment));
+            when(courseRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(teacherlessCourse));
+            when(getUserProfileUseCase.getUserById(ADMIN_ID)).thenReturn(admin());
+            when(enrollmentRepositoryPort.countActiveByCourseId(GROUP_ID)).thenReturn(0L);
+            stubSaveReturnsArgument();
+
+            Enrollment result = service.approve(ENROLLMENT_ID, ADMIN_ID);
+
+            assertThat(result.getStatus()).isEqualTo(EnrollmentStatus.ACTIVE);
+            assertThat(result.getApprovedByUserId()).isEqualTo(ADMIN_ID);
         }
 
         @ParameterizedTest
@@ -300,7 +336,7 @@ class EnrollmentApprovalServiceTest {
                     .hasMessage("Cannot approve enrollment with status: " + status);
 
             // State is validated BEFORE loading the group and BEFORE the authorization check
-            verifyNoInteractions(groupRepositoryPort, getUserProfileUseCase, autoReservationPort);
+            verifyNoInteractions(courseRepositoryPort, getUserProfileUseCase, autoReservationPort);
             verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));
         }
 
@@ -312,17 +348,17 @@ class EnrollmentApprovalServiceTest {
                     .isInstanceOf(EnrollmentNotFoundException.class)
                     .hasMessage("Enrollment not found with ID: " + ENROLLMENT_ID);
 
-            verifyNoInteractions(groupRepositoryPort, getUserProfileUseCase, autoReservationPort);
+            verifyNoInteractions(courseRepositoryPort, getUserProfileUseCase, autoReservationPort);
         }
 
         @Test
         void shouldThrowGroupNotFoundWhenGroupDoesNotExist() {
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(pendingEnrollment()));
-            when(groupRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.empty());
+            when(courseRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> service.approve(ENROLLMENT_ID, ADMIN_ID))
-                    .isInstanceOf(GroupNotFoundException.class)
-                    .hasMessage("Group not found with ID: " + GROUP_ID);
+                    .isInstanceOf(CourseNotFoundException.class)
+                    .hasMessage("Course not found with ID: " + GROUP_ID);
 
             verifyNoInteractions(getUserProfileUseCase, autoReservationPort);
             verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));
@@ -332,22 +368,22 @@ class EnrollmentApprovalServiceTest {
         void shouldLockGroupWithFindByIdForUpdateBeforeAuthorizationAndCapacityCheck() {
             Enrollment enrollment = pendingEnrollment();
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(enrollment));
-            when(groupRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(24)));
+            when(courseRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(24)));
             when(getUserProfileUseCase.getUserById(ADMIN_ID)).thenReturn(admin());
-            when(enrollmentRepositoryPort.countActiveByGroupId(GROUP_ID)).thenReturn(0L);
+            when(enrollmentRepositoryPort.countActiveByCourseId(GROUP_ID)).thenReturn(0L);
             stubSaveReturnsArgument();
 
             service.approve(ENROLLMENT_ID, ADMIN_ID);
 
-            InOrder order = inOrder(enrollmentRepositoryPort, groupRepositoryPort, getUserProfileUseCase);
+            InOrder order = inOrder(enrollmentRepositoryPort, courseRepositoryPort, getUserProfileUseCase);
             order.verify(enrollmentRepositoryPort).findById(ENROLLMENT_ID);
-            order.verify(groupRepositoryPort).findByIdForUpdate(GROUP_ID);
+            order.verify(courseRepositoryPort).findByIdForUpdate(GROUP_ID);
             order.verify(getUserProfileUseCase).getUserById(ADMIN_ID);
-            order.verify(enrollmentRepositoryPort).countActiveByGroupId(GROUP_ID);
+            order.verify(enrollmentRepositoryPort).countActiveByCourseId(GROUP_ID);
             order.verify(enrollmentRepositoryPort).save(any(Enrollment.class));
 
             // approve() never uses the unlocked lookup
-            verify(groupRepositoryPort, never()).findById(anyLong());
+            verify(courseRepositoryPort, never()).findById(anyLong());
         }
 
         @Test
@@ -359,9 +395,9 @@ class EnrollmentApprovalServiceTest {
             Enrollment enrollment = pendingEnrollment();
             Enrollment staleSnapshot = enrollmentWithStatus(EnrollmentStatus.PENDING_APPROVAL);
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(enrollment));
-            when(groupRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(24)));
+            when(courseRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(24)));
             when(getUserProfileUseCase.getUserById(ADMIN_ID)).thenReturn(admin());
-            when(enrollmentRepositoryPort.countActiveByGroupId(GROUP_ID)).thenReturn(0L);
+            when(enrollmentRepositoryPort.countActiveByCourseId(GROUP_ID)).thenReturn(0L);
             when(enrollmentRepositoryPort.save(any(Enrollment.class))).thenReturn(staleSnapshot);
 
             Enrollment result = service.approve(ENROLLMENT_ID, ADMIN_ID);
@@ -380,7 +416,7 @@ class EnrollmentApprovalServiceTest {
         void shouldRejectWithReasonWhenPendingApproval() {
             Enrollment enrollment = pendingEnrollment();
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(enrollment));
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(24)));
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(24)));
             when(getUserProfileUseCase.getUserById(TEACHER_ID)).thenReturn(groupTeacher());
             stubSaveReturnsArgument();
 
@@ -401,7 +437,7 @@ class EnrollmentApprovalServiceTest {
         void shouldAllowAdminToRejectAnyGroupEnrollment() {
             Enrollment enrollment = pendingEnrollment();
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(enrollment));
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(24)));
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(24)));
             when(getUserProfileUseCase.getUserById(ADMIN_ID)).thenReturn(admin());
             stubSaveReturnsArgument();
 
@@ -419,14 +455,14 @@ class EnrollmentApprovalServiceTest {
             // the pessimistic lock (plain findById, no findByIdForUpdate).
             Enrollment enrollment = pendingEnrollment();
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(enrollment));
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(24)));
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(24)));
             when(getUserProfileUseCase.getUserById(TEACHER_ID)).thenReturn(groupTeacher());
             stubSaveReturnsArgument();
 
             service.reject(ENROLLMENT_ID, TEACHER_ID, "reason");
 
-            verify(groupRepositoryPort).findById(GROUP_ID);
-            verify(groupRepositoryPort, never()).findByIdForUpdate(anyLong());
+            verify(courseRepositoryPort).findById(GROUP_ID);
+            verify(courseRepositoryPort, never()).findByIdForUpdate(anyLong());
         }
 
         @ParameterizedTest
@@ -439,7 +475,7 @@ class EnrollmentApprovalServiceTest {
                     .isInstanceOf(InvalidEnrollmentStateException.class)
                     .hasMessage("Cannot reject enrollment with status: " + status);
 
-            verifyNoInteractions(groupRepositoryPort, getUserProfileUseCase, autoReservationPort);
+            verifyNoInteractions(courseRepositoryPort, getUserProfileUseCase, autoReservationPort);
             verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));
         }
 
@@ -448,7 +484,7 @@ class EnrollmentApprovalServiceTest {
             Enrollment enrollment = pendingEnrollment();
             User otherTeacher = userWithRole(OTHER_TEACHER_ID, "other@acainfo.com", RoleType.TEACHER);
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(enrollment));
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(24)));
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.of(groupWithCapacity(24)));
             when(getUserProfileUseCase.getUserById(OTHER_TEACHER_ID)).thenReturn(otherTeacher);
 
             assertThatThrownBy(() -> service.reject(ENROLLMENT_ID, OTHER_TEACHER_ID, "nope"))
@@ -466,16 +502,16 @@ class EnrollmentApprovalServiceTest {
             assertThatThrownBy(() -> service.reject(ENROLLMENT_ID, TEACHER_ID, "reason"))
                     .isInstanceOf(EnrollmentNotFoundException.class);
 
-            verifyNoInteractions(groupRepositoryPort, getUserProfileUseCase, autoReservationPort);
+            verifyNoInteractions(courseRepositoryPort, getUserProfileUseCase, autoReservationPort);
         }
 
         @Test
         void shouldThrowGroupNotFoundWhenRejectingAndGroupDoesNotExist() {
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(pendingEnrollment()));
-            when(groupRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.empty());
+            when(courseRepositoryPort.findById(GROUP_ID)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> service.reject(ENROLLMENT_ID, TEACHER_ID, "reason"))
-                    .isInstanceOf(GroupNotFoundException.class);
+                    .isInstanceOf(CourseNotFoundException.class);
 
             verifyNoInteractions(getUserProfileUseCase, autoReservationPort);
             verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));

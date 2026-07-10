@@ -44,7 +44,7 @@ public interface SessionRestMapper {
      */
     @Mapping(target = "subjectName", ignore = true)
     @Mapping(target = "subjectCode", ignore = true)
-    @Mapping(target = "groupName", ignore = true)
+    @Mapping(target = "courseName", ignore = true)
     @Mapping(target = "teacherName", ignore = true)
     @Mapping(target = "durationMinutes", expression = "java(session.getDurationMinutes())")
     @Mapping(target = "isScheduled", expression = "java(session.isScheduled())")
@@ -54,8 +54,6 @@ public interface SessionRestMapper {
     @Mapping(target = "isPostponed", expression = "java(session.isPostponed())")
     @Mapping(target = "isRegular", expression = "java(session.isRegular())")
     @Mapping(target = "isExtra", expression = "java(session.isExtra())")
-    @Mapping(target = "isSchedulingType", expression = "java(session.isSchedulingType())")
-    @Mapping(target = "hasGroup", expression = "java(session.hasGroup())")
     @Mapping(target = "hasSchedule", expression = "java(session.hasSchedule())")
     SessionResponse toResponse(Session session);
 
@@ -65,17 +63,17 @@ public interface SessionRestMapper {
      * @param session     the session domain object
      * @param subjectName name of the subject
      * @param subjectCode code of the subject
-     * @param groupName   name of the group (nullable for sessions without group)
+     * @param courseName   name of the group (nullable for sessions without group)
      * @param teacherName full name of the teacher (nullable for sessions without group)
      * @return enriched session response
      */
     @Mapping(target = "subjectName", source = "subjectName")
     @Mapping(target = "subjectCode", source = "subjectCode")
-    @Mapping(target = "groupName", source = "groupName")
+    @Mapping(target = "courseName", source = "courseName")
     @Mapping(target = "teacherName", source = "teacherName")
     @Mapping(target = "id", source = "session.id")
     @Mapping(target = "subjectId", source = "session.subjectId")
-    @Mapping(target = "groupId", source = "session.groupId")
+    @Mapping(target = "courseId", source = "session.courseId")
     @Mapping(target = "scheduleId", source = "session.scheduleId")
     @Mapping(target = "classroom", source = "session.classroom")
     @Mapping(target = "date", source = "session.date")
@@ -95,14 +93,12 @@ public interface SessionRestMapper {
     @Mapping(target = "isPostponed", expression = "java(session.isPostponed())")
     @Mapping(target = "isRegular", expression = "java(session.isRegular())")
     @Mapping(target = "isExtra", expression = "java(session.isExtra())")
-    @Mapping(target = "isSchedulingType", expression = "java(session.isSchedulingType())")
-    @Mapping(target = "hasGroup", expression = "java(session.hasGroup())")
     @Mapping(target = "hasSchedule", expression = "java(session.hasSchedule())")
     SessionResponse toEnrichedResponse(
             Session session,
             String subjectName,
             String subjectCode,
-            String groupName,
+            String courseName,
             String teacherName
     );
 

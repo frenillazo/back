@@ -6,9 +6,9 @@ import com.acainfo.enrollment.domain.exception.EnrollmentNotFoundException;
 import com.acainfo.enrollment.domain.exception.InvalidEnrollmentStateException;
 import com.acainfo.enrollment.domain.model.Enrollment;
 import com.acainfo.enrollment.domain.model.EnrollmentStatus;
-import com.acainfo.group.application.port.out.GroupRepositoryPort;
-import com.acainfo.group.domain.exception.GroupNotFoundException;
-import com.acainfo.group.domain.model.SubjectGroup;
+import com.acainfo.course.application.port.out.CourseRepositoryPort;
+import com.acainfo.course.domain.exception.CourseNotFoundException;
+import com.acainfo.course.domain.model.Course;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -53,16 +53,16 @@ class WaitingListServiceTest {
     private AutoReservationPort autoReservationPort;
 
     @Mock
-    private GroupRepositoryPort groupRepositoryPort;
+    private CourseRepositoryPort courseRepositoryPort;
 
     @InjectMocks
     private WaitingListService waitingListService;
 
-    private SubjectGroup group;
+    private Course group;
 
     @BeforeEach
     void setUp() {
-        group = SubjectGroup.builder()
+        group = Course.builder()
                 .id(GROUP_ID)
                 .name("Test group")
                 .subjectId(1L)
@@ -74,7 +74,7 @@ class WaitingListServiceTest {
         return Enrollment.builder()
                 .id(id)
                 .studentId(studentId)
-                .groupId(GROUP_ID)
+                .courseId(GROUP_ID)
                 .status(EnrollmentStatus.WAITING_LIST)
                 .waitingListPosition(position)
                 .enrolledAt(LocalDateTime.now().minusDays(1))
@@ -87,29 +87,29 @@ class WaitingListServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
     }
 
-    // ==================== getWaitingListByGroupId ====================
+    // ==================== getWaitingListByCourseId ====================
 
     @Nested
-    class GetWaitingListByGroupId {
+    class GetWaitingListByCourseId {
 
         @Test
         void shouldReturnWaitingListOrderedByRepositoryWhenGroupHasQueue() {
             List<Enrollment> queue = List.of(
                     waitingEnrollment(1L, 10L, 1),
                     waitingEnrollment(2L, 11L, 2));
-            when(enrollmentRepositoryPort.findWaitingListByGroupId(GROUP_ID)).thenReturn(queue);
+            when(enrollmentRepositoryPort.findWaitingListByCourseId(GROUP_ID)).thenReturn(queue);
 
-            List<Enrollment> result = waitingListService.getWaitingListByGroupId(GROUP_ID);
+            List<Enrollment> result = waitingListService.getWaitingListByCourseId(GROUP_ID);
 
             assertThat(result).isSameAs(queue);
-            verify(enrollmentRepositoryPort).findWaitingListByGroupId(GROUP_ID);
+            verify(enrollmentRepositoryPort).findWaitingListByCourseId(GROUP_ID);
         }
 
         @Test
         void shouldReturnEmptyListWhenGroupHasNoQueue() {
-            when(enrollmentRepositoryPort.findWaitingListByGroupId(GROUP_ID)).thenReturn(List.of());
+            when(enrollmentRepositoryPort.findWaitingListByCourseId(GROUP_ID)).thenReturn(List.of());
 
-            List<Enrollment> result = waitingListService.getWaitingListByGroupId(GROUP_ID);
+            List<Enrollment> result = waitingListService.getWaitingListByCourseId(GROUP_ID);
 
             assertThat(result).isEmpty();
         }
@@ -180,7 +180,7 @@ class WaitingListServiceTest {
             Enrollment activeEnrollment = Enrollment.builder()
                     .id(ENROLLMENT_ID)
                     .studentId(STUDENT_ID)
-                    .groupId(GROUP_ID)
+                    .courseId(GROUP_ID)
                     .status(EnrollmentStatus.ACTIVE)
                     .build();
             when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(activeEnrollment));
@@ -221,8 +221,8 @@ class WaitingListServiceTest {
             Enrollment first = waitingEnrollment(1L, 10L, 1);
             Enrollment second = waitingEnrollment(2L, 11L, 2);
             Enrollment third = waitingEnrollment(3L, 12L, 3);
-            when(groupRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(group));
-            when(enrollmentRepositoryPort.findWaitingListByGroupId(GROUP_ID))
+            when(courseRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(group));
+            when(enrollmentRepositoryPort.findWaitingListByCourseId(GROUP_ID))
                     .thenReturn(List.of(first, second, third));
             stubSaveEcho();
 
@@ -250,8 +250,8 @@ class WaitingListServiceTest {
         @Test
         void shouldGenerateAutoReservationsForPromotedStudent() {
             Enrollment first = waitingEnrollment(7L, 42L, 1);
-            when(groupRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(group));
-            when(enrollmentRepositoryPort.findWaitingListByGroupId(GROUP_ID)).thenReturn(List.of(first));
+            when(courseRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(group));
+            when(enrollmentRepositoryPort.findWaitingListByCourseId(GROUP_ID)).thenReturn(List.of(first));
             stubSaveEcho();
 
             waitingListService.promoteNextFromWaitingList(GROUP_ID);
@@ -261,8 +261,8 @@ class WaitingListServiceTest {
 
         @Test
         void shouldReturnNullWithoutSideEffectsWhenWaitingListIsEmpty() {
-            when(groupRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(group));
-            when(enrollmentRepositoryPort.findWaitingListByGroupId(GROUP_ID)).thenReturn(List.of());
+            when(courseRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(group));
+            when(enrollmentRepositoryPort.findWaitingListByCourseId(GROUP_ID)).thenReturn(List.of());
 
             Enrollment result = waitingListService.promoteNextFromWaitingList(GROUP_ID);
 
@@ -275,13 +275,13 @@ class WaitingListServiceTest {
 
         @Test
         void shouldThrowGroupNotFoundWhenGroupDoesNotExist() {
-            when(groupRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.empty());
+            when(courseRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> waitingListService.promoteNextFromWaitingList(GROUP_ID))
-                    .isInstanceOf(GroupNotFoundException.class)
+                    .isInstanceOf(CourseNotFoundException.class)
                     .hasMessageContaining(String.valueOf(GROUP_ID));
 
-            verify(enrollmentRepositoryPort, never()).findWaitingListByGroupId(anyLong());
+            verify(enrollmentRepositoryPort, never()).findWaitingListByCourseId(anyLong());
             verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));
             verifyNoInteractions(autoReservationPort);
         }
@@ -289,15 +289,15 @@ class WaitingListServiceTest {
         @Test
         void shouldLockGroupRowBeforeReadingWaitingList() {
             Enrollment first = waitingEnrollment(1L, 10L, 1);
-            when(groupRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(group));
-            when(enrollmentRepositoryPort.findWaitingListByGroupId(GROUP_ID)).thenReturn(List.of(first));
+            when(courseRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(group));
+            when(enrollmentRepositoryPort.findWaitingListByCourseId(GROUP_ID)).thenReturn(List.of(first));
             stubSaveEcho();
 
             waitingListService.promoteNextFromWaitingList(GROUP_ID);
 
-            InOrder inOrder = inOrder(groupRepositoryPort, enrollmentRepositoryPort);
-            inOrder.verify(groupRepositoryPort).findByIdForUpdate(GROUP_ID);
-            inOrder.verify(enrollmentRepositoryPort).findWaitingListByGroupId(GROUP_ID);
+            InOrder inOrder = inOrder(courseRepositoryPort, enrollmentRepositoryPort);
+            inOrder.verify(courseRepositoryPort).findByIdForUpdate(GROUP_ID);
+            inOrder.verify(enrollmentRepositoryPort).findWaitingListByCourseId(GROUP_ID);
         }
 
         @Test
@@ -305,8 +305,8 @@ class WaitingListServiceTest {
             // Data-inconsistency edge captured as-is: head of queue with null position.
             // Promotion still happens (ACTIVE + reservations) but no decrement is issued.
             Enrollment inconsistentHead = waitingEnrollment(9L, 50L, null);
-            when(groupRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(group));
-            when(enrollmentRepositoryPort.findWaitingListByGroupId(GROUP_ID))
+            when(courseRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(group));
+            when(enrollmentRepositoryPort.findWaitingListByCourseId(GROUP_ID))
                     .thenReturn(List.of(inconsistentHead));
             stubSaveEcho();
 

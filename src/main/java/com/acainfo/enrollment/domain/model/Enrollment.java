@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -38,23 +37,9 @@ public class Enrollment {
     private Long studentId;
 
     /**
-     * Reference to the subject group the student is enrolled in.
-     * <p>Nullable: exactly one of {@code groupId} and {@code intensiveId} must be set
-     * (CHECK constraint at the DB level).</p>
+     * Reference to the course the student is enrolled in.
      */
-    private Long groupId;
-
-    /**
-     * Reference to the intensive course the student is enrolled in.
-     * <p>Nullable: exactly one of {@code groupId} and {@code intensiveId} must be set.</p>
-     */
-    private Long intensiveId;
-
-    /**
-     * Price per hour for this enrollment (€/hour).
-     * Set at enrollment time, used for payment calculations.
-     */
-    private BigDecimal pricePerHour;
+    private Long courseId;
 
     /**
      * Current status of this enrollment.
@@ -194,16 +179,10 @@ public class Enrollment {
     // ==================== Polymorphic helpers ====================
 
     /**
-     * Whether this enrollment is for a regular {@code SubjectGroup}.
+     * Whether this enrollment is for a regular {@code Course}.
      */
-    public boolean isForGroup() {
-        return groupId != null;
+    public boolean isForCourse() {
+        return courseId != null;
     }
 
-    /**
-     * Whether this enrollment is for an {@code Intensive} course.
-     */
-    public boolean isForIntensive() {
-        return intensiveId != null;
-    }
 }

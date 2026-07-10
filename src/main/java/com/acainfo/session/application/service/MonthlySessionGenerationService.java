@@ -1,8 +1,8 @@
 package com.acainfo.session.application.service;
 
-import com.acainfo.group.application.port.out.GroupRepositoryPort;
-import com.acainfo.group.domain.model.GroupStatus;
-import com.acainfo.group.domain.model.SubjectGroup;
+import com.acainfo.course.application.port.out.CourseRepositoryPort;
+import com.acainfo.course.domain.model.CourseStatus;
+import com.acainfo.course.domain.model.Course;
 import com.acainfo.session.application.dto.GenerateSessionsCommand;
 import com.acainfo.session.application.port.in.GenerateSessionsUseCase;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MonthlySessionGenerationService {
 
-    private final GroupRepositoryPort groupRepositoryPort;
+    private final CourseRepositoryPort courseRepositoryPort;
     private final GenerateSessionsUseCase generateSessionsUseCase;
 
     /**
@@ -56,8 +56,8 @@ public class MonthlySessionGenerationService {
         log.info("Monthly session generation starting for {} (range {} - {})",
                 month, startOfMonth, endOfMonth);
 
-        List<SubjectGroup> activeGroups = groupRepositoryPort.findAll().stream()
-                .filter(g -> g.getStatus() == GroupStatus.OPEN)
+        List<Course> activeGroups = courseRepositoryPort.findAll().stream()
+                .filter(g -> g.getStatus() == CourseStatus.OPEN)
                 .toList();
 
         int processed = 0;
@@ -65,7 +65,7 @@ public class MonthlySessionGenerationService {
         int totalCreated = 0;
         int errored = 0;
 
-        for (SubjectGroup g : activeGroups) {
+        for (Course g : activeGroups) {
             processed++;
 
             LocalDate effectiveEnd = g.getEndDate() != null && g.getEndDate().isBefore(endOfMonth)

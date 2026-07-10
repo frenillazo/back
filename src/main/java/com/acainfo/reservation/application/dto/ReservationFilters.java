@@ -1,7 +1,5 @@
 package com.acainfo.reservation.application.dto;
 
-import com.acainfo.reservation.domain.model.AttendanceStatus;
-import com.acainfo.reservation.domain.model.OnlineRequestStatus;
 import com.acainfo.reservation.domain.model.ReservationMode;
 import com.acainfo.reservation.domain.model.ReservationStatus;
 
@@ -15,9 +13,6 @@ public record ReservationFilters(
         Long enrollmentId,
         ReservationStatus status,
         ReservationMode mode,
-        OnlineRequestStatus onlineRequestStatus,
-        AttendanceStatus attendanceStatus,
-        Boolean hasAttendanceRecorded,
         Integer page,
         Integer size,
         String sortBy,

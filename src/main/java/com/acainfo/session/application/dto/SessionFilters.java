@@ -13,8 +13,8 @@ import java.util.List;
  */
 public record SessionFilters(
         Long subjectId,
-        Long groupId,
-        List<Long> groupIds,
+        Long courseId,
+        List<Long> courseIds,
         Long scheduleId,
         SessionType type,
         SessionStatus status,
@@ -44,9 +44,9 @@ public record SessionFilters(
     /**
      * Factory method for filtering sessions by group.
      */
-    public static SessionFilters byGroup(Long groupId) {
+    public static SessionFilters byGroup(Long courseId) {
         return new SessionFilters(
-                null, groupId, null, null, null, null, null,
+                null, courseId, null, null, null, null, null,
                 null, null, null, null, null, null
         );
     }
@@ -74,9 +74,9 @@ public record SessionFilters(
     /**
      * Factory method for filtering upcoming scheduled sessions for a group.
      */
-    public static SessionFilters upcomingForGroup(Long groupId, LocalDate fromDate) {
+    public static SessionFilters upcomingForCourse(Long courseId, LocalDate fromDate) {
         return new SessionFilters(
-                null, groupId, null, null, null, SessionStatus.SCHEDULED, null,
+                null, courseId, null, null, null, SessionStatus.SCHEDULED, null,
                 fromDate, null, null, null, "date", "ASC"
         );
     }
@@ -84,9 +84,9 @@ public record SessionFilters(
     /**
      * Factory method for filtering upcoming scheduled sessions for multiple groups.
      */
-    public static SessionFilters upcomingForGroups(List<Long> groupIds, LocalDate fromDate, int limit) {
+    public static SessionFilters upcomingForCourses(List<Long> courseIds, LocalDate fromDate, int limit) {
         return new SessionFilters(
-                null, null, groupIds, null, null, SessionStatus.SCHEDULED, null,
+                null, null, courseIds, null, null, SessionStatus.SCHEDULED, null,
                 fromDate, null, 0, limit, "date", "ASC"
         );
     }

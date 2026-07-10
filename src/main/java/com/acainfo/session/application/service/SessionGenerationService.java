@@ -1,8 +1,8 @@
 package com.acainfo.session.application.service;
 
-import com.acainfo.group.application.port.out.GroupRepositoryPort;
-import com.acainfo.group.domain.exception.GroupNotFoundException;
-import com.acainfo.group.domain.model.SubjectGroup;
+import com.acainfo.course.application.port.out.CourseRepositoryPort;
+import com.acainfo.course.domain.exception.CourseNotFoundException;
+import com.acainfo.course.domain.model.Course;
 import com.acainfo.reservation.application.dto.GenerateReservationsCommand;
 import com.acainfo.reservation.application.port.in.GenerateReservationsUseCase;
 import com.acainfo.schedule.application.port.out.ScheduleRepositoryPort;
@@ -38,7 +38,7 @@ import java.util.List;
 public class SessionGenerationService implements GenerateSessionsUseCase {
 
     private final SessionRepositoryPort sessionRepositoryPort;
-    private final GroupRepositoryPort groupRepositoryPort;
+    private final CourseRepositoryPort courseRepositoryPort;
     private final ScheduleRepositoryPort scheduleRepositoryPort;
     private final UserRepositoryPort userRepositoryPort;
     private final GenerateReservationsUseCase generateReservationsUseCase;
@@ -46,8 +46,8 @@ public class SessionGenerationService implements GenerateSessionsUseCase {
     @Override
     @Transactional
     public List<Session> generate(GenerateSessionsCommand command) {
-        log.info("Generating sessions: groupId={}, from={}, to={}",
-                command.groupId(), command.startDate(), command.endDate());
+        log.info("Generating sessions: courseId={}, from={}, to={}",
+                command.courseId(), command.startDate(), command.endDate());
 
         List<Session> sessionsToCreate = preview(command);
 
@@ -61,7 +61,7 @@ public class SessionGenerationService implements GenerateSessionsUseCase {
         // Auto-generate reservations for all newly created sessions
         for (Session session : savedSessions) {
             generateReservationsUseCase.generate(
-                    new GenerateReservationsCommand(session.getId(), session.getGroupId())
+                    new GenerateReservationsCommand(session.getId(), session.getCourseId())
             );
         }
 
@@ -72,24 +72,24 @@ public class SessionGenerationService implements GenerateSessionsUseCase {
     @Override
     @Transactional(readOnly = true)
     public List<Session> preview(GenerateSessionsCommand command) {
-        log.debug("Previewing session generation: groupId={}, from={}, to={}",
-                command.groupId(), command.startDate(), command.endDate());
+        log.debug("Previewing session generation: courseId={}, from={}, to={}",
+                command.courseId(), command.startDate(), command.endDate());
 
-        if (command.groupId() == null) {
+        if (command.courseId() == null) {
             throw new InvalidSessionStateException(
-                    "Generation for all groups not yet implemented. Please specify a groupId."
+                    "Generation for all groups not yet implemented. Please specify a courseId."
             );
         }
 
-        List<Schedule> schedules = scheduleRepositoryPort.findByGroupId(command.groupId());
+        List<Schedule> schedules = scheduleRepositoryPort.findByCourseId(command.courseId());
 
         if (schedules.isEmpty()) {
-            log.debug("No schedules found for groupId: {}", command.groupId());
+            log.debug("No schedules found for courseId: {}", command.courseId());
             return List.of();
         }
 
-        SubjectGroup group = groupRepositoryPort.findById(command.groupId())
-                .orElseThrow(() -> new GroupNotFoundException(command.groupId()));
+        Course group = courseRepositoryPort.findById(command.courseId())
+                .orElseThrow(() -> new CourseNotFoundException(command.courseId()));
 
         // Cap the requested endDate by the group's own endDate so we never generate
         // sessions past the group's lifespan, regardless of the caller (cron or REST).
@@ -121,7 +121,7 @@ public class SessionGenerationService implements GenerateSessionsUseCase {
 
                         Session session = Session.builder()
                                 .subjectId(group.getSubjectId())
-                                .groupId(command.groupId())
+                                .courseId(command.courseId())
                                 .scheduleId(schedule.getId())
                                 .classroom(schedule.getClassroom())
                                 .date(currentDate)
@@ -214,7 +214,7 @@ public class SessionGenerationService implements GenerateSessionsUseCase {
             }
 
             // Get teacher ID for batch session
-            SubjectGroup batchGroup = groupRepositoryPort.findById(batchSession.getGroupId())
+            Course batchGroup = courseRepositoryPort.findById(batchSession.getCourseId())
                     .orElse(null);
             if (batchGroup == null || !teacherId.equals(batchGroup.getTeacherId())) {
                 continue; // Different teacher, no conflict

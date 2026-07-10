@@ -61,10 +61,4 @@ public class ReservationQueryService implements GetReservationUseCase {
         log.debug("Getting reservations by studentId: {}", studentId);
         return reservationRepositoryPort.findByStudentId(studentId);
     }
-
-    @Override
-    public List<SessionReservation> getPendingOnlineRequestsForTeacher(Long teacherId) {
-        log.debug("Getting pending online requests for teacher: {}", teacherId);
-        return reservationRepositoryPort.findPendingOnlineRequestsByTeacherId(teacherId);
-    }
 }

@@ -35,9 +35,9 @@ public class EnrollmentSpecifications {
                 predicates.add(criteriaBuilder.equal(root.get("studentId"), filters.studentId()));
             }
 
-            // Filter by groupId
-            if (filters.groupId() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("groupId"), filters.groupId()));
+            // Filter by courseId
+            if (filters.courseId() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("courseId"), filters.courseId()));
             }
 
             // Filter by status
@@ -79,14 +79,14 @@ public class EnrollmentSpecifications {
     }
 
     /**
-     * Specification to find enrollments by groupId.
+     * Specification to find enrollments by courseId.
      */
-    public static Specification<EnrollmentJpaEntity> hasGroupId(Long groupId) {
+    public static Specification<EnrollmentJpaEntity> hasCourseId(Long courseId) {
         return (root, query, criteriaBuilder) -> {
-            if (groupId == null) {
+            if (courseId == null) {
                 return criteriaBuilder.conjunction();
             }
-            return criteriaBuilder.equal(root.get("groupId"), groupId);
+            return criteriaBuilder.equal(root.get("courseId"), courseId);
         };
     }
 

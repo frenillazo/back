@@ -1,7 +1,7 @@
 package com.acainfo.schedule.infrastructure.adapter.in.rest;
 
-import com.acainfo.group.application.port.in.GetGroupUseCase;
-import com.acainfo.group.domain.model.SubjectGroup;
+import com.acainfo.course.application.port.in.GetCourseUseCase;
+import com.acainfo.course.domain.model.Course;
 import com.acainfo.schedule.domain.model.Schedule;
 import com.acainfo.schedule.infrastructure.adapter.in.rest.dto.ScheduleEnrichedResponse;
 import com.acainfo.schedule.infrastructure.mapper.ScheduleRestMapper;
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 public class ScheduleResponseEnricher {
 
     private final ScheduleRestMapper scheduleRestMapper;
-    private final GetGroupUseCase getGroupUseCase;
+    private final GetCourseUseCase getCourseUseCase;
     private final GetSubjectUseCase getSubjectUseCase;
     private final GetUserProfileUseCase getUserProfileUseCase;
 
@@ -42,7 +42,7 @@ public class ScheduleResponseEnricher {
      * @return enriched schedule response
      */
     public ScheduleEnrichedResponse enrich(Schedule schedule) {
-        SubjectGroup group = getGroupUseCase.getById(schedule.getGroupId());
+        Course group = getCourseUseCase.getById(schedule.getCourseId());
         Subject subject = getSubjectUseCase.getById(group.getSubjectId());
         User teacher = getUserProfileUseCase.getUserById(group.getTeacherId());
 
@@ -68,22 +68,22 @@ public class ScheduleResponseEnricher {
         }
 
         // Collect unique group IDs
-        Set<Long> groupIds = schedules.stream()
-                .map(Schedule::getGroupId)
+        Set<Long> courseIds = schedules.stream()
+                .map(Schedule::getCourseId)
                 .collect(Collectors.toSet());
 
         // Fetch groups
-        Map<Long, SubjectGroup> groupsById = groupIds.stream()
-                .map(getGroupUseCase::getById)
-                .collect(Collectors.toMap(SubjectGroup::getId, Function.identity()));
+        Map<Long, Course> groupsById = courseIds.stream()
+                .map(getCourseUseCase::getById)
+                .collect(Collectors.toMap(Course::getId, Function.identity()));
 
         // Collect unique subject and teacher IDs from groups
         Set<Long> subjectIds = groupsById.values().stream()
-                .map(SubjectGroup::getSubjectId)
+                .map(Course::getSubjectId)
                 .collect(Collectors.toSet());
 
         Set<Long> teacherIds = groupsById.values().stream()
-                .map(SubjectGroup::getTeacherId)
+                .map(Course::getTeacherId)
                 .collect(Collectors.toSet());
 
         // Fetch subjects
@@ -99,7 +99,7 @@ public class ScheduleResponseEnricher {
         // Build enriched responses
         return schedules.stream()
                 .map(schedule -> {
-                    SubjectGroup group = groupsById.get(schedule.getGroupId());
+                    Course group = groupsById.get(schedule.getCourseId());
                     Subject subject = subjectsById.get(group.getSubjectId());
                     User teacher = teachersById.get(group.getTeacherId());
 

@@ -8,8 +8,8 @@ import com.acainfo.shared.domain.exception.BusinessRuleException;
  */
 public class UnauthorizedApprovalException extends BusinessRuleException {
 
-    public UnauthorizedApprovalException(Long userId, Long groupId) {
-        super(String.format("User %d is not authorized to approve/reject enrollments for group %d", userId, groupId));
+    public UnauthorizedApprovalException(Long userId, Long courseId) {
+        super(String.format("User %d is not authorized to approve/reject enrollments for group %d", userId, courseId));
     }
 
     @Override

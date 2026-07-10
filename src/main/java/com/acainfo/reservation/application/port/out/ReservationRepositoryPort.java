@@ -1,7 +1,6 @@
 package com.acainfo.reservation.application.port.out;
 
 import com.acainfo.reservation.application.dto.ReservationFilters;
-import com.acainfo.reservation.domain.model.OnlineRequestStatus;
 import com.acainfo.reservation.domain.model.ReservationMode;
 import com.acainfo.reservation.domain.model.ReservationStatus;
 import com.acainfo.reservation.domain.model.SessionReservation;
@@ -86,22 +85,6 @@ public interface ReservationRepositoryPort {
     List<SessionReservation> findBySessionIdAndStatus(Long sessionId, ReservationStatus status);
 
     /**
-     * Find reservations with pending online requests for sessions taught by a teacher.
-     *
-     * @param teacherId Teacher ID
-     * @return List of reservations with pending requests
-     */
-    List<SessionReservation> findPendingOnlineRequestsByTeacherId(Long teacherId);
-
-    /**
-     * Find reservations by online request status.
-     *
-     * @param status Online request status
-     * @return List of reservations
-     */
-    List<SessionReservation> findByOnlineRequestStatus(OnlineRequestStatus status);
-
-    /**
      * Check if a reservation exists for student and session.
      *
      * @param studentId Student ID
@@ -139,14 +122,6 @@ public interface ReservationRepositoryPort {
     default long countInPersonReservations(Long sessionId) {
         return countBySessionIdAndStatusAndMode(sessionId, ReservationStatus.CONFIRMED, ReservationMode.IN_PERSON);
     }
-
-    /**
-     * Find reservations without attendance recorded for a session.
-     *
-     * @param sessionId Session ID
-     * @return List of reservations without attendance
-     */
-    List<SessionReservation> findBySessionIdAndAttendanceStatusIsNull(Long sessionId);
 
     /**
      * Delete a reservation.

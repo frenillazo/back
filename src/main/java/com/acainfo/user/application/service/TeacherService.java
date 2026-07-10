@@ -1,6 +1,6 @@
 package com.acainfo.user.application.service;
 
-import com.acainfo.group.application.port.out.GroupRepositoryPort;
+import com.acainfo.course.application.port.out.CourseRepositoryPort;
 import com.acainfo.user.application.dto.CreateTeacherCommand;
 import com.acainfo.user.application.dto.UpdateTeacherCommand;
 import com.acainfo.user.application.dto.UserFilters;
@@ -34,7 +34,7 @@ public class TeacherService implements ManageTeachersUseCase {
 
     private final UserRepositoryPort userRepositoryPort;
     private final RoleRepositoryPort roleRepositoryPort;
-    private final GroupRepositoryPort groupRepositoryPort;
+    private final CourseRepositoryPort courseRepositoryPort;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -115,7 +115,7 @@ public class TeacherService implements ManageTeachersUseCase {
         }
 
         // Check if teacher has active groups (OPEN or CLOSED)
-        long activeGroupsCount = groupRepositoryPort.countActiveGroupsByTeacherId(teacherId);
+        long activeGroupsCount = courseRepositoryPort.countActiveGroupsByTeacherId(teacherId);
         if (activeGroupsCount > 0) {
             throw new TeacherHasActiveGroupsException(teacherId, activeGroupsCount);
         }

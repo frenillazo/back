@@ -51,7 +51,7 @@ public class EnrollmentExpirationService {
                 enrollmentRepositoryPort.save(enrollment);
 
                 log.info("Expired enrollment {} for student {} in group {}",
-                        enrollment.getId(), enrollment.getStudentId(), enrollment.getGroupId());
+                        enrollment.getId(), enrollment.getStudentId(), enrollment.getCourseId());
             } catch (Exception e) {
                 log.error("Failed to expire enrollment {}: {}", enrollment.getId(), e.getMessage());
             }

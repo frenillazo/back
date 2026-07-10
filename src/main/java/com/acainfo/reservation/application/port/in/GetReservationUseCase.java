@@ -44,12 +44,4 @@ public interface GetReservationUseCase {
      * @return List of reservations for the student
      */
     List<SessionReservation> getByStudentId(Long studentId);
-
-    /**
-     * Get pending online requests for a teacher's sessions.
-     *
-     * @param teacherId Teacher ID
-     * @return List of reservations with pending online requests
-     */
-    List<SessionReservation> getPendingOnlineRequestsForTeacher(Long teacherId);
 }

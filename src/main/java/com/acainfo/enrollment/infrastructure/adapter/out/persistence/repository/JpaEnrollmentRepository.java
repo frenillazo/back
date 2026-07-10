@@ -30,7 +30,7 @@ public interface JpaEnrollmentRepository extends
     /**
      * Find all enrollments for a group.
      */
-    List<EnrollmentJpaEntity> findByGroupId(Long groupId);
+    List<EnrollmentJpaEntity> findByCourseId(Long courseId);
 
     /**
      * Find enrollments by student and status.
@@ -45,35 +45,35 @@ public interface JpaEnrollmentRepository extends
     /**
      * Find enrollments by group and status.
      */
-    List<EnrollmentJpaEntity> findByGroupIdAndStatus(Long groupId, EnrollmentStatus status);
+    List<EnrollmentJpaEntity> findByCourseIdAndStatus(Long courseId, EnrollmentStatus status);
 
     /**
      * Find a specific enrollment by student and group.
      */
-    Optional<EnrollmentJpaEntity> findByStudentIdAndGroupId(Long studentId, Long groupId);
+    Optional<EnrollmentJpaEntity> findByStudentIdAndCourseId(Long studentId, Long courseId);
 
     /**
      * Check if student is already enrolled (active or waiting) in a group.
      */
-    boolean existsByStudentIdAndGroupIdAndStatusIn(Long studentId, Long groupId, List<EnrollmentStatus> statuses);
+    boolean existsByStudentIdAndCourseIdAndStatusIn(Long studentId, Long courseId, List<EnrollmentStatus> statuses);
 
     /**
      * Count active enrollments for a group.
      */
-    long countByGroupIdAndStatus(Long groupId, EnrollmentStatus status);
+    long countByCourseIdAndStatus(Long courseId, EnrollmentStatus status);
 
     /**
      * Find waiting list for a group, ordered by position (FIFO).
      */
-    List<EnrollmentJpaEntity> findByGroupIdAndStatusOrderByWaitingListPositionAsc(
-            Long groupId, EnrollmentStatus status);
+    List<EnrollmentJpaEntity> findByCourseIdAndStatusOrderByWaitingListPositionAsc(
+            Long courseId, EnrollmentStatus status);
 
     /**
      * Find the next waiting list position for a group.
      */
     @Query("SELECT COALESCE(MAX(e.waitingListPosition), 0) + 1 FROM EnrollmentJpaEntity e " +
-           "WHERE e.groupId = :groupId AND e.status = 'WAITING_LIST'")
-    int findNextWaitingListPosition(@Param("groupId") Long groupId);
+           "WHERE e.courseId = :courseId AND e.status = 'WAITING_LIST'")
+    int findNextWaitingListPosition(@Param("courseId") Long courseId);
 
     /**
      * Decrement waiting list positions after a student leaves.
@@ -81,14 +81,14 @@ public interface JpaEnrollmentRepository extends
      */
     @Modifying
     @Query("UPDATE EnrollmentJpaEntity e SET e.waitingListPosition = e.waitingListPosition - 1 " +
-           "WHERE e.groupId = :groupId AND e.status = 'WAITING_LIST' " +
+           "WHERE e.courseId = :courseId AND e.status = 'WAITING_LIST' " +
            "AND e.waitingListPosition > :position")
-    void decrementWaitingListPositionsAfter(@Param("groupId") Long groupId, @Param("position") int position);
+    void decrementWaitingListPositionsAfter(@Param("courseId") Long courseId, @Param("position") int position);
 
     /**
      * Find pending approval enrollments for multiple groups.
      */
-    List<EnrollmentJpaEntity> findByGroupIdInAndStatus(List<Long> groupIds, EnrollmentStatus status);
+    List<EnrollmentJpaEntity> findByCourseIdInAndStatus(List<Long> courseIds, EnrollmentStatus status);
 
     /**
      * Find pending enrollments older than a given time (for expiration).

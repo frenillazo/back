@@ -41,14 +41,14 @@ public class SessionSpecifications {
                 predicates.add(criteriaBuilder.equal(root.get("subjectId"), filters.subjectId()));
             }
 
-            // Filter by groupId
-            if (filters.groupId() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("groupId"), filters.groupId()));
+            // Filter by courseId
+            if (filters.courseId() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("courseId"), filters.courseId()));
             }
 
-            // Filter by groupIds (IN clause)
-            if (filters.groupIds() != null && !filters.groupIds().isEmpty()) {
-                predicates.add(root.get("groupId").in(filters.groupIds()));
+            // Filter by courseIds (IN clause)
+            if (filters.courseIds() != null && !filters.courseIds().isEmpty()) {
+                predicates.add(root.get("courseId").in(filters.courseIds()));
             }
 
             // Filter by scheduleId
@@ -99,14 +99,14 @@ public class SessionSpecifications {
     }
 
     /**
-     * Specification to find sessions by groupId.
+     * Specification to find sessions by courseId.
      */
-    public static Specification<SessionJpaEntity> hasGroupId(Long groupId) {
+    public static Specification<SessionJpaEntity> hasCourseId(Long courseId) {
         return (root, query, criteriaBuilder) -> {
-            if (groupId == null) {
+            if (courseId == null) {
                 return criteriaBuilder.conjunction();
             }
-            return criteriaBuilder.equal(root.get("groupId"), groupId);
+            return criteriaBuilder.equal(root.get("courseId"), courseId);
         };
     }
 
@@ -209,14 +209,14 @@ public class SessionSpecifications {
     }
 
     /**
-     * Specification to find sessions by multiple groupIds (IN clause).
+     * Specification to find sessions by multiple courseIds (IN clause).
      */
-    public static Specification<SessionJpaEntity> hasGroupIdIn(List<Long> groupIds) {
+    public static Specification<SessionJpaEntity> hasCourseIdIn(List<Long> courseIds) {
         return (root, query, criteriaBuilder) -> {
-            if (groupIds == null || groupIds.isEmpty()) {
+            if (courseIds == null || courseIds.isEmpty()) {
                 return criteriaBuilder.conjunction();
             }
-            return root.get("groupId").in(groupIds);
+            return root.get("courseId").in(courseIds);
         };
     }
 }

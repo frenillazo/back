@@ -4,8 +4,8 @@ import com.acainfo.enrollment.application.port.out.AutoReservationPort;
 import com.acainfo.enrollment.application.port.out.EnrollmentRepositoryPort;
 import com.acainfo.enrollment.domain.model.Enrollment;
 import com.acainfo.enrollment.domain.model.EnrollmentStatus;
-import com.acainfo.group.application.port.out.GroupRepositoryPort;
-import com.acainfo.group.domain.model.SubjectGroup;
+import com.acainfo.course.application.port.out.CourseRepositoryPort;
+import com.acainfo.course.domain.model.Course;
 import com.acainfo.user.application.port.in.GetUserProfileUseCase;
 import com.acainfo.user.domain.model.Role;
 import com.acainfo.user.domain.model.RoleType;
@@ -52,7 +52,7 @@ class EnrollmentApprovalServiceWaitingListEntryTest {
     private EnrollmentRepositoryPort enrollmentRepositoryPort;
 
     @Mock
-    private GroupRepositoryPort groupRepositoryPort;
+    private CourseRepositoryPort courseRepositoryPort;
 
     @Mock
     private GetUserProfileUseCase getUserProfileUseCase;
@@ -64,7 +64,7 @@ class EnrollmentApprovalServiceWaitingListEntryTest {
     private EnrollmentApprovalService enrollmentApprovalService;
 
     private Enrollment pendingEnrollment;
-    private SubjectGroup group;
+    private Course group;
     private User teacher;
 
     @BeforeEach
@@ -72,11 +72,11 @@ class EnrollmentApprovalServiceWaitingListEntryTest {
         pendingEnrollment = Enrollment.builder()
                 .id(ENROLLMENT_ID)
                 .studentId(STUDENT_ID)
-                .groupId(GROUP_ID)
+                .courseId(GROUP_ID)
                 .status(EnrollmentStatus.PENDING_APPROVAL)
                 .build();
 
-        group = SubjectGroup.builder()
+        group = Course.builder()
                 .id(GROUP_ID)
                 .teacherId(TEACHER_ID)
                 .capacity(CAPACITY)
@@ -89,7 +89,7 @@ class EnrollmentApprovalServiceWaitingListEntryTest {
                 .build();
 
         when(enrollmentRepositoryPort.findById(ENROLLMENT_ID)).thenReturn(Optional.of(pendingEnrollment));
-        when(groupRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(group));
+        when(courseRepositoryPort.findByIdForUpdate(GROUP_ID)).thenReturn(Optional.of(group));
         when(getUserProfileUseCase.getUserById(TEACHER_ID)).thenReturn(teacher);
         when(enrollmentRepositoryPort.save(any(Enrollment.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -98,7 +98,7 @@ class EnrollmentApprovalServiceWaitingListEntryTest {
     @Test
     void shouldAssignNextWaitingListPositionWhenGroupIsFullOnApproval() {
         // Group full: active count equals max capacity
-        when(enrollmentRepositoryPort.countActiveByGroupId(GROUP_ID)).thenReturn((long) CAPACITY);
+        when(enrollmentRepositoryPort.countActiveByCourseId(GROUP_ID)).thenReturn((long) CAPACITY);
         when(enrollmentRepositoryPort.getNextWaitingListPosition(GROUP_ID)).thenReturn(3);
 
         Enrollment result = enrollmentApprovalService.approve(ENROLLMENT_ID, TEACHER_ID);
@@ -119,7 +119,7 @@ class EnrollmentApprovalServiceWaitingListEntryTest {
     @Test
     void shouldApproveAsActiveWithoutQueuePositionWhenSeatsAvailable() {
         // One seat free: active count strictly below max capacity
-        when(enrollmentRepositoryPort.countActiveByGroupId(GROUP_ID)).thenReturn((long) CAPACITY - 1);
+        when(enrollmentRepositoryPort.countActiveByCourseId(GROUP_ID)).thenReturn((long) CAPACITY - 1);
 
         Enrollment result = enrollmentApprovalService.approve(ENROLLMENT_ID, TEACHER_ID);
 

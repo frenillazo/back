@@ -7,8 +7,8 @@ import com.acainfo.enrollment.domain.exception.EnrollmentNotFoundException;
 import com.acainfo.enrollment.domain.exception.InvalidEnrollmentStateException;
 import com.acainfo.enrollment.domain.model.Enrollment;
 import com.acainfo.enrollment.domain.model.EnrollmentStatus;
-import com.acainfo.group.application.port.out.GroupRepositoryPort;
-import com.acainfo.group.domain.exception.GroupNotFoundException;
+import com.acainfo.course.application.port.out.CourseRepositoryPort;
+import com.acainfo.course.domain.exception.CourseNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,13 +28,13 @@ public class WaitingListService implements WaitingListUseCase {
 
     private final EnrollmentRepositoryPort enrollmentRepositoryPort;
     private final AutoReservationPort autoReservationPort;
-    private final GroupRepositoryPort groupRepositoryPort;
+    private final CourseRepositoryPort courseRepositoryPort;
 
     @Override
     @Transactional(readOnly = true)
-    public List<Enrollment> getWaitingListByGroupId(Long groupId) {
-        log.debug("Getting waiting list for group: {}", groupId);
-        return enrollmentRepositoryPort.findWaitingListByGroupId(groupId);
+    public List<Enrollment> getWaitingListByCourseId(Long courseId) {
+        log.debug("Getting waiting list for group: {}", courseId);
+        return enrollmentRepositoryPort.findWaitingListByCourseId(courseId);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class WaitingListService implements WaitingListUseCase {
         }
 
         Integer oldPosition = enrollment.getWaitingListPosition();
-        Long groupId = enrollment.getGroupId();
+        Long courseId = enrollment.getCourseId();
 
         // Update enrollment status
         enrollment.setStatus(EnrollmentStatus.WITHDRAWN);
@@ -70,7 +70,7 @@ public class WaitingListService implements WaitingListUseCase {
 
         // Adjust positions for remaining students in queue
         if (oldPosition != null) {
-            enrollmentRepositoryPort.decrementWaitingListPositionsAfter(groupId, oldPosition);
+            enrollmentRepositoryPort.decrementWaitingListPositionsAfter(courseId, oldPosition);
         }
 
         log.info("Student left waiting list successfully, enrollment: {}", enrollmentId);
@@ -79,17 +79,17 @@ public class WaitingListService implements WaitingListUseCase {
 
     @Override
     @Transactional
-    public Enrollment promoteNextFromWaitingList(Long groupId) {
-        log.debug("Attempting to promote next student from waiting list for group: {}", groupId);
+    public Enrollment promoteNextFromWaitingList(Long courseId) {
+        log.debug("Attempting to promote next student from waiting list for group: {}", courseId);
 
         // Lock the group row to prevent concurrent promotions from exceeding capacity
-        groupRepositoryPort.findByIdForUpdate(groupId)
-                .orElseThrow(() -> new GroupNotFoundException(groupId));
+        courseRepositoryPort.findByIdForUpdate(courseId)
+                .orElseThrow(() -> new CourseNotFoundException(courseId));
 
-        List<Enrollment> waitingList = enrollmentRepositoryPort.findWaitingListByGroupId(groupId);
+        List<Enrollment> waitingList = enrollmentRepositoryPort.findWaitingListByCourseId(courseId);
 
         if (waitingList.isEmpty()) {
-            log.debug("No students in waiting list for group: {}", groupId);
+            log.debug("No students in waiting list for group: {}", courseId);
             return null;
         }
 
@@ -106,18 +106,18 @@ public class WaitingListService implements WaitingListUseCase {
 
         // Adjust positions for remaining students
         if (oldPosition != null) {
-            enrollmentRepositoryPort.decrementWaitingListPositionsAfter(groupId, oldPosition);
+            enrollmentRepositoryPort.decrementWaitingListPositionsAfter(courseId, oldPosition);
         }
 
         // Auto-generate reservations for promoted student
         autoReservationPort.generateForNewEnrollment(
                 promotedEnrollment.getStudentId(),
-                groupId,
+                courseId,
                 promotedEnrollment.getId()
         );
 
         log.info("Student {} promoted from waiting list to ACTIVE for group {}",
-                promotedEnrollment.getStudentId(), groupId);
+                promotedEnrollment.getStudentId(), courseId);
 
         return promotedEnrollment;
     }
