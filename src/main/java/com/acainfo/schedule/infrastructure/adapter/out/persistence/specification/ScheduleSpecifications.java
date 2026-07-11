@@ -1,5 +1,6 @@
 package com.acainfo.schedule.infrastructure.adapter.out.persistence.specification;
 
+import com.acainfo.course.infrastructure.adapter.out.persistence.entity.CourseJpaEntity;
 import com.acainfo.schedule.application.dto.ScheduleFilters;
 import com.acainfo.schedule.domain.model.Classroom;
 import com.acainfo.schedule.infrastructure.adapter.out.persistence.entity.ScheduleJpaEntity;
@@ -43,6 +44,15 @@ public class ScheduleSpecifications {
             // Filter by dayOfWeek
             if (filters.dayOfWeek() != null) {
                 predicates.add(criteriaBuilder.equal(root.get("dayOfWeek"), filters.dayOfWeek()));
+            }
+
+            // Filter by course status (subquery: schedules whose course has the given status)
+            if (filters.courseStatus() != null) {
+                var courseIdsWithStatus = query.subquery(Long.class);
+                var course = courseIdsWithStatus.from(CourseJpaEntity.class);
+                courseIdsWithStatus.select(course.get("id"))
+                        .where(criteriaBuilder.equal(course.get("status"), filters.courseStatus()));
+                predicates.add(root.get("courseId").in(courseIdsWithStatus));
             }
 
             // Combine all predicates with AND

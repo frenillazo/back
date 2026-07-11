@@ -1,5 +1,6 @@
 package com.acainfo.schedule.application.dto;
 
+import com.acainfo.course.domain.model.CourseStatus;
 import com.acainfo.schedule.domain.model.Classroom;
 
 import java.time.DayOfWeek;
@@ -12,6 +13,7 @@ public record ScheduleFilters(
         Long courseId,
         Classroom classroom,
         DayOfWeek dayOfWeek,
+        CourseStatus courseStatus,
         Integer page,
         Integer size,
         String sortBy,

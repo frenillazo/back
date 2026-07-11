@@ -227,9 +227,10 @@ public class ScheduleService implements
 
         // Get all schedules and filter for conflicts
         ScheduleFilters filters = new ScheduleFilters(
-                null,  // all groups
+                null,  // all courses
                 classroom,
                 dayOfWeek,
+                null,  // any course status
                 null, null, null, null  // default pagination
         );
 

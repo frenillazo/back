@@ -5,6 +5,7 @@ import com.acainfo.schedule.application.port.in.CreateScheduleUseCase;
 import com.acainfo.schedule.application.port.in.DeleteScheduleUseCase;
 import com.acainfo.schedule.application.port.in.GetScheduleUseCase;
 import com.acainfo.schedule.application.port.in.UpdateScheduleUseCase;
+import com.acainfo.course.domain.model.CourseStatus;
 import com.acainfo.schedule.domain.model.Classroom;
 import com.acainfo.schedule.domain.model.Schedule;
 import com.acainfo.schedule.infrastructure.adapter.in.rest.dto.CreateScheduleRequest;
@@ -101,6 +102,7 @@ public class ScheduleController {
             @RequestParam(required = false) Long courseId,
             @RequestParam(required = false) Classroom classroom,
             @RequestParam(required = false) DayOfWeek dayOfWeek,
+            @RequestParam(required = false) CourseStatus courseStatus,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "dayOfWeek") String sortBy,
@@ -113,6 +115,7 @@ public class ScheduleController {
                 courseId,
                 classroom,
                 dayOfWeek,
+                courseStatus,
                 page,
                 size,
                 sortBy,
@@ -202,6 +205,7 @@ public class ScheduleController {
             @RequestParam(required = false) Long courseId,
             @RequestParam(required = false) Classroom classroom,
             @RequestParam(required = false) DayOfWeek dayOfWeek,
+            @RequestParam(required = false) CourseStatus courseStatus,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "100") int size,
             @RequestParam(defaultValue = "dayOfWeek") String sortBy,
@@ -214,6 +218,7 @@ public class ScheduleController {
                 courseId,
                 classroom,
                 dayOfWeek,
+                courseStatus,
                 page,
                 size,
                 sortBy,
