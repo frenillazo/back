@@ -5,7 +5,7 @@ Spring Boot 3.2.1 · Java 21 · monolito modular con estructura hexagonal · Pos
 ## Build y verificación
 
 - Compilar: `JAVA_HOME="C:/Users/pablo/.jdks/ms-21.0.8" ./mvnw compile -q` (JAVA_HOME no está en el PATH; ~1 min)
-- **0 tests** (src/test vacío) — no hay red de seguridad para refactors; añadirlos es la primera prioridad
+- Tests: `JAVA_HOME="C:/Users/pablo/.jdks/ms-21.0.8" ./mvnw test` — **117 tests** (Mockito puro de los servicios críticos + smoke @SpringBootTest H2). Deben estar SIEMPRE en verde.
 - Arranque local: perfil `dev` = H2 en memoria + `data-dev.sql` (admin@acainfo.com y ~40 usuarios seed, contraseña "password"); perfil `local` = Postgres localhost:5433
 - Swagger: `/swagger-ui.html` — la fuente de verdad de la API (`docs/API_REFERENCE.md` está desfasado)
 
@@ -25,11 +25,10 @@ Módulos: `user` (auth + profesores: no hay entidad Teacher, son users con rol),
 
 ## Trampas
 
-- `currentEnrollmentCount` (SubjectGroup, Intensive) SIEMPRE a 0 en BD: usar `enrollmentRepositoryPort.countActiveByGroupId()`. Los métodos de dominio `isFull()/canEnroll()` mienten.
+- La ocupación de un curso NO se persiste: usar `enrollmentRepositoryPort.countActiveByCourseId()`; el `CourseResponseEnricher` la calcula para la API. `capacity` NULL = sin cupo ni lista de espera.
 - Crons **apagados a propósito** en `application.properties` (`cron=-`): generación mensual de sesiones y auto-disable de materiales. NO "arreglarlos". La generación de sesiones es manual.
 - **Flyway manda sobre el esquema** (src/main/resources/db/migration; V1 baseline de prod + V2 curso unificado, aplicadas en prod el 11-jul-2026). Todo cambio de entidad JPA exige su migración V*.sql; prod corre `ddl-auto=validate`.
-- `application-test.properties` usa nombres de propiedad JWT que no existen en `JwtProperties` (jwt.expiration vs jwt.access-token-expiration) — trampa para cuando haya tests.
-- **OBSOLETO, no invertir** (se eliminará en la simplificación): `GroupRequest*` (flujo entero), `Payment*` (pagos manuales hasta 2027), asistencia y online-requests.
+- `src/main/resources/application-test.properties` usa nombres de propiedad JWT incorrectos (el bueno es el de `src/test/resources`, ya corregido).
 
 ## Bugs conocidos pendientes
 
