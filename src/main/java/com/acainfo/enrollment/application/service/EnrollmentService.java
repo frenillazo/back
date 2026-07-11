@@ -35,6 +35,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class EnrollmentService implements
+        com.acainfo.enrollment.application.port.in.CloseCourseEnrollmentsUseCase,
         EnrollStudentUseCase,
         WithdrawEnrollmentUseCase,
         ChangeCourseUseCase,
@@ -160,6 +161,43 @@ public class EnrollmentService implements
                 command.enrollmentId(), oldCourseId, command.newCourseId());
 
         return savedEnrollment;
+    }
+
+    // ==================== CloseCourseEnrollmentsUseCase ====================
+
+    /**
+     * Close all live enrollments of a course (invoked when the course stops being OPEN).
+     * ACTIVE -> COMPLETED (+ cancel future reservations); PENDING_APPROVAL / WAITING_LIST -> EXPIRED.
+     */
+    @Override
+    @Transactional
+    public int closeAllForCourse(Long courseId) {
+        List<Enrollment> enrollments = enrollmentRepositoryPort.findByCourseId(courseId);
+        int transitioned = 0;
+
+        for (Enrollment enrollment : enrollments) {
+            switch (enrollment.getStatus()) {
+                case ACTIVE -> {
+                    enrollment.setStatus(EnrollmentStatus.COMPLETED);
+                    enrollmentRepositoryPort.save(enrollment);
+                    autoReservationPort.cancelFutureReservations(
+                            enrollment.getStudentId(), courseId);
+                    transitioned++;
+                }
+                case PENDING_APPROVAL, WAITING_LIST -> {
+                    enrollment.setStatus(EnrollmentStatus.EXPIRED);
+                    enrollment.setWaitingListPosition(null);
+                    enrollmentRepositoryPort.save(enrollment);
+                    transitioned++;
+                }
+                default -> { /* WITHDRAWN, COMPLETED, REJECTED, EXPIRED: nada que hacer */ }
+            }
+        }
+
+        if (transitioned > 0) {
+            log.info("Closed {} live enrollments for course {}", transitioned, courseId);
+        }
+        return transitioned;
     }
 
     // ==================== GetEnrollmentUseCase ====================

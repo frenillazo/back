@@ -24,6 +24,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -411,6 +412,63 @@ class EnrollmentServiceTest {
             assertThatThrownBy(() -> enrollmentService.getById(ENROLLMENT_ID))
                     .isInstanceOf(EnrollmentNotFoundException.class)
                     .hasMessageContaining(String.valueOf(ENROLLMENT_ID));
+        }
+    }
+
+    // ==================== closeAllForCourse() ====================
+
+    @Nested
+    class CloseAllForCourse {
+
+        @Test
+        void shouldCompleteActiveEnrollmentAndCancelFutureReservationsWhenClosingCourse() {
+            Enrollment active = enrollmentBuilder(EnrollmentStatus.ACTIVE).build();
+            when(enrollmentRepositoryPort.findByCourseId(GROUP_ID)).thenReturn(List.of(active));
+            when(enrollmentRepositoryPort.save(any(Enrollment.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            int transitioned = enrollmentService.closeAllForCourse(GROUP_ID);
+
+            assertThat(transitioned).isEqualTo(1);
+            assertThat(active.getStatus()).isEqualTo(EnrollmentStatus.COMPLETED);
+            verify(enrollmentRepositoryPort).save(active);
+            verify(autoReservationPort).cancelFutureReservations(STUDENT_ID, GROUP_ID);
+        }
+
+        @Test
+        void shouldExpirePendingAndWaitingListEnrollmentsWithoutTouchingReservations() {
+            Enrollment pending = enrollmentBuilder(EnrollmentStatus.PENDING_APPROVAL).id(1001L).build();
+            Enrollment waiting = enrollmentBuilder(EnrollmentStatus.WAITING_LIST).id(1002L)
+                    .waitingListPosition(2).build();
+            when(enrollmentRepositoryPort.findByCourseId(GROUP_ID)).thenReturn(List.of(pending, waiting));
+            when(enrollmentRepositoryPort.save(any(Enrollment.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            int transitioned = enrollmentService.closeAllForCourse(GROUP_ID);
+
+            assertThat(transitioned).isEqualTo(2);
+            assertThat(pending.getStatus()).isEqualTo(EnrollmentStatus.EXPIRED);
+            assertThat(waiting.getStatus()).isEqualTo(EnrollmentStatus.EXPIRED);
+            assertThat(waiting.getWaitingListPosition()).isNull();
+            verify(autoReservationPort, never()).cancelFutureReservations(anyLong(), anyLong());
+        }
+
+        @Test
+        void shouldIgnoreFinalStateEnrollmentsWhenClosingCourse() {
+            Enrollment withdrawn = enrollmentBuilder(EnrollmentStatus.WITHDRAWN).id(1003L).build();
+            Enrollment completed = enrollmentBuilder(EnrollmentStatus.COMPLETED).id(1004L).build();
+            when(enrollmentRepositoryPort.findByCourseId(GROUP_ID)).thenReturn(List.of(withdrawn, completed));
+
+            int transitioned = enrollmentService.closeAllForCourse(GROUP_ID);
+
+            assertThat(transitioned).isZero();
+            verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));
+            verify(autoReservationPort, never()).cancelFutureReservations(anyLong(), anyLong());
+        }
+
+        @Test
+        void shouldReturnZeroWhenCourseHasNoEnrollments() {
+            when(enrollmentRepositoryPort.findByCourseId(GROUP_ID)).thenReturn(List.of());
+
+            assertThat(enrollmentService.closeAllForCourse(GROUP_ID)).isZero();
         }
     }
 }

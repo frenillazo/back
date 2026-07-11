@@ -12,6 +12,7 @@ import com.acainfo.course.domain.exception.CourseNotFoundException;
 import com.acainfo.course.domain.exception.InvalidCourseDataException;
 import com.acainfo.course.domain.model.CourseStatus;
 import com.acainfo.course.domain.model.Course;
+import com.acainfo.enrollment.application.port.in.CloseCourseEnrollmentsUseCase;
 import com.acainfo.enrollment.application.port.out.EnrollmentRepositoryPort;
 import com.acainfo.schedule.application.port.out.ScheduleRepositoryPort;
 import com.acainfo.schedule.domain.model.Schedule;
@@ -50,6 +51,7 @@ public class CourseService implements
     private final ScheduleRepositoryPort scheduleRepositoryPort;
     private final SessionRepositoryPort sessionRepositoryPort;
     private final EnrollmentRepositoryPort enrollmentRepositoryPort;
+    private final CloseCourseEnrollmentsUseCase closeCourseEnrollmentsUseCase;
 
     @Override
     @Transactional
@@ -129,7 +131,11 @@ public class CourseService implements
         }
 
         if (command.status() != null) {
+            boolean closingCourse = course.isOpen() && command.status() != CourseStatus.OPEN;
             course.setStatus(command.status());
+            if (closingCourse) {
+                closeCourseEnrollmentsUseCase.closeAllForCourse(id);
+            }
         }
 
         if (command.pricePerMonth() != null) {
@@ -218,9 +224,13 @@ public class CourseService implements
         log.info("Cancelling course with ID: {}", id);
 
         Course course = getById(id);
+        boolean wasOpen = course.isOpen();
         course.setStatus(CourseStatus.CANCELLED);
 
         Course cancelledCourse = courseRepositoryPort.save(course);
+        if (wasOpen) {
+            closeCourseEnrollmentsUseCase.closeAllForCourse(id);
+        }
         log.info("Course cancelled successfully: ID {}", id);
 
         return cancelledCourse;
