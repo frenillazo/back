@@ -5,7 +5,7 @@ Spring Boot 3.2.1 · Java 21 · monolito modular con estructura hexagonal · Pos
 ## Build y verificación
 
 - Compilar: `JAVA_HOME="C:/Users/pablo/.jdks/ms-21.0.8" ./mvnw compile -q` (JAVA_HOME no está en el PATH; ~1 min)
-- Tests: `JAVA_HOME="C:/Users/pablo/.jdks/ms-21.0.8" ./mvnw test` — **117 tests** (Mockito puro de los servicios críticos + smoke @SpringBootTest H2). Deben estar SIEMPRE en verde.
+- Tests: `JAVA_HOME="C:/Users/pablo/.jdks/ms-21.0.8" ./mvnw test` — **130 tests** (Mockito puro de los servicios críticos + smoke @SpringBootTest H2). Deben estar SIEMPRE en verde.
 - Arranque local: perfil `dev` = H2 en memoria + `data-dev.sql` (admin@acainfo.com y ~40 usuarios seed, contraseña "password"); perfil `local` = Postgres localhost:5433
 - Swagger: `/swagger-ui.html` — la fuente de verdad de la API (`docs/API_REFERENCE.md` está desfasado)
 
@@ -26,12 +26,11 @@ Módulos: `user` (auth + profesores: no hay entidad Teacher, son users con rol),
 ## Trampas
 
 - La ocupación de un curso NO se persiste: usar `enrollmentRepositoryPort.countActiveByCourseId()`; el `CourseResponseEnricher` la calcula para la API. `capacity` NULL = sin cupo ni lista de espera.
-- Crons **apagados a propósito** en `application.properties` (`cron=-`): generación mensual de sesiones y auto-disable de materiales. NO "arreglarlos". La generación de sesiones es manual.
+- Crons **apagados a propósito** en `application.properties` (`cron=-`): generación mensual de sesiones y auto-disable de materiales. NO "arreglarlos". La generación de sesiones es manual. Crons SÍ activos: purga diaria de tokens expirados (`security/cleanup/TokenCleanupService`, 05:00) y limpieza de usuarios sin verificar (04:00).
 - **Flyway manda sobre el esquema** (src/main/resources/db/migration; V1 baseline de prod + V2 curso unificado, aplicadas en prod el 11-jul-2026). Todo cambio de entidad JPA exige su migración V*.sql; prod corre `ddl-auto=validate`.
 - `src/main/resources/application-test.properties` usa nombres de propiedad JWT incorrectos (el bueno es el de `src/test/resources`, ya corregido).
 
 ## Bugs conocidos pendientes
 
-- `AuthController.logout`: exige body `{refreshToken}` que el front no envía (400 siempre, token nunca revocado); `logout/all` es un no-op con TODO.
-- Spring Boot 3.2.1 EOL (CVEs en transitivas) — actualizar a 3.3+/3.4+ con la red de 117 tests.
-(Los demás bugs de la auditoría jul-2026 cayeron con la migración curso unificado: material access, PaymentAdmin, WaitingQueue, GroupRequest 500.)
+- Spring Boot 3.2.1 EOL (CVEs en transitivas) — actualizar a 3.3+/3.4+ con la red de 130 tests.
+(Logout y purga de tokens arreglados el 11-jul-2026; los demás bugs de la auditoría jul-2026 cayeron con la migración curso unificado: material access, PaymentAdmin, WaitingQueue, GroupRequest 500.)

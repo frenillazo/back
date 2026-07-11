@@ -1,6 +1,7 @@
 package com.acainfo.user.infrastructure.adapter.in.rest;
 
 import com.acainfo.security.terms.TermsAcceptanceService;
+import com.acainfo.security.userdetails.CustomUserDetails;
 import com.acainfo.user.application.dto.AuthenticationCommand;
 import com.acainfo.user.application.dto.AuthenticationResult;
 import com.acainfo.user.application.dto.RegisterUserCommand;
@@ -28,7 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -170,26 +170,25 @@ public class AuthController {
     @PostMapping("/logout")
     @Operation(
             summary = "Logout user",
-            description = "Invalidates the provided refresh token"
+            description = "Invalidates the provided refresh token. Body is optional; without a token the logout is client-side only."
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
                     description = "Logout successful",
                     content = @Content(schema = @Schema(implementation = MessageResponse.class))
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Invalid refresh token",
-                    content = @Content(schema = @Schema(implementation = MessageResponse.class))
             )
     })
-    public ResponseEntity<MessageResponse> logout(@Valid @RequestBody RefreshTokenRequest request) {
+    public ResponseEntity<MessageResponse> logout(@RequestBody(required = false) RefreshTokenRequest request) {
         log.info("Logout request");
 
-        logoutUseCase.logout(request.refreshToken());
+        if (request != null && request.refreshToken() != null && !request.refreshToken().isBlank()) {
+            logoutUseCase.logout(request.refreshToken());
+            log.info("User logged out and refresh token revoked");
+        } else {
+            log.warn("Logout request without refresh token - nothing to revoke");
+        }
 
-        log.info("User logged out successfully");
         return ResponseEntity.ok(MessageResponse.of("Logout successful"));
     }
 
@@ -210,18 +209,17 @@ public class AuthController {
                     content = @Content(schema = @Schema(implementation = MessageResponse.class))
             )
     })
-    public ResponseEntity<MessageResponse> logoutAllDevices(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<MessageResponse> logoutAllDevices(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(MessageResponse.of("Authentication required"));
+        }
+
         log.info("Logout all devices request for user: {}", userDetails.getUsername());
 
-        // Get user ID from email
-        // Note: This assumes UserDetails username is email
-        // In a real implementation, you'd fetch the user from the repository
-        // For now, we'll need to enhance this in the future
+        logoutUseCase.logoutAllDevices(userDetails.getUserId());
 
-        // TODO: Implement proper user ID extraction from UserDetails
-        // For now, this is a placeholder that will need service enhancement
-
-        log.warn("Logout all devices not fully implemented - requires user ID extraction");
+        log.info("User logged out from all devices: {}", userDetails.getUsername());
         return ResponseEntity.ok(MessageResponse.of("Logout from all devices successful"));
     }
 
