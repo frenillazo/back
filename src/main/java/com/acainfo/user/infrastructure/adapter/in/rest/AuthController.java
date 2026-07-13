@@ -1,5 +1,7 @@
 package com.acainfo.user.infrastructure.adapter.in.rest;
 
+import com.acainfo.security.refresh.AuthCookieService;
+import com.acainfo.security.refresh.RefreshTokenService;
 import com.acainfo.security.terms.TermsAcceptanceService;
 import com.acainfo.security.userdetails.CustomUserDetails;
 import com.acainfo.user.application.dto.AuthenticationCommand;
@@ -26,7 +28,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -52,6 +56,7 @@ public class AuthController {
     private final ResetPasswordUseCase resetPasswordUseCase;
     private final UserRestMapper userRestMapper;
     private final TermsAcceptanceService termsAcceptanceService;
+    private final AuthCookieService authCookieService;
 
     @PostMapping("/register")
     @Operation(
@@ -118,15 +123,19 @@ public class AuthController {
         boolean termsAccepted = termsAcceptanceService.hasAcceptedCurrentTerms(result.user().getId());
         AuthResponse response = AuthResponse.builder()
                 .accessToken(authResponse.accessToken())
-                .refreshToken(authResponse.refreshToken())
                 .tokenType(authResponse.tokenType())
                 .expiresIn(authResponse.expiresIn())
                 .user(authResponse.user())
                 .termsAccepted(termsAccepted)
                 .build();
 
+        // El refresh token viaja SOLO en cookie httpOnly, nunca en el body.
+        ResponseCookie refreshCookie = authCookieService.buildRefreshCookie(result.refreshToken());
+
         log.info("User logged in successfully: {}", request.email());
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                .body(response);
     }
 
     @PostMapping("/refresh")
@@ -146,25 +155,34 @@ public class AuthController {
                     content = @Content(schema = @Schema(implementation = MessageResponse.class))
             )
     })
-    public ResponseEntity<AuthResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+    public ResponseEntity<AuthResponse> refreshToken(
+            @CookieValue(name = AuthCookieService.REFRESH_COOKIE_NAME, required = false) String refreshToken) {
         log.info("Token refresh request");
 
-        AuthenticationResult result = refreshTokenUseCase.refreshToken(request.refreshToken());
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new RefreshTokenService.InvalidRefreshTokenException("No hay refresh token");
+        }
+
+        AuthenticationResult result = refreshTokenUseCase.refreshToken(refreshToken);
         AuthResponse authResponse = userRestMapper.toAuthResponse(result);
 
         // Check terms acceptance and include in response
         boolean termsAccepted = termsAcceptanceService.hasAcceptedCurrentTerms(result.user().getId());
         AuthResponse response = AuthResponse.builder()
                 .accessToken(authResponse.accessToken())
-                .refreshToken(authResponse.refreshToken())
                 .tokenType(authResponse.tokenType())
                 .expiresIn(authResponse.expiresIn())
                 .user(authResponse.user())
                 .termsAccepted(termsAccepted)
                 .build();
 
+        // Rotación: el token nuevo reemplaza la cookie httpOnly.
+        ResponseCookie refreshCookie = authCookieService.buildRefreshCookie(result.refreshToken());
+
         log.info("Token refreshed successfully for user: {}", result.user().getEmail());
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                .body(response);
     }
 
     @PostMapping("/logout")
@@ -179,17 +197,22 @@ public class AuthController {
                     content = @Content(schema = @Schema(implementation = MessageResponse.class))
             )
     })
-    public ResponseEntity<MessageResponse> logout(@RequestBody(required = false) RefreshTokenRequest request) {
+    public ResponseEntity<MessageResponse> logout(
+            @CookieValue(name = AuthCookieService.REFRESH_COOKIE_NAME, required = false) String refreshToken) {
         log.info("Logout request");
 
-        if (request != null && request.refreshToken() != null && !request.refreshToken().isBlank()) {
-            logoutUseCase.logout(request.refreshToken());
+        if (refreshToken != null && !refreshToken.isBlank()) {
+            logoutUseCase.logout(refreshToken);
             log.info("User logged out and refresh token revoked");
         } else {
-            log.warn("Logout request without refresh token - nothing to revoke");
+            log.warn("Logout request without refresh token cookie - nothing to revoke");
         }
 
-        return ResponseEntity.ok(MessageResponse.of("Logout successful"));
+        // Borra la cookie del navegador aunque no hubiera token que revocar.
+        ResponseCookie clearCookie = authCookieService.buildClearRefreshCookie();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, clearCookie.toString())
+                .body(MessageResponse.of("Sesión cerrada correctamente"));
     }
 
     @PostMapping("/logout/all")

@@ -4,12 +4,14 @@ import lombok.Builder;
 
 /**
  * REST DTO for authentication responses (login and refresh).
- * Contains JWT tokens and user information.
+ * Contains the JWT access token and user information.
+ *
+ * <p>El refresh token NO viaja aquí: se entrega en una cookie httpOnly
+ * (ver {@code AuthCookieService}).</p>
  */
 @Builder
 public record AuthResponse(
         String accessToken,
-        String refreshToken,
         String tokenType,
         Long expiresIn,
         UserResponse user,
@@ -18,10 +20,9 @@ public record AuthResponse(
     /**
      * Creates an AuthResponse with default token type "Bearer".
      */
-    public static AuthResponse of(String accessToken, String refreshToken, Long expiresIn, UserResponse user, boolean termsAccepted) {
+    public static AuthResponse of(String accessToken, Long expiresIn, UserResponse user, boolean termsAccepted) {
         return AuthResponse.builder()
                 .accessToken(accessToken)
-                .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .expiresIn(expiresIn)
                 .user(user)

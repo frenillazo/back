@@ -1,6 +1,7 @@
 package com.acainfo.shared.infrastructure.config;
 
 import com.acainfo.security.jwt.JwtAuthenticationFilter;
+import com.acainfo.security.jwt.RestAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -41,6 +42,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 
     /**
      * Whether to enable Swagger UI publicly.
@@ -92,6 +94,11 @@ public class SecurityConfig {
                 // Stateless session (JWT-based, no server-side sessions)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                // 401 en fallo de autenticación (token ausente/inválido/expirado)
+                // para que el front dispare el refresh; 403 queda para rol insuficiente.
+                .exceptionHandling(ex ->
+                        ex.authenticationEntryPoint(restAuthenticationEntryPoint))
 
                 // Authorization rules
                 .authorizeHttpRequests(auth -> {

@@ -1,5 +1,6 @@
 package com.acainfo.user.infrastructure.adapter.in.rest;
 
+import com.acainfo.security.refresh.AuthCookieService;
 import com.acainfo.security.terms.TermsAcceptanceService;
 import com.acainfo.security.userdetails.CustomUserDetails;
 import com.acainfo.user.application.port.in.AuthenticateUserUseCase;
@@ -12,7 +13,6 @@ import com.acainfo.user.application.port.in.ResetPasswordUseCase;
 import com.acainfo.user.application.port.in.VerifyEmailUseCase;
 import com.acainfo.user.domain.model.User;
 import com.acainfo.user.infrastructure.adapter.in.rest.dto.MessageResponse;
-import com.acainfo.user.infrastructure.adapter.in.rest.dto.RefreshTokenRequest;
 import com.acainfo.user.infrastructure.mapper.UserRestMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,11 +20,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 /**
  * Pure unit tests for the logout endpoints of {@link AuthController}.
@@ -57,9 +59,16 @@ class AuthControllerLogoutTest {
     private UserRestMapper userRestMapper;
     @Mock
     private TermsAcceptanceService termsAcceptanceService;
+    @Mock
+    private AuthCookieService authCookieService;
 
     @InjectMocks
     private AuthController authController;
+
+    private void stubClearCookie() {
+        when(authCookieService.buildClearRefreshCookie())
+                .thenReturn(ResponseCookie.from(AuthCookieService.REFRESH_COOKIE_NAME, "").build());
+    }
 
     private CustomUserDetails userDetails() {
         User user = User.builder()
@@ -70,16 +79,20 @@ class AuthControllerLogoutTest {
     }
 
     @Test
-    void logout_withRefreshToken_revokesIt() {
+    void logout_withRefreshCookie_revokesIt() {
+        stubClearCookie();
+
         ResponseEntity<MessageResponse> response =
-                authController.logout(new RefreshTokenRequest("refresh-token-123"));
+                authController.logout("refresh-token-123");
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         verify(logoutUseCase).logout("refresh-token-123");
     }
 
     @Test
-    void logout_withoutBody_returnsOkWithoutRevoking() {
+    void logout_withoutCookie_returnsOkWithoutRevoking() {
+        stubClearCookie();
+
         ResponseEntity<MessageResponse> response = authController.logout(null);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -87,9 +100,10 @@ class AuthControllerLogoutTest {
     }
 
     @Test
-    void logout_withBlankToken_returnsOkWithoutRevoking() {
-        ResponseEntity<MessageResponse> response =
-                authController.logout(new RefreshTokenRequest("   "));
+    void logout_withBlankCookie_returnsOkWithoutRevoking() {
+        stubClearCookie();
+
+        ResponseEntity<MessageResponse> response = authController.logout("   ");
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         verifyNoInteractions(logoutUseCase);

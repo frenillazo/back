@@ -71,7 +71,6 @@ public interface UserRestMapper {
      */
     @Mapping(target = "user", source = "user")
     @Mapping(target = "accessToken", source = "accessToken")
-    @Mapping(target = "refreshToken", source = "refreshToken")
     @Mapping(target = "tokenType", constant = "Bearer")
     @Mapping(target = "expiresIn", expression = "java(getAccessTokenExpiration())")
     @Mapping(target = "termsAccepted", ignore = true)
