@@ -12,11 +12,11 @@ import jakarta.validation.constraints.Size;
  */
 public record UpdateSubjectRequest(
 
-        @Size(max = 100, message = "Name must not exceed 100 characters")
+        @Size(max = 100, message = "El nombre no puede exceder 100 caracteres")
         String name,
 
-        @Min(value = 1, message = "Year must be between 1 and 4")
-        @Max(value = 4, message = "Year must be between 1 and 4")
+        @Min(value = 1, message = "El curso debe estar entre 1 y 4")
+        @Max(value = 4, message = "El curso debe estar entre 1 y 4")
         Integer year,
 
         SubjectStatus status

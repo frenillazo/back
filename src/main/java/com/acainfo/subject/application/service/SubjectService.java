@@ -50,13 +50,13 @@ public class SubjectService implements
 
         // Validate name
         if (command.name() == null || command.name().isBlank()) {
-            throw new InvalidSubjectDataException("Name is required");
+            throw new InvalidSubjectDataException("El nombre es obligatorio");
         }
 
         // Validate code format (3 letters + 3 digits, e.g., ING101)
         if (!isValidCode(normalizedCode)) {
             throw new InvalidSubjectDataException(
-                    "Code must be 3 uppercase letters followed by 3 digits (e.g., ING101)"
+                    "El código debe ser 3 letras mayúsculas seguidas de 3 dígitos (p.ej., ING101)"
             );
         }
 
@@ -143,7 +143,7 @@ public class SubjectService implements
         // Check if subject has groups
         if (subject.getCurrentGroupCount() > 0) {
             throw new InvalidSubjectDataException(
-                    "Cannot delete subject with existing groups. Archive it instead."
+                    "No se puede eliminar una asignatura con grupos existentes. Archívela en su lugar."
             );
         }
 

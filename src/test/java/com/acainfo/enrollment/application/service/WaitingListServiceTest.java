@@ -187,7 +187,7 @@ class WaitingListServiceTest {
 
             assertThatThrownBy(() -> waitingListService.leaveWaitingList(ENROLLMENT_ID))
                     .isInstanceOf(InvalidEnrollmentStateException.class)
-                    .hasMessageContaining("not on waiting list")
+                    .hasMessageContaining("no está en lista de espera")
                     .hasMessageContaining("ACTIVE");
 
             // The enrollment must not be touched

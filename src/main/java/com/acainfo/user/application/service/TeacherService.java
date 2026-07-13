@@ -50,7 +50,7 @@ public class TeacherService implements ManageTeachersUseCase {
 
         // Validate password
         if (command.password() == null || command.password().length() < 6) {
-            throw new IllegalArgumentException("Password must be at least 6 characters");
+            throw new IllegalArgumentException("La contraseña debe tener al menos 6 caracteres");
         }
 
         // Get TEACHER role
@@ -84,7 +84,7 @@ public class TeacherService implements ManageTeachersUseCase {
 
         // Validate that user is actually a teacher
         if (!teacher.isTeacher()) {
-            throw new IllegalArgumentException("User is not a teacher");
+            throw new IllegalArgumentException("El usuario no es profesor");
         }
 
         // Update fields
@@ -111,7 +111,7 @@ public class TeacherService implements ManageTeachersUseCase {
 
         // Validate that user is actually a teacher
         if (!teacher.isTeacher()) {
-            throw new IllegalArgumentException("User is not a teacher");
+            throw new IllegalArgumentException("El usuario no es profesor");
         }
 
         // Check if teacher has active groups (OPEN or CLOSED)
@@ -158,7 +158,7 @@ public class TeacherService implements ManageTeachersUseCase {
 
         // Validate that user is actually a teacher
         if (!teacher.isTeacher()) {
-            throw new IllegalArgumentException("User is not a teacher");
+            throw new IllegalArgumentException("El usuario no es profesor");
         }
 
         return teacher;

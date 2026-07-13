@@ -8,7 +8,7 @@ import com.acainfo.shared.domain.exception.BusinessRuleException;
 public class CourseCapacityExceededException extends BusinessRuleException {
 
     public CourseCapacityExceededException(Long courseId, int maxCapacity) {
-        super(String.format("Course %d has reached its maximum capacity of %d students", courseId, maxCapacity));
+        super(String.format("El curso %d ha alcanzado su capacidad máxima de %d estudiantes", courseId, maxCapacity));
     }
 
     public CourseCapacityExceededException(String message) {

@@ -14,6 +14,6 @@ import lombok.*;
 @Builder
 public class SwitchSessionRequest {
 
-    @NotNull(message = "New session ID is required")
+    @NotNull(message = "El nuevo ID de sesión es obligatorio")
     private Long newSessionId;
 }

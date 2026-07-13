@@ -58,10 +58,10 @@ public class RefreshTokenService {
     @Transactional(readOnly = true)
     public RefreshToken validateRefreshToken(String token) {
         RefreshToken refreshToken = refreshTokenRepository.findValidToken(token, LocalDateTime.now())
-                .orElseThrow(() -> new InvalidRefreshTokenException("Invalid or expired refresh token"));
+                .orElseThrow(() -> new InvalidRefreshTokenException("Refresh token inválido o expirado"));
 
         if (!refreshToken.isValid()) {
-            throw new InvalidRefreshTokenException("Refresh token is not valid");
+            throw new InvalidRefreshTokenException("El refresh token no es válido");
         }
 
         return refreshToken;

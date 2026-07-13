@@ -21,22 +21,22 @@ import java.time.LocalDate;
 @ToString
 public class CreateCourseRequest {
 
-    @NotNull(message = "Subject ID is required")
+    @NotNull(message = "El ID de asignatura es obligatorio")
     private Long subjectId;
 
     private Long teacherId;  // optional: null = not assigned yet
 
-    @NotNull(message = "startDate is required")
+    @NotNull(message = "startDate es obligatorio")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;
 
-    @NotNull(message = "endDate is required")
+    @NotNull(message = "endDate es obligatorio")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate endDate;
 
-    @Min(value = 1, message = "Capacity must be at least 1")
+    @Min(value = 1, message = "La capacidad debe ser al menos 1")
     private Integer capacity;  // null = unlimited (virtual/dual course)
 
-    @DecimalMin(value = "0.01", message = "Price per month must be greater than 0")
+    @DecimalMin(value = "0.01", message = "El precio por mes debe ser mayor que 0")
     private BigDecimal pricePerMonth;  // informative only
 }

@@ -8,7 +8,7 @@ import com.acainfo.shared.domain.exception.BusinessRuleException;
 public class UserNotActiveException extends BusinessRuleException {
 
     public UserNotActiveException(String email) {
-        super("User account is not active: " + email);
+        super("La cuenta de usuario no está activa: " + email);
     }
 
     @Override

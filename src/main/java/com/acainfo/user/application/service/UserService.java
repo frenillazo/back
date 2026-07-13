@@ -42,7 +42,7 @@ public class UserService implements
     public User getUserByEmail(String email) {
         log.info("Getting user by email: {}", email);
         return userRepositoryPort.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado con email: " + email));
     }
 
     @Override
@@ -85,7 +85,7 @@ public class UserService implements
 
         // Validate new password
         if (newPassword == null || newPassword.length() < 6) {
-            throw new IllegalArgumentException("Password must be at least 6 characters");
+            throw new IllegalArgumentException("La contraseña debe tener al menos 6 caracteres");
         }
 
         // Update password

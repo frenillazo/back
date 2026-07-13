@@ -17,12 +17,12 @@ import java.time.LocalDate;
 @ToString
 public class GenerateSessionsRequest {
 
-    @NotNull(message = "Group ID is required")
+    @NotNull(message = "El ID de grupo es obligatorio")
     private Long courseId;
 
-    @NotNull(message = "Start date is required")
+    @NotNull(message = "La fecha de inicio es obligatoria")
     private LocalDate startDate;
 
-    @NotNull(message = "End date is required")
+    @NotNull(message = "La fecha de fin es obligatoria")
     private LocalDate endDate;
 }

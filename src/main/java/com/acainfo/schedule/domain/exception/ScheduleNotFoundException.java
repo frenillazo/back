@@ -8,6 +8,6 @@ import com.acainfo.shared.domain.exception.NotFoundException;
 public class ScheduleNotFoundException extends NotFoundException {
 
     public ScheduleNotFoundException(Long scheduleId) {
-        super("Schedule not found with id: " + scheduleId);
+        super("Horario no encontrado con id: " + scheduleId);
     }
 }

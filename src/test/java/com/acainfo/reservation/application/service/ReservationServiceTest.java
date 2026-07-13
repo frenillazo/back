@@ -226,7 +226,7 @@ class ReservationServiceTest {
 
             assertThatThrownBy(() -> reservationService.create(command(ReservationMode.IN_PERSON)))
                     .isInstanceOf(SessionFullException.class)
-                    .hasMessageContaining("capacity of " + MAX_IN_PERSON_CAPACITY);
+                    .hasMessageContaining("capacidad presencial de " + MAX_IN_PERSON_CAPACITY);
 
             verify(reservationRepositoryPort, never()).save(any(SessionReservation.class));
         }
@@ -249,7 +249,7 @@ class ReservationServiceTest {
 
             assertThatThrownBy(() -> reservationService.create(command(ReservationMode.IN_PERSON)))
                     .isInstanceOf(ReservationAlreadyExistsException.class)
-                    .hasMessageContaining("already has a reservation for session " + SESSION_ID);
+                    .hasMessageContaining("ya tiene una reserva para la sesión " + SESSION_ID);
 
             verify(reservationRepositoryPort, never()).save(any(SessionReservation.class));
         }
@@ -293,7 +293,7 @@ class ReservationServiceTest {
 
             assertThatThrownBy(() -> reservationService.create(command(ReservationMode.IN_PERSON)))
                     .isInstanceOf(CrossGroupReservationNotAllowedException.class)
-                    .hasMessageContaining("different subject");
+                    .hasMessageContaining("asignatura distinta");
 
             verify(reservationRepositoryPort, never()).save(any(SessionReservation.class));
         }
@@ -312,7 +312,7 @@ class ReservationServiceTest {
 
             assertThatThrownBy(() -> reservationService.create(command(ReservationMode.IN_PERSON)))
                     .isInstanceOf(SubjectReservationAlreadyExistsException.class)
-                    .hasMessageContaining("already has a confirmed reservation for subject " + SUBJECT_ID);
+                    .hasMessageContaining("ya tiene una reserva confirmada para la asignatura " + SUBJECT_ID);
 
             verify(reservationRepositoryPort, never()).save(any(SessionReservation.class));
         }
@@ -395,7 +395,7 @@ class ReservationServiceTest {
 
             assertThatThrownBy(() -> reservationService.cancel(RESERVATION_ID, OTHER_STUDENT_ID))
                     .isInstanceOf(InvalidReservationStateException.class)
-                    .hasMessageContaining("does not belong to student " + OTHER_STUDENT_ID);
+                    .hasMessageContaining("no pertenece al estudiante " + OTHER_STUDENT_ID);
 
             verify(reservationRepositoryPort, never()).save(any(SessionReservation.class));
         }
@@ -407,7 +407,7 @@ class ReservationServiceTest {
 
             assertThatThrownBy(() -> reservationService.cancel(RESERVATION_ID, STUDENT_ID))
                     .isInstanceOf(InvalidReservationStateException.class)
-                    .hasMessageContaining("Cannot cancel reservation " + RESERVATION_ID)
+                    .hasMessageContaining("No se puede cancelar la reserva " + RESERVATION_ID)
                     .hasMessageContaining("CANCELLED");
 
             verify(reservationRepositoryPort, never()).save(any(SessionReservation.class));
@@ -547,7 +547,7 @@ class ReservationServiceTest {
 
             assertThatThrownBy(() -> reservationService.switchSession(otherStudentCommand))
                     .isInstanceOf(InvalidReservationStateException.class)
-                    .hasMessageContaining("does not belong to student " + OTHER_STUDENT_ID);
+                    .hasMessageContaining("no pertenece al estudiante " + OTHER_STUDENT_ID);
 
             verify(reservationRepositoryPort, never()).save(any(SessionReservation.class));
         }
@@ -575,7 +575,7 @@ class ReservationServiceTest {
 
             assertThatThrownBy(() -> reservationService.switchSession(command))
                     .isInstanceOf(ReservationAlreadyExistsException.class)
-                    .hasMessageContaining("already has a reservation for session " + NEW_SESSION_ID);
+                    .hasMessageContaining("ya tiene una reserva para la sesión " + NEW_SESSION_ID);
 
             verify(reservationRepositoryPort, never()).save(any(SessionReservation.class));
         }
@@ -610,7 +610,7 @@ class ReservationServiceTest {
 
             assertThatThrownBy(() -> reservationService.switchSession(command))
                     .isInstanceOf(CrossGroupReservationNotAllowedException.class)
-                    .hasMessageContaining("different subject");
+                    .hasMessageContaining("asignatura distinta");
 
             verify(reservationRepositoryPort, never()).save(any(SessionReservation.class));
         }
@@ -630,7 +630,7 @@ class ReservationServiceTest {
 
             assertThatThrownBy(() -> reservationService.switchSession(command))
                     .isInstanceOf(SessionFullException.class)
-                    .hasMessageContaining("capacity of " + MAX_IN_PERSON_CAPACITY);
+                    .hasMessageContaining("capacidad presencial de " + MAX_IN_PERSON_CAPACITY);
 
             // The current reservation is left untouched: no save, still CONFIRMED
             verify(reservationRepositoryPort, never()).save(any(SessionReservation.class));

@@ -112,12 +112,12 @@ public class ReservationService implements
         // Verify ownership
         if (!reservation.getStudentId().equals(studentId)) {
             throw new InvalidReservationStateException(
-                    "Reservation " + reservationId + " does not belong to student " + studentId);
+                    "La reserva " + reservationId + " no pertenece al estudiante " + studentId);
         }
 
         if (!reservation.canBeCancelled()) {
             throw new InvalidReservationStateException(
-                    reservationId, reservation.getStatus().name(), "cancel");
+                    reservationId, reservation.getStatus().name(), "cancelar");
         }
 
         reservation.setStatus(ReservationStatus.CANCELLED);
@@ -145,7 +145,7 @@ public class ReservationService implements
         // Verify ownership
         if (!currentReservation.getStudentId().equals(command.studentId())) {
             throw new InvalidReservationStateException(
-                    "Reservation " + command.currentReservationId() + " does not belong to student " + command.studentId());
+                    "La reserva " + command.currentReservationId() + " no pertenece al estudiante " + command.studentId());
         }
 
         // Validate new session exists

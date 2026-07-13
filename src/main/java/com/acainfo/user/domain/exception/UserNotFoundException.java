@@ -8,10 +8,10 @@ import com.acainfo.shared.domain.exception.NotFoundException;
 public class UserNotFoundException extends NotFoundException {
 
     public UserNotFoundException(Long userId) {
-        super("User not found with id: " + userId);
+        super("Usuario no encontrado con id: " + userId);
     }
 
     public UserNotFoundException(String email) {
-        super("User not found with email: " + email);
+        super("Usuario no encontrado con email: " + email);
     }
 }

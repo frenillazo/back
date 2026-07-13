@@ -9,8 +9,8 @@ import com.acainfo.shared.domain.exception.BusinessRuleException;
 public class CrossGroupReservationNotAllowedException extends BusinessRuleException {
 
     public CrossGroupReservationNotAllowedException(Long studentId, Long sessionId) {
-        super("Student " + studentId + " cannot reserve session " + sessionId +
-              " because it belongs to a different subject than their enrollment");
+        super("El estudiante " + studentId + " no puede reservar la sesión " + sessionId +
+              " porque pertenece a una asignatura distinta a la de su inscripción");
     }
 
     @Override

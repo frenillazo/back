@@ -8,7 +8,7 @@ import com.acainfo.shared.domain.exception.BusinessRuleException;
 public class UserBlockedException extends BusinessRuleException {
 
     public UserBlockedException(String email) {
-        super("User is blocked: " + email);
+        super("El usuario está bloqueado: " + email);
     }
 
     @Override

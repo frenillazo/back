@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
  * Request DTO for updating user status.
  */
 public record UpdateUserStatusRequest(
-        @NotNull(message = "Status is required")
+        @NotNull(message = "El estado es obligatorio")
         UserStatus status
 ) {
 }

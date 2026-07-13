@@ -9,12 +9,12 @@ import jakarta.validation.constraints.Size;
  */
 public record UpdateTeacherRequest(
 
-        @NotBlank(message = "First name is required")
-        @Size(max = 50, message = "First name must not exceed 50 characters")
+        @NotBlank(message = "El nombre es obligatorio")
+        @Size(max = 50, message = "El nombre no puede exceder 50 caracteres")
         String firstName,
 
-        @NotBlank(message = "Last name is required")
-        @Size(max = 50, message = "Last name must not exceed 50 characters")
+        @NotBlank(message = "Los apellidos son obligatorios")
+        @Size(max = 50, message = "Los apellidos no pueden exceder 50 caracteres")
         String lastName
 ) {
 }

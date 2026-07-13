@@ -10,8 +10,8 @@ import com.acainfo.shared.domain.exception.BusinessRuleException;
 public class SubjectReservationAlreadyExistsException extends BusinessRuleException {
 
     public SubjectReservationAlreadyExistsException(Long studentId, Long subjectId) {
-        super("Student " + studentId + " already has a confirmed reservation for subject " + subjectId
-                + ". Use 'Cambiar Sesion' to switch to a different session.");
+        super("El estudiante " + studentId + " ya tiene una reserva confirmada para la asignatura " + subjectId
+                + ". Use 'Cambiar Sesion' para cambiar a otra sesión.");
     }
 
     @Override

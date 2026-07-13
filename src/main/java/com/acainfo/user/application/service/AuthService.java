@@ -80,7 +80,7 @@ public class AuthService implements
 
         // Validate email format
         if (!isValidEmail(command.email())) {
-            throw new IllegalArgumentException("Invalid email format");
+            throw new IllegalArgumentException("Formato de email inválido");
         }
 
         // Validate email domain
@@ -95,7 +95,7 @@ public class AuthService implements
 
         // Validate password length
         if (command.password() == null || command.password().length() < 6) {
-            throw new IllegalArgumentException("Password must be at least 6 characters");
+            throw new IllegalArgumentException("La contraseña debe tener al menos 6 caracteres");
         }
 
         // Get STUDENT role
@@ -296,7 +296,7 @@ public class AuthService implements
 
         // Validate password length
         if (newPassword == null || newPassword.length() < 6) {
-            throw new IllegalArgumentException("Password must be at least 6 characters");
+            throw new IllegalArgumentException("La contraseña debe tener al menos 6 caracteres");
         }
 
         // Validate token

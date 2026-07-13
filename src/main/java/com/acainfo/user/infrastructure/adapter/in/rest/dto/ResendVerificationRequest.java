@@ -7,8 +7,8 @@ import jakarta.validation.constraints.NotBlank;
  * REST DTO for resend verification email requests.
  */
 public record ResendVerificationRequest(
-        @NotBlank(message = "Email is required")
-        @Email(message = "Invalid email format")
+        @NotBlank(message = "El email es obligatorio")
+        @Email(message = "Formato de email inválido")
         String email
 ) {
 }

@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
  * Request DTO for assigning a role to a user.
  */
 public record AssignRoleRequest(
-        @NotNull(message = "Role type is required")
+        @NotNull(message = "El tipo de rol es obligatorio")
         RoleType roleType
 ) {
 }

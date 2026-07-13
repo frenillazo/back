@@ -197,10 +197,10 @@ public class ScheduleService implements
      */
     private void validateTimeRange(LocalTime startTime, LocalTime endTime) {
         if (startTime == null || endTime == null) {
-            throw new InvalidScheduleDataException("Start time and end time are required");
+            throw new InvalidScheduleDataException("La hora de inicio y la hora de fin son obligatorias");
         }
         if (!startTime.isBefore(endTime)) {
-            throw new InvalidScheduleDataException("Start time must be before end time");
+            throw new InvalidScheduleDataException("La hora de inicio debe ser anterior a la hora de fin");
         }
     }
 

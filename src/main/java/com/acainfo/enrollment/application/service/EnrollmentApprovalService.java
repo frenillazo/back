@@ -44,7 +44,7 @@ public class EnrollmentApprovalService implements ApproveEnrollmentUseCase, Reje
 
         if (!enrollment.canBeApproved()) {
             throw new InvalidEnrollmentStateException(
-                    "Cannot approve enrollment with status: " + enrollment.getStatus()
+                    "No se puede aprobar una inscripción con estado: " + enrollment.getStatus()
             );
         }
 
@@ -96,7 +96,7 @@ public class EnrollmentApprovalService implements ApproveEnrollmentUseCase, Reje
 
         if (!enrollment.canBeRejected()) {
             throw new InvalidEnrollmentStateException(
-                    "Cannot reject enrollment with status: " + enrollment.getStatus()
+                    "No se puede rechazar una inscripción con estado: " + enrollment.getStatus()
             );
         }
 

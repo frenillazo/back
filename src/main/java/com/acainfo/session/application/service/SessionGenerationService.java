@@ -77,7 +77,7 @@ public class SessionGenerationService implements GenerateSessionsUseCase {
 
         if (command.courseId() == null) {
             throw new InvalidSessionStateException(
-                    "Generation for all groups not yet implemented. Please specify a courseId."
+                    "La generación para todos los grupos aún no está implementada. Por favor, especifique un courseId."
             );
         }
 

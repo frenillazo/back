@@ -8,7 +8,7 @@ import com.acainfo.shared.domain.exception.BusinessRuleException;
 public class DuplicateEmailException extends BusinessRuleException {
 
     public DuplicateEmailException(String email) {
-        super("Email already registered: " + email);
+        super("Email ya registrado: " + email);
     }
 
     @Override

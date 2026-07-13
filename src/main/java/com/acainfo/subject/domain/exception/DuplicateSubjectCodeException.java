@@ -8,7 +8,7 @@ import com.acainfo.shared.domain.exception.BusinessRuleException;
 public class DuplicateSubjectCodeException extends BusinessRuleException {
 
     public DuplicateSubjectCodeException(String code) {
-        super("Subject code already exists: " + code);
+        super("El código de asignatura ya existe: " + code);
     }
 
     @Override

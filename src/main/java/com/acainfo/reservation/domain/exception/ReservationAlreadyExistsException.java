@@ -8,7 +8,7 @@ import com.acainfo.shared.domain.exception.BusinessRuleException;
 public class ReservationAlreadyExistsException extends BusinessRuleException {
 
     public ReservationAlreadyExistsException(Long studentId, Long sessionId) {
-        super("Student " + studentId + " already has a reservation for session " + sessionId);
+        super("El estudiante " + studentId + " ya tiene una reserva para la sesión " + sessionId);
     }
 
     @Override

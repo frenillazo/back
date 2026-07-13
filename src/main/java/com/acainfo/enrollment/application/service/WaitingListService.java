@@ -54,7 +54,7 @@ public class WaitingListService implements WaitingListUseCase {
 
         if (!enrollment.isOnWaitingList()) {
             throw new InvalidEnrollmentStateException(
-                    "Enrollment is not on waiting list. Current status: " + enrollment.getStatus()
+                    "La inscripción no está en lista de espera. Estado actual: " + enrollment.getStatus()
             );
         }
 

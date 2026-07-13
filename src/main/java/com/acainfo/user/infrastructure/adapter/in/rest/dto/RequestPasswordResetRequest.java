@@ -7,8 +7,8 @@ import jakarta.validation.constraints.NotBlank;
  * REST DTO for password reset request.
  */
 public record RequestPasswordResetRequest(
-        @NotBlank(message = "Email is required")
-        @Email(message = "Invalid email format")
+        @NotBlank(message = "El email es obligatorio")
+        @Email(message = "Formato de email inválido")
         String email
 ) {
 }

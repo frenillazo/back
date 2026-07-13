@@ -142,7 +142,7 @@ public class AuthController {
             ),
             @ApiResponse(
                     responseCode = "401",
-                    description = "Invalid or expired refresh token",
+                    description = "Refresh token inválido o expirado",
                     content = @Content(schema = @Schema(implementation = MessageResponse.class))
             )
     })

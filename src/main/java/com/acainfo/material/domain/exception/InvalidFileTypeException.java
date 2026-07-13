@@ -8,11 +8,11 @@ import com.acainfo.shared.domain.exception.BusinessRuleException;
 public class InvalidFileTypeException extends BusinessRuleException {
 
     public InvalidFileTypeException(String extension) {
-        super("File type not allowed: " + extension);
+        super("Tipo de archivo no permitido: " + extension);
     }
 
     public InvalidFileTypeException(String extension, String allowedTypes) {
-        super("File type '" + extension + "' not allowed. Allowed types: " + allowedTypes);
+        super("Tipo de archivo '" + extension + "' no permitido. Tipos permitidos: " + allowedTypes);
     }
 
     @Override

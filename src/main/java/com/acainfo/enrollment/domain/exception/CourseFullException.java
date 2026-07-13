@@ -8,7 +8,7 @@ import com.acainfo.shared.domain.exception.BusinessRuleException;
 public class CourseFullException extends BusinessRuleException {
 
     public CourseFullException(Long courseId) {
-        super("Course " + courseId + " is full and has no available seats");
+        super("El curso " + courseId + " está completo y no tiene plazas disponibles");
     }
 
     @Override

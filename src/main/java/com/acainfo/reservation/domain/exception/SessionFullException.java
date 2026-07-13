@@ -8,11 +8,11 @@ import com.acainfo.shared.domain.exception.BusinessRuleException;
 public class SessionFullException extends BusinessRuleException {
 
     public SessionFullException(Long sessionId) {
-        super("Session " + sessionId + " has no available in-person seats");
+        super("La sesión " + sessionId + " no tiene plazas presenciales disponibles");
     }
 
     public SessionFullException(Long sessionId, int capacity) {
-        super("Session " + sessionId + " has reached its in-person capacity of " + capacity);
+        super("La sesión " + sessionId + " ha alcanzado su capacidad presencial de " + capacity);
     }
 
     @Override

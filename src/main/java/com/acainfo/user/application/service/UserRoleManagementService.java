@@ -40,7 +40,7 @@ public class UserRoleManagementService implements ManageUserRolesUseCase {
 
         if (hasRole) {
             throw new IllegalArgumentException(
-                    "User already has role: " + roleType
+                    "El usuario ya tiene el rol: " + roleType
             );
         }
 
@@ -75,14 +75,14 @@ public class UserRoleManagementService implements ManageUserRolesUseCase {
 
         if (!hasRole) {
             throw new IllegalArgumentException(
-                    "User doesn't have role: " + roleType
+                    "El usuario no tiene el rol: " + roleType
             );
         }
 
         // Prevent removing last role
         if (user.getRoles().size() <= 1) {
             throw new IllegalArgumentException(
-                    "Cannot remove last role from user. User must have at least one role."
+                    "No se puede eliminar el último rol del usuario. El usuario debe tener al menos un rol."
             );
         }
 

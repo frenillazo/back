@@ -14,19 +14,19 @@ import jakarta.validation.constraints.Size;
  */
 public record CreateSubjectRequest(
 
-        @NotBlank(message = "Subject code is required")
-        @Pattern(regexp = "^[A-Z]{3}\\d{3}$", message = "Code must be 3 uppercase letters followed by 3 digits (e.g., ING101)")
+        @NotBlank(message = "El código de asignatura es obligatorio")
+        @Pattern(regexp = "^[A-Z]{3}\\d{3}$", message = "El código debe ser 3 letras mayúsculas seguidas de 3 dígitos (p.ej., ING101)")
         String code,
 
-        @NotBlank(message = "Subject name is required")
-        @Size(max = 100, message = "Name must not exceed 100 characters")
+        @NotBlank(message = "El nombre de la asignatura es obligatorio")
+        @Size(max = 100, message = "El nombre no puede exceder 100 caracteres")
         String name,
 
-        @NotNull(message = "Degree is required")
+        @NotNull(message = "La titulación es obligatoria")
         Degree degree,
 
-        @Min(value = 1, message = "Year must be between 1 and 4")
-        @Max(value = 4, message = "Year must be between 1 and 4")
+        @Min(value = 1, message = "El curso debe estar entre 1 y 4")
+        @Max(value = 4, message = "El curso debe estar entre 1 y 4")
         Integer year
 ) {
 }

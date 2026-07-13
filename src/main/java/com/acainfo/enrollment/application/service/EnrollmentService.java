@@ -87,7 +87,7 @@ public class EnrollmentService implements
 
         if (!enrollment.canBeWithdrawn()) {
             throw new InvalidEnrollmentStateException(
-                    "Cannot withdraw enrollment with status: " + enrollment.getStatus()
+                    "No se puede dar de baja una inscripción con estado: " + enrollment.getStatus()
             );
         }
 
@@ -132,7 +132,7 @@ public class EnrollmentService implements
 
         if (!enrollment.isActive()) {
             throw new InvalidEnrollmentStateException(
-                    "Only ACTIVE enrollments can change group. Current status: " + enrollment.getStatus()
+                    "Solo las inscripciones ACTIVE pueden cambiar de grupo. Estado actual: " + enrollment.getStatus()
             );
         }
 

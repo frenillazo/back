@@ -9,10 +9,10 @@ import com.acainfo.user.domain.model.RoleType;
 public class RoleNotFoundException extends NotFoundException {
 
     public RoleNotFoundException(Long roleId) {
-        super("Role not found with id: " + roleId);
+        super("Rol no encontrado con id: " + roleId);
     }
 
     public RoleNotFoundException(RoleType roleType) {
-        super("Role not found with type: " + roleType);
+        super("Rol no encontrado con tipo: " + roleType);
     }
 }

@@ -8,7 +8,7 @@ import com.acainfo.shared.domain.exception.BusinessRuleException;
 public class InvalidCredentialsException extends BusinessRuleException {
 
     public InvalidCredentialsException() {
-        super("Invalid email or password");
+        super("Email o contraseña incorrectos");
     }
 
     @Override

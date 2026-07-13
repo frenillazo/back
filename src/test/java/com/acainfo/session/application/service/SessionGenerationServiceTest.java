@@ -158,7 +158,7 @@ class SessionGenerationServiceTest {
 
         assertThatThrownBy(() -> service.generate(command))
                 .isInstanceOf(InvalidSessionStateException.class)
-                .hasMessageContaining("Generation for all groups not yet implemented");
+                .hasMessageContaining("La generación para todos los grupos aún no está implementada");
 
         verifyNoInteractions(scheduleRepositoryPort, courseRepositoryPort,
                 sessionRepositoryPort, generateReservationsUseCase);
@@ -188,7 +188,7 @@ class SessionGenerationServiceTest {
         assertThatThrownBy(() -> service.generate(
                 GenerateSessionsCommand.forCourse(GROUP_ID, RANGE_START, RANGE_END)))
                 .isInstanceOf(CourseNotFoundException.class)
-                .hasMessageContaining("Course not found with ID: " + GROUP_ID);
+                .hasMessageContaining("Curso no encontrado con ID: " + GROUP_ID);
 
         verify(sessionRepositoryPort, never()).saveAll(anyList());
         verifyNoInteractions(generateReservationsUseCase);

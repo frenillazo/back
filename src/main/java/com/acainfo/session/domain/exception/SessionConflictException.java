@@ -9,7 +9,7 @@ import java.time.LocalTime;
 public class SessionConflictException extends ValidationException {
     public SessionConflictException(Classroom classroom, DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime) {
         super(String.format(
-                "Session conflict: %s is already booked on %s between %s and %s",
+                "Conflicto de sesión: %s ya está reservada el %s entre %s y %s",
                 classroom.getDisplayName(),
                 dayOfWeek,
                 startTime,
@@ -18,7 +18,7 @@ public class SessionConflictException extends ValidationException {
     }
 
     public SessionConflictException(Long conflictingSessionId) {
-        super("Session conflicts with existing session id: " + conflictingSessionId);
+        super("La sesión entra en conflicto con la sesión existente id: " + conflictingSessionId);
     }
 
     public SessionConflictException(String message) {

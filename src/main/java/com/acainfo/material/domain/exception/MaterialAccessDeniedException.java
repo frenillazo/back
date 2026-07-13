@@ -9,11 +9,11 @@ import com.acainfo.shared.domain.exception.BusinessRuleException;
 public class MaterialAccessDeniedException extends BusinessRuleException {
 
     public MaterialAccessDeniedException(Long materialId, Long userId) {
-        super("Access denied to material " + materialId + " for user " + userId);
+        super("Acceso denegado al material " + materialId + " para el usuario " + userId);
     }
 
     public MaterialAccessDeniedException(Long materialId, Long userId, String reason) {
-        super("Access denied to material " + materialId + " for user " + userId + ": " + reason);
+        super("Acceso denegado al material " + materialId + " para el usuario " + userId + ": " + reason);
     }
 
     @Override

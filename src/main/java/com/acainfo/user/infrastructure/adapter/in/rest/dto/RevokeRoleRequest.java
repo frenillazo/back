@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
  * Request DTO for revoking a role from a user.
  */
 public record RevokeRoleRequest(
-        @NotNull(message = "Role type is required")
+        @NotNull(message = "El tipo de rol es obligatorio")
         RoleType roleType
 ) {
 }

@@ -14,9 +14,9 @@ import lombok.*;
 @Builder
 public class EnrollStudentRequest {
 
-    @NotNull(message = "Student ID is required")
+    @NotNull(message = "El ID de estudiante es obligatorio")
     private Long studentId;
 
-    @NotNull(message = "Group ID is required")
+    @NotNull(message = "El ID de grupo es obligatorio")
     private Long courseId;
 }

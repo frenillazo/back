@@ -50,7 +50,7 @@ public class LocalFileStorageAdapter implements FileStoragePort {
             Files.createDirectories(basePath);
             log.info("Local file storage initialized at: {}", basePath);
         } catch (IOException e) {
-            throw new FileStorageException("Could not initialize storage directory: " + basePath, e);
+            throw new FileStorageException("No se pudo inicializar el directorio de almacenamiento: " + basePath, e);
         }
     }
 
@@ -59,7 +59,7 @@ public class LocalFileStorageAdapter implements FileStoragePort {
         try {
             // Get subject information
             Subject subject = subjectRepository.findById(subjectId)
-                    .orElseThrow(() -> new FileStorageException("Subject not found with id: " + subjectId));
+                    .orElseThrow(() -> new FileStorageException("Asignatura no encontrada con id: " + subjectId));
 
             // Build folder structure: subjects/{subjectCode-subjectName}/{categoryFolder}/
             String subjectFolderName = sanitizeFolderName(subject.getCode() + "-" + subject.getName());
@@ -80,7 +80,7 @@ public class LocalFileStorageAdapter implements FileStoragePort {
 
             return storagePath;
         } catch (IOException e) {
-            throw new FileStorageException("Failed to store file: " + storedFilename, e);
+            throw new FileStorageException("No se pudo almacenar el archivo: " + storedFilename, e);
         }
     }
 
@@ -90,12 +90,12 @@ public class LocalFileStorageAdapter implements FileStoragePort {
             Path filePath = basePath.resolve(storagePath);
 
             if (!Files.exists(filePath)) {
-                throw new FileStorageException("File not found: " + storagePath);
+                throw new FileStorageException("Archivo no encontrado: " + storagePath);
             }
 
             return Files.newInputStream(filePath);
         } catch (IOException e) {
-            throw new FileStorageException("Failed to retrieve file: " + storagePath, e);
+            throw new FileStorageException("No se pudo recuperar el archivo: " + storagePath, e);
         }
     }
 
@@ -111,7 +111,7 @@ public class LocalFileStorageAdapter implements FileStoragePort {
                 log.warn("File not found for deletion: {}", storagePath);
             }
         } catch (IOException e) {
-            throw new FileStorageException("Failed to delete file: " + storagePath, e);
+            throw new FileStorageException("No se pudo eliminar el archivo: " + storagePath, e);
         }
     }
 

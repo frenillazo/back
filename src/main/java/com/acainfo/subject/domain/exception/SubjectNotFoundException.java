@@ -8,10 +8,10 @@ import com.acainfo.shared.domain.exception.NotFoundException;
 public class SubjectNotFoundException extends NotFoundException {
 
     public SubjectNotFoundException(Long subjectId) {
-        super("Subject not found with id: " + subjectId);
+        super("Asignatura no encontrada con id: " + subjectId);
     }
 
     public SubjectNotFoundException(String code) {
-        super("Subject not found with code: " + code);
+        super("Asignatura no encontrada con código: " + code);
     }
 }

@@ -14,6 +14,6 @@ import lombok.*;
 @Builder
 public class AddSupporterRequest {
 
-    @NotNull(message = "Student ID is required")
+    @NotNull(message = "El ID de estudiante es obligatorio")
     private Long studentId;
 }

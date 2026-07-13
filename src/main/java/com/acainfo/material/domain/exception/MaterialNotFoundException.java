@@ -8,7 +8,7 @@ import com.acainfo.shared.domain.exception.NotFoundException;
 public class MaterialNotFoundException extends NotFoundException {
 
     public MaterialNotFoundException(Long id) {
-        super("Material not found with ID: " + id);
+        super("Material no encontrado con ID: " + id);
     }
 
     @Override

@@ -8,7 +8,7 @@ import com.acainfo.shared.domain.exception.BusinessRuleException;
 public class AlreadyEnrolledException extends BusinessRuleException {
 
     public AlreadyEnrolledException(Long studentId, Long courseId) {
-        super("Student " + studentId + " is already enrolled or on waiting list for course " + courseId);
+        super("El estudiante " + studentId + " ya está inscrito o en lista de espera para el curso " + courseId);
     }
 
     @Override

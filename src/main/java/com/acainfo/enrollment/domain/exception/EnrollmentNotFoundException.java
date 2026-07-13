@@ -8,7 +8,7 @@ import com.acainfo.shared.domain.exception.NotFoundException;
 public class EnrollmentNotFoundException extends NotFoundException {
 
     public EnrollmentNotFoundException(Long id) {
-        super("Enrollment not found with ID: " + id);
+        super("Inscripción no encontrada con ID: " + id);
     }
 
     @Override

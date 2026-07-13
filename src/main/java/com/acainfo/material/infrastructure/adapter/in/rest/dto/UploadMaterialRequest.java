@@ -10,14 +10,14 @@ import jakarta.validation.constraints.Size;
  * File content is handled separately via MultipartFile.
  */
 public record UploadMaterialRequest(
-        @NotNull(message = "Subject ID is required")
+        @NotNull(message = "El ID de asignatura es obligatorio")
         Long subjectId,
 
-        @NotBlank(message = "Name is required")
-        @Size(max = 255, message = "Name must not exceed 255 characters")
+        @NotBlank(message = "El nombre es obligatorio")
+        @Size(max = 255, message = "El nombre no puede exceder 255 caracteres")
         String name,
 
-        @Size(max = 1000, message = "Description must not exceed 1000 characters")
+        @Size(max = 1000, message = "La descripción no puede exceder 1000 caracteres")
         String description,
 
         MaterialCategory category

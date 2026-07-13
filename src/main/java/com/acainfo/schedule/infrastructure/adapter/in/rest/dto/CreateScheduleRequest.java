@@ -20,20 +20,20 @@ import java.time.LocalTime;
 @ToString
 public class CreateScheduleRequest {
 
-    @NotNull(message = "Group ID is required")
+    @NotNull(message = "El ID de grupo es obligatorio")
     private Long courseId;
 
-    @NotNull(message = "Day of week is required")
+    @NotNull(message = "El día de la semana es obligatorio")
     private DayOfWeek dayOfWeek;
 
-    @NotNull(message = "Start time is required")
+    @NotNull(message = "La hora de inicio es obligatoria")
     @JsonFormat(pattern = "HH:mm")
     private LocalTime startTime;
 
-    @NotNull(message = "End time is required")
+    @NotNull(message = "La hora de fin es obligatoria")
     @JsonFormat(pattern = "HH:mm")
     private LocalTime endTime;
 
-    @NotNull(message = "Classroom is required")
+    @NotNull(message = "El aula es obligatoria")
     private Classroom classroom;
 }

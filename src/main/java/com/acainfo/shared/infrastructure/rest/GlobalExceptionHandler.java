@@ -152,7 +152,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.of(
                 HttpStatus.UNAUTHORIZED.value(),
                 "Unauthorized",
-                "Authentication failed: " + ex.getMessage(),
+                "Fallo de autenticación: " + ex.getMessage(),
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
@@ -166,7 +166,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.of(
                 HttpStatus.UNAUTHORIZED.value(),
                 "Unauthorized",
-                "Invalid email or password",
+                "Email o contraseña incorrectos",
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
@@ -180,7 +180,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.of(
                 HttpStatus.FORBIDDEN.value(),
                 "Forbidden",
-                "Access denied",
+                "Acceso denegado",
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
@@ -203,7 +203,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.withFieldErrors(
                 HttpStatus.BAD_REQUEST.value(),
                 "Bad Request",
-                "Validation failed",
+                "La validación ha fallado",
                 request.getRequestURI(),
                 fieldErrors
         );
@@ -246,7 +246,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.of(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "Internal Server Error",
-                "An unexpected error occurred",
+                "Ha ocurrido un error inesperado",
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);

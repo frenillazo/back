@@ -14,6 +14,6 @@ import lombok.*;
 @Builder
 public class ChangeCourseRequest {
 
-    @NotNull(message = "New group ID is required")
+    @NotNull(message = "El nuevo ID de grupo es obligatorio")
     private Long newCourseId;
 }

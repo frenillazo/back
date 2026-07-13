@@ -8,7 +8,7 @@ import com.acainfo.shared.domain.exception.NotFoundException;
 public class CourseNotFoundException extends NotFoundException {
 
     public CourseNotFoundException(Long id) {
-        super("Course not found with ID: " + id);
+        super("Curso no encontrado con ID: " + id);
     }
 
     @Override

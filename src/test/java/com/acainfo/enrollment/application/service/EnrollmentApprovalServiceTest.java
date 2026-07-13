@@ -282,8 +282,8 @@ class EnrollmentApprovalServiceTest {
 
             assertThatThrownBy(() -> service.approve(ENROLLMENT_ID, OTHER_TEACHER_ID))
                     .isInstanceOf(UnauthorizedApprovalException.class)
-                    .hasMessageContaining("User " + OTHER_TEACHER_ID)
-                    .hasMessageContaining("group " + GROUP_ID);
+                    .hasMessageContaining("El usuario " + OTHER_TEACHER_ID)
+                    .hasMessageContaining("grupo " + GROUP_ID);
 
             assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.PENDING_APPROVAL);
             verify(enrollmentRepositoryPort, never()).countActiveByCourseId(anyLong());
@@ -333,7 +333,7 @@ class EnrollmentApprovalServiceTest {
 
             assertThatThrownBy(() -> service.approve(ENROLLMENT_ID, ADMIN_ID))
                     .isInstanceOf(InvalidEnrollmentStateException.class)
-                    .hasMessage("Cannot approve enrollment with status: " + status);
+                    .hasMessage("No se puede aprobar una inscripción con estado: " + status);
 
             // State is validated BEFORE loading the group and BEFORE the authorization check
             verifyNoInteractions(courseRepositoryPort, getUserProfileUseCase, autoReservationPort);
@@ -346,7 +346,7 @@ class EnrollmentApprovalServiceTest {
 
             assertThatThrownBy(() -> service.approve(ENROLLMENT_ID, ADMIN_ID))
                     .isInstanceOf(EnrollmentNotFoundException.class)
-                    .hasMessage("Enrollment not found with ID: " + ENROLLMENT_ID);
+                    .hasMessage("Inscripción no encontrada con ID: " + ENROLLMENT_ID);
 
             verifyNoInteractions(courseRepositoryPort, getUserProfileUseCase, autoReservationPort);
         }
@@ -358,7 +358,7 @@ class EnrollmentApprovalServiceTest {
 
             assertThatThrownBy(() -> service.approve(ENROLLMENT_ID, ADMIN_ID))
                     .isInstanceOf(CourseNotFoundException.class)
-                    .hasMessage("Course not found with ID: " + GROUP_ID);
+                    .hasMessage("Curso no encontrado con ID: " + GROUP_ID);
 
             verifyNoInteractions(getUserProfileUseCase, autoReservationPort);
             verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));
@@ -473,7 +473,7 @@ class EnrollmentApprovalServiceTest {
 
             assertThatThrownBy(() -> service.reject(ENROLLMENT_ID, TEACHER_ID, "too late"))
                     .isInstanceOf(InvalidEnrollmentStateException.class)
-                    .hasMessage("Cannot reject enrollment with status: " + status);
+                    .hasMessage("No se puede rechazar una inscripción con estado: " + status);
 
             verifyNoInteractions(courseRepositoryPort, getUserProfileUseCase, autoReservationPort);
             verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));

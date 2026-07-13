@@ -12,7 +12,7 @@ public class InvalidReservationStateException extends BusinessRuleException {
     }
 
     public InvalidReservationStateException(Long reservationId, String currentState, String operation) {
-        super("Cannot " + operation + " reservation " + reservationId + " in state " + currentState);
+        super("No se puede " + operation + " la reserva " + reservationId + " en estado " + currentState);
     }
 
     @Override

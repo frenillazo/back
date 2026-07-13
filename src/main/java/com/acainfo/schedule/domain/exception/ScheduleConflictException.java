@@ -14,7 +14,7 @@ public class ScheduleConflictException extends BusinessRuleException {
 
     public ScheduleConflictException(Classroom classroom, DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime) {
         super(String.format(
-                "Schedule conflict: %s is already booked on %s between %s and %s",
+                "Conflicto de horario: %s ya está reservada el %s entre %s y %s",
                 classroom.getDisplayName(),
                 dayOfWeek,
                 startTime,
@@ -23,7 +23,7 @@ public class ScheduleConflictException extends BusinessRuleException {
     }
 
     public ScheduleConflictException(Long conflictingScheduleId) {
-        super("Schedule conflicts with existing schedule id: " + conflictingScheduleId);
+        super("El horario entra en conflicto con el horario existente id: " + conflictingScheduleId);
     }
 
     public ScheduleConflictException(String message) {

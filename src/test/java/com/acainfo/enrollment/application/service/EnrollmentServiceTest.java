@@ -126,7 +126,7 @@ class EnrollmentServiceTest {
 
             assertThatThrownBy(() -> enrollmentService.enroll(new EnrollStudentCommand(STUDENT_ID, GROUP_ID)))
                     .isInstanceOf(CourseNotFoundException.class)
-                    .hasMessageContaining("Course not found with ID: " + GROUP_ID);
+                    .hasMessageContaining("Curso no encontrado con ID: " + GROUP_ID);
 
             verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));
         }
@@ -140,7 +140,7 @@ class EnrollmentServiceTest {
 
             assertThatThrownBy(() -> enrollmentService.enroll(new EnrollStudentCommand(STUDENT_ID, GROUP_ID)))
                     .isInstanceOf(AlreadyEnrolledException.class)
-                    .hasMessageContaining("already enrolled");
+                    .hasMessageContaining("ya está inscrito");
 
             verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));
         }
@@ -243,7 +243,7 @@ class EnrollmentServiceTest {
 
             assertThatThrownBy(() -> enrollmentService.withdraw(ENROLLMENT_ID))
                     .isInstanceOf(InvalidEnrollmentStateException.class)
-                    .hasMessageContaining("Cannot withdraw enrollment with status: WITHDRAWN");
+                    .hasMessageContaining("No se puede dar de baja una inscripción con estado: WITHDRAWN");
 
             verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));
             verifyNoInteractions(autoReservationPort);
@@ -268,7 +268,7 @@ class EnrollmentServiceTest {
 
             assertThatThrownBy(() -> enrollmentService.withdraw(ENROLLMENT_ID))
                     .isInstanceOf(EnrollmentNotFoundException.class)
-                    .hasMessageContaining("Enrollment not found with ID: " + ENROLLMENT_ID);
+                    .hasMessageContaining("Inscripción no encontrada con ID: " + ENROLLMENT_ID);
 
             verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));
         }
@@ -316,7 +316,7 @@ class EnrollmentServiceTest {
             assertThatThrownBy(() -> enrollmentService.changeCourse(
                     new ChangeCourseCommand(ENROLLMENT_ID, NEW_GROUP_ID)))
                     .isInstanceOf(CourseFullException.class)
-                    .hasMessageContaining("Course " + NEW_GROUP_ID + " is full");
+                    .hasMessageContaining("El curso " + NEW_GROUP_ID + " está completo");
 
             assertThat(active.getCourseId()).isEqualTo(GROUP_ID);
             verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));
@@ -355,7 +355,7 @@ class EnrollmentServiceTest {
             assertThatThrownBy(() -> enrollmentService.changeCourse(
                     new ChangeCourseCommand(ENROLLMENT_ID, NEW_GROUP_ID)))
                     .isInstanceOf(InvalidEnrollmentStateException.class)
-                    .hasMessageContaining("Only ACTIVE enrollments can change group")
+                    .hasMessageContaining("Solo las inscripciones ACTIVE pueden cambiar de grupo")
                     .hasMessageContaining("WAITING_LIST");
 
             verify(courseRepositoryPort, never()).findById(anyLong());
@@ -371,7 +371,7 @@ class EnrollmentServiceTest {
             assertThatThrownBy(() -> enrollmentService.changeCourse(
                     new ChangeCourseCommand(ENROLLMENT_ID, NEW_GROUP_ID)))
                     .isInstanceOf(CourseNotFoundException.class)
-                    .hasMessageContaining("Course not found with ID: " + NEW_GROUP_ID);
+                    .hasMessageContaining("Curso no encontrado con ID: " + NEW_GROUP_ID);
 
             verify(enrollmentRepositoryPort, never()).save(any(Enrollment.class));
             verifyNoInteractions(waitingListService);

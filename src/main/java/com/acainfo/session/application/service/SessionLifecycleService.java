@@ -33,7 +33,7 @@ public class SessionLifecycleService implements SessionLifecycleUseCase {
 
         if (!session.isScheduled()) {
             throw new InvalidSessionStateException(
-                    "Only SCHEDULED sessions can be started. Current status: " + session.getStatus()
+                    "Solo se pueden iniciar sesiones SCHEDULED. Estado actual: " + session.getStatus()
             );
         }
 
@@ -53,7 +53,7 @@ public class SessionLifecycleService implements SessionLifecycleUseCase {
 
         if (!session.isInProgress()) {
             throw new InvalidSessionStateException(
-                    "Only IN_PROGRESS sessions can be completed. Current status: " + session.getStatus()
+                    "Solo se pueden completar sesiones IN_PROGRESS. Estado actual: " + session.getStatus()
             );
         }
 
@@ -73,7 +73,7 @@ public class SessionLifecycleService implements SessionLifecycleUseCase {
 
         if (!session.isScheduled()) {
             throw new InvalidSessionStateException(
-                    "Only SCHEDULED sessions can be cancelled. Current status: " + session.getStatus()
+                    "Solo se pueden cancelar sesiones SCHEDULED. Estado actual: " + session.getStatus()
             );
         }
 
@@ -93,7 +93,7 @@ public class SessionLifecycleService implements SessionLifecycleUseCase {
 
         if (!originalSession.isScheduled()) {
             throw new InvalidSessionStateException(
-                    "Only SCHEDULED sessions can be postponed. Current status: " + originalSession.getStatus()
+                    "Solo se pueden posponer sesiones SCHEDULED. Estado actual: " + originalSession.getStatus()
             );
         }
 

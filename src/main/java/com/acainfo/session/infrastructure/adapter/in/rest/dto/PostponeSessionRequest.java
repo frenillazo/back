@@ -20,7 +20,7 @@ import java.time.LocalTime;
 @ToString
 public class PostponeSessionRequest {
 
-    @NotNull(message = "New date is required")
+    @NotNull(message = "La nueva fecha es obligatoria")
     private LocalDate newDate;
 
     private LocalTime newStartTime;  // Optional: null = keep original

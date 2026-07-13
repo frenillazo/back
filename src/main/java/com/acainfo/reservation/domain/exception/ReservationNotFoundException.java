@@ -8,11 +8,11 @@ import com.acainfo.shared.domain.exception.NotFoundException;
 public class ReservationNotFoundException extends NotFoundException {
 
     public ReservationNotFoundException(Long id) {
-        super("Session reservation not found with ID: " + id);
+        super("Reserva de sesión no encontrada con ID: " + id);
     }
 
     public ReservationNotFoundException(Long studentId, Long sessionId) {
-        super("Session reservation not found for student " + studentId + " and session " + sessionId);
+        super("Reserva de sesión no encontrada para el estudiante " + studentId + " y la sesión " + sessionId);
     }
 
     @Override

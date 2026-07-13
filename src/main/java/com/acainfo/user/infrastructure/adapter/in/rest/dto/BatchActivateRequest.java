@@ -8,7 +8,7 @@ import java.util.List;
  * Request for batch activation of users.
  */
 public record BatchActivateRequest(
-        @NotEmpty(message = "User IDs list cannot be empty")
+        @NotEmpty(message = "La lista de IDs de usuario no puede estar vacía")
         List<Long> userIds
 ) {
 }

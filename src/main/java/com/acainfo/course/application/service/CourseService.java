@@ -70,22 +70,22 @@ public class CourseService implements
 
             if (!teacher.isTeacher() && !teacher.isAdmin()) {
                 throw new InvalidCourseDataException(
-                        "User " + command.teacherId() + " is not a teacher or admin"
+                        "El usuario " + command.teacherId() + " no es profesor ni administrador"
                 );
             }
         }
 
         // Validate dates
         if (command.startDate() == null || command.endDate() == null) {
-            throw new InvalidCourseDataException("startDate and endDate are required");
+            throw new InvalidCourseDataException("startDate y endDate son obligatorios");
         }
         if (command.endDate().isBefore(command.startDate())) {
-            throw new InvalidCourseDataException("endDate must be on or after startDate");
+            throw new InvalidCourseDataException("endDate debe ser igual o posterior a startDate");
         }
 
         // Validate capacity if provided (null = unlimited, virtual/dual course)
         if (command.capacity() != null && command.capacity() < 1) {
-            throw new InvalidCourseDataException("Capacity must be at least 1");
+            throw new InvalidCourseDataException("La capacidad debe ser al menos 1");
         }
 
         // Generate course name automatically
@@ -123,7 +123,7 @@ public class CourseService implements
             long activeEnrollments = enrollmentRepositoryPort.countActiveByCourseId(id);
             if (command.capacity() < activeEnrollments) {
                 throw new InvalidCourseDataException(
-                        String.format("Capacity cannot be less than current enrollments (%d)",
+                        String.format("La capacidad no puede ser menor que las inscripciones actuales (%d)",
                                 activeEnrollments)
                 );
             }
@@ -147,7 +147,7 @@ public class CourseService implements
                     .orElseThrow(() -> new UserNotFoundException(command.teacherId()));
             if (!teacher.isTeacher() && !teacher.isAdmin()) {
                 throw new InvalidCourseDataException(
-                        "User " + command.teacherId() + " is not a teacher or admin"
+                        "El usuario " + command.teacherId() + " no es profesor ni administrador"
                 );
             }
             course.setTeacherId(command.teacherId());
@@ -158,7 +158,7 @@ public class CourseService implements
         LocalDate newEnd = command.endDate() != null ? command.endDate() : course.getEndDate();
 
         if (newEnd.isBefore(newStart)) {
-            throw new InvalidCourseDataException("endDate must be on or after startDate");
+            throw new InvalidCourseDataException("endDate debe ser igual o posterior a startDate");
         }
         course.setStartDate(newStart);
         course.setEndDate(newEnd);
@@ -195,7 +195,7 @@ public class CourseService implements
         long activeEnrollments = enrollmentRepositoryPort.countActiveByCourseId(id);
         if (activeEnrollments > 0) {
             throw new InvalidCourseDataException(
-                    "Cannot delete course with existing enrollments. Cancel it instead."
+                    "No se puede eliminar un curso con inscripciones existentes. Cancélelo en su lugar."
             );
         }
 

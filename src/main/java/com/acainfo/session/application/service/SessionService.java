@@ -100,7 +100,7 @@ public class SessionService implements
             case EXTRA -> {
                 if (command.courseId() == null) {
                     throw new InvalidSessionStateException(
-                            "EXTRA sessions require a courseId"
+                            "Las sesiones EXTRA requieren un courseId"
                     );
                 }
                 Course group = courseRepositoryPort.findById(command.courseId())
@@ -110,7 +110,7 @@ public class SessionService implements
             case REGULAR -> {
                 if (command.scheduleId() == null) {
                     throw new InvalidSessionStateException(
-                            "REGULAR sessions require a scheduleId"
+                            "Las sesiones REGULAR requieren un scheduleId"
                     );
                 }
                 Schedule schedule = scheduleRepositoryPort.findById(command.scheduleId())
@@ -176,7 +176,7 @@ public class SessionService implements
 
         if (!session.isScheduled()) {
             throw new InvalidSessionStateException(
-                    "Only SCHEDULED sessions can be updated. Current status: " + session.getStatus()
+                    "Solo se pueden modificar sesiones SCHEDULED. Estado actual: " + session.getStatus()
             );
         }
 
@@ -213,7 +213,7 @@ public class SessionService implements
 
         if (!session.isScheduled()) {
             throw new InvalidSessionStateException(
-                    "Only SCHEDULED sessions can be deleted. Current status: " + session.getStatus()
+                    "Solo se pueden eliminar sesiones SCHEDULED. Estado actual: " + session.getStatus()
             );
         }
 

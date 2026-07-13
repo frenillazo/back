@@ -27,7 +27,7 @@ import java.time.LocalTime;
 @ToString
 public class CreateSessionRequest {
 
-    @NotNull(message = "Session type is required")
+    @NotNull(message = "El tipo de sesión es obligatorio")
     private SessionType type;
 
     private Long subjectId;   // Optional: derived from the course
@@ -36,18 +36,18 @@ public class CreateSessionRequest {
 
     private Long scheduleId;  // Required for REGULAR
 
-    @NotNull(message = "Classroom is required")
+    @NotNull(message = "El aula es obligatoria")
     private Classroom classroom;
 
-    @NotNull(message = "Date is required")
+    @NotNull(message = "La fecha es obligatoria")
     private LocalDate date;
 
-    @NotNull(message = "Start time is required")
+    @NotNull(message = "La hora de inicio es obligatoria")
     private LocalTime startTime;
 
-    @NotNull(message = "End time is required")
+    @NotNull(message = "La hora de fin es obligatoria")
     private LocalTime endTime;
 
-    @NotNull(message = "Session mode is required")
+    @NotNull(message = "El modo de sesión es obligatorio")
     private SessionMode mode;
 }

@@ -23,10 +23,10 @@ public class UpdateCourseRequest {
 
     private CourseStatus status;
 
-    @Min(value = 1, message = "Capacity must be at least 1")
+    @Min(value = 1, message = "La capacidad debe ser al menos 1")
     private Integer capacity;
 
-    @DecimalMin(value = "0.01", message = "pricePerMonth must be > 0")
+    @DecimalMin(value = "0.01", message = "pricePerMonth debe ser > 0")
     private BigDecimal pricePerMonth;
 
     private Long teacherId;  // optional: reassign teacher

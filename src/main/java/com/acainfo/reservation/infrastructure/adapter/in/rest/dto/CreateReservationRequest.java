@@ -15,15 +15,15 @@ import lombok.*;
 @Builder
 public class CreateReservationRequest {
 
-    @NotNull(message = "Student ID is required")
+    @NotNull(message = "El ID de estudiante es obligatorio")
     private Long studentId;
 
-    @NotNull(message = "Session ID is required")
+    @NotNull(message = "El ID de sesión es obligatorio")
     private Long sessionId;
 
-    @NotNull(message = "Enrollment ID is required")
+    @NotNull(message = "El ID de inscripción es obligatorio")
     private Long enrollmentId;
 
-    @NotNull(message = "Mode is required")
+    @NotNull(message = "El modo es obligatorio")
     private ReservationMode mode;
 }

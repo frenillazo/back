@@ -53,7 +53,7 @@ public class SmtpEmailAdapter implements EmailSenderPort {
 
         } catch (MessagingException e) {
             log.error("Failed to send verification email to {}: {}", to, e.getMessage());
-            throw new RuntimeException("Failed to send verification email", e);
+            throw new RuntimeException("No se pudo enviar el email de verificación", e);
         }
     }
 
@@ -194,7 +194,7 @@ public class SmtpEmailAdapter implements EmailSenderPort {
 
         } catch (MessagingException e) {
             log.error("Failed to send password reset email to {}: {}", to, e.getMessage());
-            throw new RuntimeException("Failed to send password reset email", e);
+            throw new RuntimeException("No se pudo enviar el email de recuperación de contraseña", e);
         }
     }
 

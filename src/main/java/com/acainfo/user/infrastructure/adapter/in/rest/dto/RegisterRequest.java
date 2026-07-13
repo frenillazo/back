@@ -12,27 +12,27 @@ import jakarta.validation.constraints.Size;
  */
 public record RegisterRequest(
 
-        @NotBlank(message = "Email is required")
-        @Email(message = "Email must be valid")
+        @NotBlank(message = "El email es obligatorio")
+        @Email(message = "El email debe ser válido")
         String email,
 
-        @NotBlank(message = "Password is required")
-        @Size(min = 6, message = "Password must be at least 6 characters")
+        @NotBlank(message = "La contraseña es obligatoria")
+        @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
         String password,
 
-        @NotBlank(message = "First name is required")
-        @Size(max = 50, message = "First name must not exceed 50 characters")
+        @NotBlank(message = "El nombre es obligatorio")
+        @Size(max = 50, message = "El nombre no puede exceder 50 caracteres")
         String firstName,
 
-        @NotBlank(message = "Last name is required")
-        @Size(max = 50, message = "Last name must not exceed 50 characters")
+        @NotBlank(message = "Los apellidos son obligatorios")
+        @Size(max = 50, message = "Los apellidos no pueden exceder 50 caracteres")
         String lastName,
 
-        @NotBlank(message = "Phone number is required")
-        @Size(max = 20, message = "Phone number must not exceed 20 characters")
+        @NotBlank(message = "El teléfono es obligatorio")
+        @Size(max = 20, message = "El teléfono no puede exceder 20 caracteres")
         String phoneNumber,
 
-        @NotNull(message = "Degree is required")
+        @NotNull(message = "La titulación es obligatoria")
         Degree degree
 ) {
 }
