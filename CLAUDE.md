@@ -1,6 +1,6 @@
 # AcaInfo Backend
 
-Spring Boot 3.2.1 · Java 21 · monolito modular con estructura hexagonal · PostgreSQL (prod) / H2 (dev). Submódulo git (remote: frenillazo/back); tras commitear aquí, bumpear el puntero en el superproyecto.
+Spring Boot 3.5.3 · Java 21 · monolito modular con estructura hexagonal · PostgreSQL (prod) / H2 (dev). Submódulo git (remote: frenillazo/back); tras commitear aquí, bumpear el puntero en el superproyecto.
 
 ## Build y verificación
 
@@ -32,5 +32,4 @@ Módulos: `user` (auth + profesores: no hay entidad Teacher, son users con rol),
 
 ## Bugs conocidos pendientes
 
-- Spring Boot 3.2.1 EOL (CVEs en transitivas) — actualizar a 3.3+/3.4+ con la red de 130 tests.
-(Logout y purga de tokens arreglados el 11-jul-2026; los demás bugs de la auditoría jul-2026 cayeron con la migración curso unificado: material access, PaymentAdmin, WaitingQueue, GroupRequest 500.)
+(Spring Boot actualizado a 3.5.3 el 13-jul-2026 — Flyway 11 necesita `flyway-database-postgresql`, ya en el pom. Logout y purga de tokens arreglados el 11-jul-2026; los demás bugs de la auditoría jul-2026 cayeron con la migración curso unificado.)
