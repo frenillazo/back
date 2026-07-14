@@ -52,8 +52,11 @@ public class SessionResponseEnricher {
         if (session.getCourseId() != null) {
             Course group = getCourseUseCase.getById(session.getCourseId());
             courseName = group.getName();
-            User teacher = getUserProfileUseCase.getUserById(group.getTeacherId());
-            teacherName = teacher.getFullName();
+            // El curso puede no tener profesor asignado (teacher opcional)
+            if (group.getTeacherId() != null) {
+                User teacher = getUserProfileUseCase.getUserById(group.getTeacherId());
+                teacherName = teacher.getFullName();
+            }
         }
 
         return sessionRestMapper.toEnrichedResponse(
@@ -97,9 +100,10 @@ public class SessionResponseEnricher {
                 .map(getCourseUseCase::getById)
                 .collect(Collectors.toMap(Course::getId, Function.identity()));
 
-        // Collect teacher IDs from groups
+        // Collect teacher IDs from groups (el curso puede no tener profesor)
         Set<Long> teacherIds = groupsById.values().stream()
                 .map(Course::getTeacherId)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
         // Fetch teachers

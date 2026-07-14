@@ -176,6 +176,11 @@ public class SessionGenerationService implements GenerateSessionsUseCase {
             SessionMode mode,
             List<Session> batchSessions
     ) {
+        // Curso sin profesor asignado: no hay conflictos de profesor que comprobar
+        if (teacherId == null) {
+            return;
+        }
+
         boolean newSessionIsOnline = mode == SessionMode.ONLINE;
 
         // First, check against existing sessions in the database

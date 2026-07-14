@@ -44,14 +44,18 @@ public class ScheduleResponseEnricher {
     public ScheduleEnrichedResponse enrich(Schedule schedule) {
         Course group = getCourseUseCase.getById(schedule.getCourseId());
         Subject subject = getSubjectUseCase.getById(group.getSubjectId());
-        User teacher = getUserProfileUseCase.getUserById(group.getTeacherId());
+        // El curso puede no tener profesor asignado (teacher opcional)
+        String teacherName = null;
+        if (group.getTeacherId() != null) {
+            teacherName = getUserProfileUseCase.getUserById(group.getTeacherId()).getFullName();
+        }
 
         return scheduleRestMapper.toEnrichedResponse(
                 schedule,
                 group,
                 subject.getName(),
                 subject.getCode(),
-                teacher.getFullName()
+                teacherName
         );
     }
 
@@ -84,6 +88,7 @@ public class ScheduleResponseEnricher {
 
         Set<Long> teacherIds = groupsById.values().stream()
                 .map(Course::getTeacherId)
+                .filter(id -> id != null)
                 .collect(Collectors.toSet());
 
         // Fetch subjects
@@ -101,14 +106,16 @@ public class ScheduleResponseEnricher {
                 .map(schedule -> {
                     Course group = groupsById.get(schedule.getCourseId());
                     Subject subject = subjectsById.get(group.getSubjectId());
-                    User teacher = teachersById.get(group.getTeacherId());
+                    User teacher = group.getTeacherId() != null
+                            ? teachersById.get(group.getTeacherId())
+                            : null;
 
                     return scheduleRestMapper.toEnrichedResponse(
                             schedule,
                             group,
                             subject.getName(),
                             subject.getCode(),
-                            teacher.getFullName()
+                            teacher != null ? teacher.getFullName() : null
                     );
                 })
                 .toList();

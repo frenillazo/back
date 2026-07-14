@@ -71,9 +71,10 @@ public class ReservationSessionEnricher {
                 .map(getCourseUseCase::getById)
                 .collect(Collectors.toMap(Course::getId, Function.identity()));
 
-        // Batch-fetch teachers from groups
+        // Batch-fetch teachers from groups (el curso puede no tener profesor)
         Set<Long> teacherIds = groupsById.values().stream()
                 .map(Course::getTeacherId)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
         Map<Long, User> teachersById = teacherIds.stream()

@@ -64,7 +64,11 @@ public class EnrollmentResponseEnricher {
         Course group = getCourseUseCase.getById(enrollment.getCourseId());
         Subject subject = getSubjectUseCase.getById(group.getSubjectId());
         User student = getUserProfileUseCase.getUserById(enrollment.getStudentId());
-        User teacher = getUserProfileUseCase.getUserById(group.getTeacherId());
+        // El curso puede no tener profesor asignado (teacher opcional)
+        String teacherName = null;
+        if (group.getTeacherId() != null) {
+            teacherName = getUserProfileUseCase.getUserById(group.getTeacherId()).getFullName();
+        }
 
         // Get schedules for this group
         List<Schedule> schedules = getScheduleUseCase.findByCourseId(group.getId());
@@ -86,7 +90,7 @@ public class EnrollmentResponseEnricher {
                 subject.getName(),
                 subject.getCode(),
                 group.getName(),
-                teacher.getFullName(),
+                teacherName,
                 scheduleSummary,
                 group.getCapacity(),
                 activeCount,
@@ -126,6 +130,7 @@ public class EnrollmentResponseEnricher {
 
         Set<Long> teacherIds = groupsById.values().stream()
                 .map(Course::getTeacherId)
+                .filter(id -> id != null)
                 .collect(Collectors.toSet());
 
         // Fetch subjects
@@ -160,7 +165,9 @@ public class EnrollmentResponseEnricher {
                     Course group = groupsById.get(enrollment.getCourseId());
                     Subject subject = subjectsById.get(group.getSubjectId());
                     User student = usersById.get(enrollment.getStudentId());
-                    User teacher = usersById.get(group.getTeacherId());
+                    User teacher = group.getTeacherId() != null
+                            ? usersById.get(group.getTeacherId())
+                            : null;
                     String approvedByUserName = enrollment.getApprovedByUserId() != null
                             ? usersById.get(enrollment.getApprovedByUserId()).getFullName()
                             : null;
@@ -176,7 +183,7 @@ public class EnrollmentResponseEnricher {
                             subject.getName(),
                             subject.getCode(),
                             group.getName(),
-                            teacher.getFullName(),
+                            teacher != null ? teacher.getFullName() : null,
                             scheduleSummary,
                             group.getCapacity(),
                             activeCount,
