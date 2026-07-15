@@ -134,7 +134,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleInvalidRefreshTokenException(
             InvalidRefreshTokenException ex,
             HttpServletRequest request) {
-        log.error("Invalid refresh token: {}", ex.getMessage());
+        // WARN, no ERROR: lo dispara cualquier visitante sin sesión (refresh sin cookie)
+        log.warn("Invalid refresh token: {}", ex.getMessage());
         ErrorResponse error = ErrorResponse.of(
                 HttpStatus.UNAUTHORIZED.value(),
                 "Unauthorized",
