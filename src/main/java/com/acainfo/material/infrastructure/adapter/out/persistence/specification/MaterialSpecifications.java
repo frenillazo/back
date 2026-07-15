@@ -65,7 +65,8 @@ public final class MaterialSpecifications {
             Long subjectId,
             Long uploadedById,
             String fileExtension,
-            String searchTerm) {
+            String searchTerm,
+            Integer academicYear) {
 
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -76,6 +77,10 @@ public final class MaterialSpecifications {
 
             if (uploadedById != null) {
                 predicates.add(cb.equal(root.get("uploadedById"), uploadedById));
+            }
+
+            if (academicYear != null) {
+                predicates.add(cb.equal(root.get("academicYear"), academicYear));
             }
 
             if (fileExtension != null && !fileExtension.isBlank()) {

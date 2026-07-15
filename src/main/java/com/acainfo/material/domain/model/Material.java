@@ -55,6 +55,13 @@ public class Material {
     private MaterialCategory category = MaterialCategory.OTROS;
 
     /**
+     * Academic year the material belongs to, as its start year (2025 = "2025-26" course).
+     * Students only see materials from the current academic year; admin/teacher see all
+     * and can re-tag an old material to re-publish it.
+     */
+    private Integer academicYear;
+
+    /**
      * Original filename as uploaded.
      */
     private String originalFilename;

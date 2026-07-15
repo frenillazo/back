@@ -23,6 +23,7 @@ public record MaterialResponse(
         boolean isDocumentFile,
         MaterialCategory category,
         String categoryDisplayName,
+        Integer academicYear,
         LocalDateTime uploadedAt,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,

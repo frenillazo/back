@@ -8,6 +8,7 @@ import com.acainfo.material.application.port.out.FileStoragePort;
 import com.acainfo.material.application.port.out.MaterialRepositoryPort;
 import com.acainfo.material.domain.exception.MaterialAccessDeniedException;
 import com.acainfo.material.domain.exception.MaterialNotFoundException;
+import com.acainfo.material.domain.model.AcademicYear;
 import com.acainfo.material.domain.model.Material;
 import com.acainfo.enrollment.application.port.out.EnrollmentRepositoryPort;
 import com.acainfo.enrollment.domain.model.EnrollmentStatus;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.InputStream;
+import java.time.Clock;
 
 /**
  * Service for material download operations with access control.
@@ -41,6 +43,7 @@ public class MaterialDownloadService implements DownloadMaterialUseCase, Preview
     private final UserRepositoryPort userRepository;
     private final EnrollmentRepositoryPort enrollmentRepository;
     private final CourseRepositoryPort courseRepository;
+    private final Clock clock;
 
     @Override
     public MaterialDownload download(Long materialId, Long userId) {
@@ -109,6 +112,12 @@ public class MaterialDownloadService implements DownloadMaterialUseCase, Preview
 
         // Hidden materials are never accessible to non-admin users
         if (!material.isVisible()) {
+            return false;
+        }
+
+        // Materials from past academic years are never accessible to non-admin users
+        if (material.getAcademicYear() == null
+                || material.getAcademicYear() != AcademicYear.current(clock)) {
             return false;
         }
 

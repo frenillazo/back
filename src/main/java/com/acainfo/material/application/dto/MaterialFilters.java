@@ -9,6 +9,7 @@ public record MaterialFilters(
         Long uploadedById,
         String fileExtension,
         String searchTerm,
+        Integer academicYear,
         Integer page,
         Integer size,
         String sortBy,

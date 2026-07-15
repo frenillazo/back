@@ -45,6 +45,9 @@ public class MaterialUpdateService implements UpdateMaterialUseCase {
             // empty string allowed -> clears description
             material.setDescription(command.description().isBlank() ? null : command.description().trim());
         }
+        if (command.academicYear() != null) {
+            material.setAcademicYear(command.academicYear());
+        }
 
         LocalDateTime now = LocalDateTime.now();
 

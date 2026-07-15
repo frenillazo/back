@@ -15,6 +15,8 @@ public record UpdateMaterialRequest(
 
         Boolean visible,
 
-        Boolean downloadDisabled
+        Boolean downloadDisabled,
+
+        Integer academicYear
 ) {
 }

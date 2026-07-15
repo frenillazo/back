@@ -7,6 +7,7 @@ import com.acainfo.material.application.port.out.FileStoragePort;
 import com.acainfo.material.application.port.out.MaterialRepositoryPort;
 import com.acainfo.material.domain.exception.InvalidFileTypeException;
 import com.acainfo.material.domain.exception.MaterialNotFoundException;
+import com.acainfo.material.domain.model.AcademicYear;
 import com.acainfo.material.domain.model.AllowedFileTypes;
 import com.acainfo.material.domain.model.Material;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -29,6 +31,7 @@ public class MaterialUploadService implements UploadMaterialUseCase, DeleteMater
 
     private final MaterialRepositoryPort materialRepository;
     private final FileStoragePort fileStorage;
+    private final Clock clock;
 
     @Override
     public Material upload(UploadMaterialCommand command) {
@@ -61,6 +64,7 @@ public class MaterialUploadService implements UploadMaterialUseCase, DeleteMater
                 .fileSize(command.fileSize())
                 .storagePath(storagePath)
                 .category(command.category())
+                .academicYear(AcademicYear.current(clock))
                 .uploadedAt(now)
                 // Newly uploaded materials are visible and downloadable; record activation
                 // timestamps so the auto-disable scheduled task can count from upload.

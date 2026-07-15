@@ -4,6 +4,7 @@ import com.acainfo.material.application.dto.MaterialFilters;
 import com.acainfo.material.application.port.in.GetMaterialUseCase;
 import com.acainfo.material.application.port.out.MaterialRepositoryPort;
 import com.acainfo.material.domain.exception.MaterialNotFoundException;
+import com.acainfo.material.domain.model.AcademicYear;
 import com.acainfo.material.domain.model.Material;
 import com.acainfo.enrollment.application.port.out.EnrollmentRepositoryPort;
 import com.acainfo.enrollment.domain.model.Enrollment;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.util.List;
 
 /**
@@ -36,6 +38,7 @@ public class MaterialQueryService implements GetMaterialUseCase {
     private final UserRepositoryPort userRepository;
     private final EnrollmentRepositoryPort enrollmentRepository;
     private final GetCourseUseCase getCourseUseCase;
+    private final Clock clock;
 
     @Override
     public Material getById(Long id) {
@@ -84,6 +87,11 @@ public class MaterialQueryService implements GetMaterialUseCase {
             return false;
         }
 
+        // Materials from past academic years are hidden from non-admin users
+        if (!isCurrentAcademicYear(material)) {
+            return false;
+        }
+
         // Students need an ACTIVE enrollment in a course of the material's subject
         if (user.isStudent()) {
             return enrollmentRepository
@@ -116,5 +124,10 @@ public class MaterialQueryService implements GetMaterialUseCase {
 
         // Get recent materials for those subjects
         return materialRepository.findRecentBySubjectIds(subjectIds, days);
+    }
+
+    private boolean isCurrentAcademicYear(Material material) {
+        return material.getAcademicYear() != null
+                && material.getAcademicYear() == AcademicYear.current(clock);
     }
 }

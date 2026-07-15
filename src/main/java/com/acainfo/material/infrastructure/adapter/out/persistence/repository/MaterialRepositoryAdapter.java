@@ -50,7 +50,8 @@ public class MaterialRepositoryAdapter implements MaterialRepositoryPort {
                 filters.subjectId(),
                 filters.uploadedById(),
                 filters.fileExtension(),
-                filters.searchTerm()
+                filters.searchTerm(),
+                filters.academicYear()
         );
 
         return jpaRepository.findAll(spec, pageable)

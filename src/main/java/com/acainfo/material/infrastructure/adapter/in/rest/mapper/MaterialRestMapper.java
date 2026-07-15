@@ -46,6 +46,7 @@ public interface MaterialRestMapper {
     @Mapping(target = "mimeType", source = "material.mimeType")
     @Mapping(target = "fileSize", source = "material.fileSize")
     @Mapping(target = "category", source = "material.category")
+    @Mapping(target = "academicYear", source = "material.academicYear")
     @Mapping(target = "uploadedAt", source = "material.uploadedAt")
     @Mapping(target = "createdAt", source = "material.createdAt")
     @Mapping(target = "updatedAt", source = "material.updatedAt")

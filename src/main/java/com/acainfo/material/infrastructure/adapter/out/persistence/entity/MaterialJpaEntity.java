@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_material_file_extension", columnList = "file_extension"),
                 @Index(name = "idx_material_uploaded_at", columnList = "uploaded_at"),
                 @Index(name = "idx_material_category", columnList = "subject_id, category"),
+                @Index(name = "idx_material_subject_year", columnList = "subject_id, academic_year"),
                 @Index(name = "idx_material_auto_disable",
                         columnList = "visible, download_disabled, visibility_enabled_at, download_enabled_at")
         }
@@ -54,6 +55,9 @@ public class MaterialJpaEntity {
     @Column(name = "category", length = 50, nullable = false)
     @Builder.Default
     private MaterialCategory category = MaterialCategory.OTROS;
+
+    @Column(name = "academic_year", nullable = false)
+    private Integer academicYear;
 
     @Column(name = "original_filename", nullable = false, length = 255)
     private String originalFilename;

@@ -10,6 +10,8 @@ import com.acainfo.material.application.port.in.GetMaterialUseCase;
 import com.acainfo.material.application.port.in.PreviewMaterialUseCase;
 import com.acainfo.material.application.port.in.UpdateMaterialUseCase;
 import com.acainfo.material.application.port.in.UploadMaterialUseCase;
+import com.acainfo.material.domain.exception.MaterialNotFoundException;
+import com.acainfo.material.domain.model.AcademicYear;
 import com.acainfo.material.domain.model.Material;
 import com.acainfo.material.infrastructure.adapter.in.rest.dto.BatchDownloadDisabledRequest;
 import com.acainfo.material.infrastructure.adapter.in.rest.dto.BatchUpdateResponse;
@@ -34,6 +36,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.Clock;
 import java.util.List;
 
 /**
@@ -55,6 +58,7 @@ public class MaterialController {
     private final UpdateMaterialUseCase updateMaterialUseCase;
     private final MaterialRestMapper mapper;
     private final MaterialResponseEnricher materialResponseEnricher;
+    private final Clock clock;
 
     /**
      * Upload a material file.
@@ -86,12 +90,20 @@ public class MaterialController {
 
     /**
      * Get material metadata by ID.
-     * Requires authentication.
+     * Requires authentication. Non-admin/teacher users get 404 for hidden materials
+     * or materials from past academic years (same rule as the list endpoints).
      */
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<MaterialResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<MaterialResponse> getById(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
         Material material = getMaterialUseCase.getById(id);
+        if (userDetails != null && !isAdminOrTeacher(userDetails)
+                && (!material.isVisible() || !isCurrentAcademicYear(material))) {
+            throw new MaterialNotFoundException(id);
+        }
         return ResponseEntity.ok(materialResponseEnricher.enrich(material));
     }
 
@@ -162,6 +174,7 @@ public class MaterialController {
             @RequestParam(required = false) Long uploadedById,
             @RequestParam(required = false) String fileExtension,
             @RequestParam(required = false) String searchTerm,
+            @RequestParam(required = false) Integer academicYear,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "20") Integer size,
             @RequestParam(defaultValue = "uploadedAt") String sortBy,
@@ -169,7 +182,7 @@ public class MaterialController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         MaterialFilters filters = new MaterialFilters(
-                subjectId, uploadedById, fileExtension, searchTerm,
+                subjectId, uploadedById, fileExtension, searchTerm, academicYear,
                 page, size, sortBy, sortDirection
         );
 
@@ -205,14 +218,22 @@ public class MaterialController {
     }
 
     /**
-     * Hide non-visible materials from non-admin/non-teacher users.
+     * Hide non-visible materials and materials from past academic years
+     * from non-admin/non-teacher users.
      * Admin and teacher always see everything (so they can manage).
      */
     private List<Material> filterVisibleForCaller(List<Material> materials, CustomUserDetails userDetails) {
         if (userDetails == null || isAdminOrTeacher(userDetails)) {
             return materials;
         }
-        return materials.stream().filter(Material::isVisible).toList();
+        return materials.stream()
+                .filter(m -> m.isVisible() && isCurrentAcademicYear(m))
+                .toList();
+    }
+
+    private boolean isCurrentAcademicYear(Material material) {
+        return material.getAcademicYear() != null
+                && material.getAcademicYear() == AcademicYear.current(clock);
     }
 
     private boolean isAdminOrTeacher(CustomUserDetails userDetails) {
@@ -266,7 +287,8 @@ public class MaterialController {
                 request.name(),
                 request.description(),
                 request.visible(),
-                request.downloadDisabled()
+                request.downloadDisabled(),
+                request.academicYear()
         );
         Material updated = updateMaterialUseCase.updateMetadata(id, command);
         return ResponseEntity.ok(materialResponseEnricher.enrich(updated));
