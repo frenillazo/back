@@ -71,6 +71,16 @@ public interface JpaMaterialRepository extends JpaRepository<MaterialJpaEntity, 
                               @Param("enabledAt") LocalDateTime enabledAt);
 
     /**
+     * Send all materials of a folder back to the subject root (folder_id = null).
+     * Called explicitly before deleting a folder: in dev/test the schema comes from
+     * Hibernate (folderId is a plain column, no FK), so the prod-only ON DELETE SET NULL
+     * cannot be relied upon.
+     */
+    @Modifying
+    @Query("UPDATE MaterialJpaEntity m SET m.folderId = null WHERE m.folderId = :folderId")
+    int clearFolderId(@Param("folderId") Long folderId);
+
+    /**
      * Find materials currently active (visible AND download enabled) where both flags
      * have been active since at least the given threshold timestamp.
      */

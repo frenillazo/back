@@ -121,6 +121,11 @@ public class MaterialRepositoryAdapter implements MaterialRepositoryPort {
     }
 
     @Override
+    public int clearFolderId(Long folderId) {
+        return jpaRepository.clearFolderId(folderId);
+    }
+
+    @Override
     public List<Material> findExpiredActiveMaterials(int daysThreshold) {
         LocalDateTime threshold = LocalDateTime.now().minusDays(daysThreshold);
         return mapper.toDomainList(jpaRepository.findExpiredActiveMaterials(threshold));

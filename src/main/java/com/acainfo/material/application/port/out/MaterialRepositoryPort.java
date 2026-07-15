@@ -113,4 +113,12 @@ public interface MaterialRepositoryPort {
      * scheduled task to enforce periodic admin review.
      */
     List<Material> findExpiredActiveMaterials(int daysThreshold);
+
+    /**
+     * Bulk update: send all materials of a folder back to the subject root
+     * (folderId = null). Must be called before deleting the folder.
+     *
+     * @return number of rows affected
+     */
+    int clearFolderId(Long folderId);
 }

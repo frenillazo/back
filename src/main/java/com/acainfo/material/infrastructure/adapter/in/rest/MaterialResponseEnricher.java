@@ -1,6 +1,8 @@
 package com.acainfo.material.infrastructure.adapter.in.rest;
 
+import com.acainfo.material.application.port.out.MaterialFolderRepositoryPort;
 import com.acainfo.material.domain.model.Material;
+import com.acainfo.material.domain.model.MaterialFolder;
 import com.acainfo.material.infrastructure.adapter.in.rest.dto.MaterialResponse;
 import com.acainfo.material.infrastructure.adapter.in.rest.mapper.MaterialRestMapper;
 import com.acainfo.subject.application.port.in.GetSubjectUseCase;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -30,6 +33,7 @@ public class MaterialResponseEnricher {
     private final MaterialRestMapper materialRestMapper;
     private final GetSubjectUseCase getSubjectUseCase;
     private final GetUserProfileUseCase getUserProfileUseCase;
+    private final MaterialFolderRepositoryPort materialFolderRepository;
 
     /**
      * Enrich a single material with related entity data.
@@ -40,11 +44,16 @@ public class MaterialResponseEnricher {
     public MaterialResponse enrich(Material material) {
         Subject subject = getSubjectUseCase.getById(material.getSubjectId());
         User uploader = getUserProfileUseCase.getUserById(material.getUploadedById());
+        String folderName = material.getFolderId() == null ? null :
+                materialFolderRepository.findById(material.getFolderId())
+                        .map(MaterialFolder::getName)
+                        .orElse(null);
 
         return materialRestMapper.toEnrichedResponse(
                 material,
                 subject.getName(),
-                uploader.getFullName()
+                uploader.getFullName(),
+                folderName
         );
     }
 
@@ -79,16 +88,28 @@ public class MaterialResponseEnricher {
                 .map(getUserProfileUseCase::getUserById)
                 .collect(Collectors.toMap(User::getId, Function.identity()));
 
+        // Batch-fetch folder names (folderId == null means subject root, no folder name)
+        List<Long> folderIds = materials.stream()
+                .map(Material::getFolderId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        Map<Long, String> folderNamesById = materialFolderRepository.findAllByIds(folderIds).stream()
+                .collect(Collectors.toMap(MaterialFolder::getId, MaterialFolder::getName));
+
         // Build enriched responses
         return materials.stream()
                 .map(material -> {
                     Subject subject = subjectsById.get(material.getSubjectId());
                     User uploader = uploadersById.get(material.getUploadedById());
+                    String folderName = material.getFolderId() == null ? null :
+                            folderNamesById.get(material.getFolderId());
 
                     return materialRestMapper.toEnrichedResponse(
                             material,
                             subject.getName(),
-                            uploader.getFullName()
+                            uploader.getFullName(),
+                            folderName
                     );
                 })
                 .toList();

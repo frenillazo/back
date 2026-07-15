@@ -1,7 +1,5 @@
 package com.acainfo.material.application.port.out;
 
-import com.acainfo.material.domain.model.MaterialCategory;
-
 import java.io.InputStream;
 
 /**
@@ -18,15 +16,16 @@ public interface FileStoragePort {
 
     /**
      * Store a file and return the storage path.
+     * Files live directly under the subject directory; logical folders are
+     * metadata only ({@code materials.folder_id}) and never move files on disk.
      *
      * @param content File content as InputStream
      * @param storedFilename UUID-based filename to store
      * @param subjectId Subject ID for organizing files
-     * @param category Material category for organizing files
      * @return Storage path relative to base directory
      * @throws com.acainfo.material.domain.exception.FileStorageException if storage fails
      */
-    String store(InputStream content, String storedFilename, Long subjectId, MaterialCategory category);
+    String store(InputStream content, String storedFilename, Long subjectId);
 
     /**
      * Retrieve file content.

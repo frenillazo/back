@@ -20,10 +20,10 @@ public interface MaterialRestMapper {
      */
     @Mapping(target = "subjectName", ignore = true)
     @Mapping(target = "uploadedByName", ignore = true)
+    @Mapping(target = "folderName", ignore = true)
     @Mapping(target = "fileSizeFormatted", expression = "java(material.getFileSizeFormatted())")
     @Mapping(target = "isCodeFile", expression = "java(material.isCodeFile())")
     @Mapping(target = "isDocumentFile", expression = "java(material.isDocumentFile())")
-    @Mapping(target = "categoryDisplayName", expression = "java(material.getCategoryDisplayName())")
     MaterialResponse toResponse(Material material);
 
     /**
@@ -32,10 +32,12 @@ public interface MaterialRestMapper {
      * @param material       the material domain object
      * @param subjectName    name of the subject
      * @param uploadedByName full name of the user who uploaded
+     * @param folderName     name of the folder the material lives in (null = root)
      * @return enriched material response
      */
     @Mapping(target = "subjectName", source = "subjectName")
     @Mapping(target = "uploadedByName", source = "uploadedByName")
+    @Mapping(target = "folderName", source = "folderName")
     @Mapping(target = "id", source = "material.id")
     @Mapping(target = "subjectId", source = "material.subjectId")
     @Mapping(target = "uploadedById", source = "material.uploadedById")
@@ -45,7 +47,7 @@ public interface MaterialRestMapper {
     @Mapping(target = "fileExtension", source = "material.fileExtension")
     @Mapping(target = "mimeType", source = "material.mimeType")
     @Mapping(target = "fileSize", source = "material.fileSize")
-    @Mapping(target = "category", source = "material.category")
+    @Mapping(target = "folderId", source = "material.folderId")
     @Mapping(target = "academicYear", source = "material.academicYear")
     @Mapping(target = "uploadedAt", source = "material.uploadedAt")
     @Mapping(target = "createdAt", source = "material.createdAt")
@@ -57,11 +59,11 @@ public interface MaterialRestMapper {
     @Mapping(target = "fileSizeFormatted", expression = "java(material.getFileSizeFormatted())")
     @Mapping(target = "isCodeFile", expression = "java(material.isCodeFile())")
     @Mapping(target = "isDocumentFile", expression = "java(material.isDocumentFile())")
-    @Mapping(target = "categoryDisplayName", expression = "java(material.getCategoryDisplayName())")
     MaterialResponse toEnrichedResponse(
             Material material,
             String subjectName,
-            String uploadedByName
+            String uploadedByName,
+            String folderName
     );
 
     List<MaterialResponse> toResponseList(List<Material> materials);

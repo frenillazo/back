@@ -2,9 +2,13 @@ package com.acainfo.material.application.service;
 
 import com.acainfo.material.application.dto.UpdateMaterialCommand;
 import com.acainfo.material.application.port.in.UpdateMaterialUseCase;
+import com.acainfo.material.application.port.out.MaterialFolderRepositoryPort;
 import com.acainfo.material.application.port.out.MaterialRepositoryPort;
+import com.acainfo.material.domain.exception.FolderSubjectMismatchException;
+import com.acainfo.material.domain.exception.MaterialFolderNotFoundException;
 import com.acainfo.material.domain.exception.MaterialNotFoundException;
 import com.acainfo.material.domain.model.Material;
+import com.acainfo.material.domain.model.MaterialFolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,6 +36,7 @@ import java.util.List;
 public class MaterialUpdateService implements UpdateMaterialUseCase {
 
     private final MaterialRepositoryPort materialRepository;
+    private final MaterialFolderRepositoryPort materialFolderRepository;
 
     @Override
     public Material updateMetadata(Long materialId, UpdateMaterialCommand command) {
@@ -47,6 +52,19 @@ public class MaterialUpdateService implements UpdateMaterialUseCase {
         }
         if (command.academicYear() != null) {
             material.setAcademicYear(command.academicYear());
+        }
+
+        // Move between folders: clearFolder=true sends to root and wins over folderId
+        // (null folderId means "keep", so it cannot double as "unset" — clearYear pattern)
+        if (Boolean.TRUE.equals(command.clearFolder())) {
+            material.setFolderId(null);
+        } else if (command.folderId() != null) {
+            MaterialFolder folder = materialFolderRepository.findById(command.folderId())
+                    .orElseThrow(() -> new MaterialFolderNotFoundException(command.folderId()));
+            if (!folder.getSubjectId().equals(material.getSubjectId())) {
+                throw new FolderSubjectMismatchException(command.folderId(), material.getSubjectId());
+            }
+            material.setFolderId(command.folderId());
         }
 
         LocalDateTime now = LocalDateTime.now();

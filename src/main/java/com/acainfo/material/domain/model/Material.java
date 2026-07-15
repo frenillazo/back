@@ -49,10 +49,11 @@ public class Material {
     private String description;
 
     /**
-     * Category for organizing materials (e.g., TEORIA, EJERCICIOS).
+     * Folder this material lives in (per-subject folders, single level).
+     * NULL = subject root ("sin carpeta"). Deleting a folder sends its
+     * materials back to the root, never deletes them.
      */
-    @Builder.Default
-    private MaterialCategory category = MaterialCategory.OTROS;
+    private Long folderId;
 
     /**
      * Academic year the material belongs to, as its start year (2025 = "2025-26" course).
@@ -158,24 +159,4 @@ public class Material {
                         fileExtension.equals("md"));
     }
 
-    /**
-     * Get category display name.
-     */
-    public String getCategoryDisplayName() {
-        return category != null ? category.getDisplayName() : MaterialCategory.OTROS.getDisplayName();
-    }
-
-    /**
-     * Get category folder name for storage.
-     */
-    public String getCategoryFolderName() {
-        return category != null ? category.getFolderName() : MaterialCategory.OTROS.getFolderName();
-    }
-
-    /**
-     * Check if this material is in the default category.
-     */
-    public boolean isInDefaultCategory() {
-        return category == null || category == MaterialCategory.OTROS;
-    }
 }

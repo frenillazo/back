@@ -81,7 +81,7 @@ public class MaterialController {
                 file.getContentType(),
                 file.getSize(),
                 file.getInputStream(),
-                request.getCategoryOrDefault()
+                request.folderId()
         );
 
         Material material = uploadMaterialUseCase.upload(command);
@@ -288,7 +288,9 @@ public class MaterialController {
                 request.description(),
                 request.visible(),
                 request.downloadDisabled(),
-                request.academicYear()
+                request.academicYear(),
+                request.folderId(),
+                request.clearFolder()
         );
         Material updated = updateMaterialUseCase.updateMetadata(id, command);
         return ResponseEntity.ok(materialResponseEnricher.enrich(updated));

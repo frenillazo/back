@@ -2,7 +2,6 @@ package com.acainfo.material.infrastructure.adapter.out.storage;
 
 import com.acainfo.material.application.port.out.FileStoragePort;
 import com.acainfo.material.domain.exception.FileStorageException;
-import com.acainfo.material.domain.model.MaterialCategory;
 import com.acainfo.subject.application.port.out.SubjectRepositoryPort;
 import com.acainfo.subject.domain.model.Subject;
 import lombok.extern.slf4j.Slf4j;
@@ -20,15 +19,14 @@ import java.nio.file.StandardCopyOption;
  * Local filesystem implementation of FileStoragePort.
  * Used for development and testing environments.
  *
- * <p>Storage structure:</p>
+ * <p>Storage structure (new uploads; legacy files keep their frozen storage_path):</p>
  * <pre>
  * {base-path}/
  *   └── subjects/
  *       └── {subjectCode-subjectName}/
- *           └── {categoryFolder}/
- *               └── {storedFilename}
+ *           └── {storedFilename}
  * </pre>
- * <p>Example: subjects/ing101-programacion-i/teoria/uuid.pdf</p>
+ * <p>Example: subjects/ing101-programacion-i/uuid.pdf</p>
  */
 @Slf4j
 @Component
@@ -55,19 +53,17 @@ public class LocalFileStorageAdapter implements FileStoragePort {
     }
 
     @Override
-    public String store(InputStream content, String storedFilename, Long subjectId, MaterialCategory category) {
+    public String store(InputStream content, String storedFilename, Long subjectId) {
         try {
             // Get subject information
             Subject subject = subjectRepository.findById(subjectId)
                     .orElseThrow(() -> new FileStorageException("Asignatura no encontrada con id: " + subjectId));
 
-            // Build folder structure: subjects/{subjectCode-subjectName}/{categoryFolder}/
+            // Build folder structure: subjects/{subjectCode-subjectName}/
             String subjectFolderName = sanitizeFolderName(subject.getCode() + "-" + subject.getName());
-            String categoryFolderName = category.getFolderName();
 
             Path subjectDir = basePath.resolve("subjects")
-                    .resolve(subjectFolderName)
-                    .resolve(categoryFolderName);
+                    .resolve(subjectFolderName);
             Files.createDirectories(subjectDir);
 
             // Store file
@@ -75,7 +71,7 @@ public class LocalFileStorageAdapter implements FileStoragePort {
             Files.copy(content, targetPath, StandardCopyOption.REPLACE_EXISTING);
 
             // Return relative path
-            String storagePath = "subjects/" + subjectFolderName + "/" + categoryFolderName + "/" + storedFilename;
+            String storagePath = "subjects/" + subjectFolderName + "/" + storedFilename;
             log.debug("File stored at: {}", storagePath);
 
             return storagePath;

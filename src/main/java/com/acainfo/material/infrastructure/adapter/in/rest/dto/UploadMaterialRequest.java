@@ -1,6 +1,5 @@
 package com.acainfo.material.infrastructure.adapter.in.rest.dto;
 
-import com.acainfo.material.domain.model.MaterialCategory;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -20,12 +19,6 @@ public record UploadMaterialRequest(
         @Size(max = 1000, message = "La descripción no puede exceder 1000 caracteres")
         String description,
 
-        MaterialCategory category
+        Long folderId
 ) {
-    /**
-     * Returns the category or OTROS if not provided.
-     */
-    public MaterialCategory getCategoryOrDefault() {
-        return category != null ? category : MaterialCategory.OTROS;
-    }
 }

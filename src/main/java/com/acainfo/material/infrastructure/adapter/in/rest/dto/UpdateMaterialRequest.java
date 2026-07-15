@@ -17,6 +17,10 @@ public record UpdateMaterialRequest(
 
         Boolean downloadDisabled,
 
-        Integer academicYear
+        Integer academicYear,
+
+        Long folderId,
+
+        Boolean clearFolder
 ) {
 }
