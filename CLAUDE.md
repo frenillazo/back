@@ -5,7 +5,7 @@ Spring Boot 3.5.3 · Java 21 · monolito modular con estructura hexagonal · Pos
 ## Build y verificación
 
 - Compilar: `JAVA_HOME="C:/Users/pablo/.jdks/ms-21.0.8" ./mvnw compile -q` (JAVA_HOME no está en el PATH; ~1 min)
-- Tests: `JAVA_HOME="C:/Users/pablo/.jdks/ms-21.0.8" ./mvnw test` — **158 tests** (Mockito puro de los servicios críticos + smoke @SpringBootTest H2). Deben estar SIEMPRE en verde.
+- Tests: `JAVA_HOME="C:/Users/pablo/.jdks/ms-21.0.8" ./mvnw test` — **172 tests** (Mockito puro de los servicios críticos + smoke @SpringBootTest H2). Deben estar SIEMPRE en verde.
 - Arranque local: perfil `dev` = H2 en memoria + `data-dev.sql` (admin@acainfo.com y ~40 usuarios seed, contraseña "password"); perfil `local` = Postgres localhost:5433
 - Swagger: `/swagger-ui.html` (`/v3/api-docs`) — la fuente de verdad de la API. Los docs Markdown de `docs/` se borraron el 13-jul-2026 por desfasados; el código y Swagger son la referencia.
 
