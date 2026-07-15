@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 /**
  * REST DTO for updating a subject.
  * All fields are optional.
+ * clearYear=true sets year to null ("sin asignar") and takes precedence over year.
  * Maps to UpdateSubjectCommand in application layer.
  */
 public record UpdateSubjectRequest(
@@ -18,6 +19,8 @@ public record UpdateSubjectRequest(
         @Min(value = 1, message = "El curso debe estar entre 1 y 4")
         @Max(value = 4, message = "El curso debe estar entre 1 y 4")
         Integer year,
+
+        Boolean clearYear,
 
         SubjectStatus status
 ) {

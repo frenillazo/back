@@ -93,8 +93,10 @@ public class SubjectService implements
             subject.setName(command.name().trim());
         }
 
-        // Update year if provided
-        if (command.year() != null) {
+        // Clear year takes precedence over updating it (null year = "sin asignar")
+        if (Boolean.TRUE.equals(command.clearYear())) {
+            subject.setYear(null);
+        } else if (command.year() != null) {
             subject.setYear(command.year());
         }
 
