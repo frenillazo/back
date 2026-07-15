@@ -1,5 +1,6 @@
 package com.acainfo.shared.infrastructure.rest;
 
+import com.acainfo.material.domain.exception.MaterialAccessDeniedException;
 import com.acainfo.shared.domain.exception.BusinessRuleException;
 import com.acainfo.shared.domain.exception.NotFoundException;
 import com.acainfo.shared.infrastructure.rest.dto.ErrorResponse;
@@ -171,6 +172,21 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
+    @ExceptionHandler(MaterialAccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleMaterialAccessDeniedException(
+            MaterialAccessDeniedException ex,
+            HttpServletRequest request) {
+        // WARN, no ERROR: lo dispara tráfico normal (alumno sin acceso a un material)
+        log.warn("Material access denied: {}", ex.getMessage());
+        ErrorResponse error = ErrorResponse.of(
+                HttpStatus.FORBIDDEN.value(),
+                "Forbidden",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
