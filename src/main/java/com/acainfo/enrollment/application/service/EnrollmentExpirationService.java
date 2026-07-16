@@ -14,7 +14,14 @@ import java.util.List;
 
 /**
  * Service for handling automatic expiration of pending enrollment requests.
- * Enrollments that are not approved or rejected within 48 hours are automatically expired.
+ * Enrollments that are not approved or rejected within 48 hours are expired.
+ *
+ * <p>APAGADO a propósito (16-jul-2026, decisión del dueño): con un solo admin que
+ * no entra a diario, un plazo automático de 48 h perdía alumnos en silencio — ni
+ * el alumno conocía el plazo ni el admin tenía aviso de solicitudes esperando.
+ * La solicitud vive ahora hasta que el admin decide. Para reactivarlo, poner un
+ * cron en {@code app.enrollment.expiration.cron} (y volver a contar el plazo al
+ * alumno en la UI, que ya no lo menciona).
  */
 @Service
 @RequiredArgsConstructor
@@ -27,9 +34,9 @@ public class EnrollmentExpirationService {
 
     /**
      * Scheduled job to expire pending enrollments older than 48 hours.
-     * Runs every hour.
+     * Disabled by default ({@code cron=-}); still invocable manually.
      */
-    @Scheduled(fixedRate = 3600000) // Every hour
+    @Scheduled(cron = "${app.enrollment.expiration.cron:-}")
     @Transactional
     public void expirePendingEnrollments() {
         log.info("Running enrollment expiration job...");
