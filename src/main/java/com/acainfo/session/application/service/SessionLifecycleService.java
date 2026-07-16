@@ -1,5 +1,7 @@
 package com.acainfo.session.application.service;
 
+import com.acainfo.reservation.application.port.out.ReservationRepositoryPort;
+import com.acainfo.reservation.domain.model.SessionReservation;
 import com.acainfo.session.application.dto.PostponeSessionCommand;
 import com.acainfo.session.application.port.in.GetSessionUseCase;
 import com.acainfo.session.application.port.in.SessionLifecycleUseCase;
@@ -12,6 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 /**
  * Service implementing session lifecycle transitions.
  * Handles state changes: start, complete, cancel, postpone.
@@ -23,6 +28,7 @@ public class SessionLifecycleService implements SessionLifecycleUseCase {
 
     private final SessionRepositoryPort sessionRepositoryPort;
     private final GetSessionUseCase getSessionUseCase;
+    private final ReservationRepositoryPort reservationRepositoryPort;
 
     @Override
     @Transactional
@@ -118,9 +124,45 @@ public class SessionLifecycleService implements SessionLifecycleUseCase {
 
         Session savedNewSession = sessionRepositoryPort.save(newSession);
 
+        migrateReservations(originalSession, savedNewSession);
+
         log.info("Session postponed successfully: original ID {}, new ID {}, new date {}",
                 id, savedNewSession.getId(), command.newDate());
 
         return savedNewSession;
+    }
+
+    /**
+     * Lleva las reservas confirmadas de la sesión pospuesta a la nueva.
+     *
+     * La sesión de reemplazo nacía sin reservas: el alumno veía "Pospuesta al X",
+     * iba a la nueva y no tenía plaza, sin que nada se lo advirtiera. Las
+     * reservas solo se generaban al aprobar la inscripción o al generar sesiones,
+     * nunca aquí.
+     *
+     * Las reservas de la original se quedan como estaban: la sesión ya figura
+     * como POSTPONED y sirven de histórico.
+     */
+    private void migrateReservations(Session originalSession, Session newSession) {
+        List<SessionReservation> migrated = reservationRepositoryPort
+                .findBySessionId(originalSession.getId())
+                .stream()
+                .filter(SessionReservation::isConfirmed)
+                .map(reservation -> reservation.toBuilder()
+                        .id(null)
+                        .sessionId(newSession.getId())
+                        .reservedAt(LocalDateTime.now())
+                        .createdAt(null)
+                        .updatedAt(null)
+                        .build())
+                .toList();
+
+        if (migrated.isEmpty()) {
+            return;
+        }
+
+        reservationRepositoryPort.saveAll(migrated);
+        log.info("Migrated {} reservations from postponed session {} to new session {}",
+                migrated.size(), originalSession.getId(), newSession.getId());
     }
 }

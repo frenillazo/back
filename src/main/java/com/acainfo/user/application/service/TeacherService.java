@@ -49,8 +49,8 @@ public class TeacherService implements ManageTeachersUseCase {
         }
 
         // Validate password
-        if (command.password() == null || command.password().length() < 6) {
-            throw new IllegalArgumentException("La contraseña debe tener al menos 6 caracteres");
+        if (command.password() == null || command.password().length() < 8) {
+            throw new IllegalArgumentException("La contraseña debe tener al menos 8 caracteres");
         }
 
         // Get TEACHER role

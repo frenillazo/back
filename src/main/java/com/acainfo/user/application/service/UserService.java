@@ -84,8 +84,8 @@ public class UserService implements
         }
 
         // Validate new password
-        if (newPassword == null || newPassword.length() < 6) {
-            throw new IllegalArgumentException("La contraseña debe tener al menos 6 caracteres");
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new IllegalArgumentException("La contraseña debe tener al menos 8 caracteres");
         }
 
         // Update password

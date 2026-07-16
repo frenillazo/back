@@ -94,8 +94,8 @@ public class AuthService implements
         }
 
         // Validate password length
-        if (command.password() == null || command.password().length() < 6) {
-            throw new IllegalArgumentException("La contraseña debe tener al menos 6 caracteres");
+        if (command.password() == null || command.password().length() < 8) {
+            throw new IllegalArgumentException("La contraseña debe tener al menos 8 caracteres");
         }
 
         // Get STUDENT role
@@ -295,8 +295,8 @@ public class AuthService implements
         log.info("Resetting password with token");
 
         // Validate password length
-        if (newPassword == null || newPassword.length() < 6) {
-            throw new IllegalArgumentException("La contraseña debe tener al menos 6 caracteres");
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new IllegalArgumentException("La contraseña debe tener al menos 8 caracteres");
         }
 
         // Validate token
