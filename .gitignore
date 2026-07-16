@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Material subido en local (perfil dev/local) ###
+# app.storage.local.base-path escribe aquí los ficheros que se suben al probar.
+# Este repositorio es PÚBLICO: nunca debe acabar aquí material docente real.
+storage/
