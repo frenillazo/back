@@ -9,6 +9,7 @@ import com.anthropic.models.messages.DocumentBlockParam;
 import com.anthropic.models.messages.ImageBlockParam;
 import com.anthropic.models.messages.Message;
 import com.anthropic.models.messages.MessageCreateParams;
+import com.anthropic.models.messages.StopReason;
 import com.anthropic.models.messages.TextBlockParam;
 import com.anthropic.models.messages.ThinkingConfigAdaptive;
 import com.acainfo.material.application.dto.AiImageInput;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -144,6 +146,7 @@ public class AnthropicLatexAdapter implements LlmLatexPort {
         log.debug("Calling Anthropic API (model={}, maxTokens={})",
                 properties.getModel(), properties.getMaxTokens());
         Message response = getClient().messages().create(params);
+        ensureNotTruncated(response.stopReason(), properties.getMaxTokens());
 
         String tex = response.content().stream()
                 .flatMap(block -> block.text().stream())
@@ -154,6 +157,20 @@ public class AnthropicLatexAdapter implements LlmLatexPort {
 
     private static ContentBlockParam text(String value) {
         return ContentBlockParam.ofText(TextBlockParam.builder().text(value).build());
+    }
+
+    /**
+     * A response cut off by max_tokens is a truncated .tex: without this check
+     * it would fail to compile and the fix loop could "repair" it into a
+     * compilable but INCOMPLETE document, published silently. Better a FAILED
+     * job with a clear message.
+     */
+    static void ensureNotTruncated(Optional<StopReason> stopReason, long maxTokens) {
+        if (stopReason.filter(StopReason.MAX_TOKENS::equals).isPresent()) {
+            throw new IllegalStateException(
+                    "La IA agotó el máximo de tokens de salida (" + maxTokens
+                            + "): el documento es demasiado largo y el resultado llegaría incompleto");
+        }
     }
 
     /**
